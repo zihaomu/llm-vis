@@ -728,6 +728,55 @@ def _standard_attention_subject(
         causal_pairs_formula,
     )
     attention_flops_formula = _add(projection_flops_formula, attention_core_formula)
+    attention_component_flops = {
+        "q_proj": _multiply(
+            _literal(2),
+            _symbol("B"),
+            _symbol("T"),
+            _symbol("H"),
+            _symbol("Q_PROJ_MULT"),
+            _symbol("N_Q"),
+            _symbol("D_H"),
+        ),
+        "k_proj": _multiply(
+            _literal(2),
+            _symbol("B"),
+            _symbol("T"),
+            _symbol("H"),
+            _symbol("N_KV"),
+            _symbol("D_H"),
+        ),
+        "v_proj": _multiply(
+            _literal(2),
+            _symbol("B"),
+            _symbol("T"),
+            _symbol("H"),
+            _symbol("N_KV"),
+            _symbol("D_H"),
+        ),
+        "qk_matmul": _multiply(
+            _literal(2),
+            _symbol("B"),
+            _symbol("N_Q"),
+            _symbol("D_H"),
+            causal_pairs_formula,
+        ),
+        "pv_matmul": _multiply(
+            _literal(2),
+            _symbol("B"),
+            _symbol("N_Q"),
+            _symbol("D_H"),
+            causal_pairs_formula,
+        ),
+        "o_proj": _multiply(
+            _literal(2),
+            _symbol("B"),
+            _symbol("T"),
+            _symbol("N_Q"),
+            _symbol("D_H"),
+            _symbol("H"),
+        ),
+    }
     ffn_flops_formula = _multiply(
         _literal(2),
         _symbol("B"),
@@ -737,8 +786,8 @@ def _standard_attention_subject(
     total_flops_formula = _add(attention_flops_formula, ffn_flops_formula)
 
     activation_bytes = dtype_nbytes(scenario.activation_dtype)
-    attention_logical = sum(
-        _matrix_logical_bytes(
+    attention_matrix_logical = {
+        matrix.name: _matrix_logical_bytes(
             matrix,
             tokens=tokens,
             activation_bytes=activation_bytes,
@@ -746,7 +795,8 @@ def _standard_attention_subject(
             int4_group_size=int4_group_size,
         )
         for matrix in attention_matrices
-    )
+    }
+    attention_logical = sum(attention_matrix_logical.values())
     attention_logical += attention_core_logical_bytes(
         batch=scenario.batch,
         new_tokens=scenario.new_tokens,
@@ -761,8 +811,8 @@ def _standard_attention_subject(
         scenario.batch * scenario.new_tokens * 2 * kv_width * dtype_nbytes(scenario.kv_dtype)
     )
     attention_logical += kv_write_bytes
-    ffn_logical = sum(
-        _matrix_logical_bytes(
+    ffn_matrix_logical = {
+        matrix.name: _matrix_logical_bytes(
             matrix,
             tokens=tokens,
             activation_bytes=activation_bytes,
@@ -770,7 +820,8 @@ def _standard_attention_subject(
             int4_group_size=int4_group_size,
         )
         for matrix in ffn_matrices
-    )
+    }
+    ffn_logical = sum(ffn_matrix_logical.values())
     total_logical = attention_logical + ffn_logical
     kv_formula = _multiply(
         _symbol("B"),
@@ -820,6 +871,39 @@ def _standard_attention_subject(
             MetricOrigin.FORMULA,
         ),
     }
+    formulas.update(
+        {
+            f"flops.attention.{name}": (formula, "FLOPs", MetricOrigin.FORMULA)
+            for name, formula in attention_component_flops.items()
+        }
+    )
+    formulas.update(
+        {
+            f"logical_bytes.attention.{name}": (
+                _literal(value),
+                "bytes",
+                MetricOrigin.FORMULA,
+            )
+            for name, value in attention_matrix_logical.items()
+        }
+    )
+    for name in ("gate_proj", "up_proj", "down_proj"):
+        formulas[f"flops.ffn.{name}"] = (
+            _multiply(
+                _literal(2),
+                _symbol("B"),
+                _symbol("T"),
+                _symbol("H"),
+                _symbol("I"),
+            ),
+            "FLOPs",
+            MetricOrigin.FORMULA,
+        )
+        formulas[f"logical_bytes.ffn.{name}"] = (
+            _literal(ffn_matrix_logical[name]),
+            "bytes",
+            MetricOrigin.FORMULA,
+        )
     storage_notes = _storage_assumptions(storage)
     attention_shape = (
         f"attention_shape:N_Q={query_heads},N_KV={kv_heads},D_H={head_dim}; "
@@ -994,8 +1078,8 @@ def _qwen_linear_subject(
     attention_logical += 2 * tokens * conv_width * activation_bytes + conv_storage.total_bytes
     state_bytes = evaluate_expression(state_formula, bindings)
     attention_logical += 2 * int(state_bytes)
-    ffn_logical = sum(
-        _matrix_logical_bytes(
+    ffn_matrix_logical = {
+        matrix.name: _matrix_logical_bytes(
             matrix,
             tokens=tokens,
             activation_bytes=activation_bytes,
@@ -1003,7 +1087,8 @@ def _qwen_linear_subject(
             int4_group_size=int4_group_size,
         )
         for matrix in ffn_matrices
-    )
+    }
+    ffn_logical = sum(ffn_matrix_logical.values())
     total_logical = attention_logical + ffn_logical
 
     base = _base_assumptions(adapter_result)
@@ -1052,6 +1137,23 @@ def _qwen_linear_subject(
             MetricOrigin.ESTIMATED,
         ),
     }
+    for name in ("gate_proj", "up_proj", "down_proj"):
+        formulas[f"flops.ffn.{name}"] = (
+            _multiply(
+                _literal(2),
+                _symbol("B"),
+                _symbol("T"),
+                _symbol("H"),
+                _symbol("I"),
+            ),
+            "FLOPs",
+            MetricOrigin.FORMULA,
+        )
+        formulas[f"logical_bytes.ffn.{name}"] = (
+            _literal(ffn_matrix_logical[name]),
+            "bytes",
+            MetricOrigin.FORMULA,
+        )
     metrics = []
     for name, (formula, unit, origin) in formulas.items():
         assumptions = list(base)
@@ -1507,6 +1609,11 @@ def analyze_costs(
                         )
                     )
                 elif entry.attention_kind == "full_attention":
+                    output_gate = text_config.get("attn_output_gate")
+                    if not isinstance(output_gate, bool):
+                        raise CostModelError(
+                            "Qwen full-attention cost model requires boolean attn_output_gate"
+                        )
                     subjects.append(
                         _standard_attention_subject(
                             scenario=scenario,
@@ -1521,7 +1628,7 @@ def analyze_costs(
                             query_heads=_positive_config_int(text_config, "num_attention_heads"),
                             kv_heads=_positive_config_int(text_config, "num_key_value_heads"),
                             head_dim=_positive_config_int(text_config, "head_dim"),
-                            q_projection_multiplier=2,
+                            q_projection_multiplier=2 if output_gate else 1,
                             attention_bias=bool(text_config.get("attention_bias", False)),
                             include_qk_norm=True,
                             int4_group_size=int4_group_size,

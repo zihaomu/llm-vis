@@ -1,6 +1,6 @@
 {
   "adapter_name": "glm-moe-dsa",
-  "id": "gdoc_5e46047d771541b144ea3c54",
+  "id": "gdoc_201a48f224679fa321bb66d3",
   "model_id": "zai-org/GLM-5.3-BF16",
   "provenance": {
     "evidence": [
@@ -27,9 +27,16 @@
   "source_model_map_id": "mmap_2489a5faebf206ff73430116",
   "views": [
     {
+      "boundary_bindings": [],
       "breadcrumb": [
         "zai-org/GLM-5.3-BF16"
       ],
+      "cost_frontier_node_ids": [
+        "gnode_742ae1a0251bc19d0213ecdf",
+        "gnode_87aa94ae1c9ac617d396366e"
+      ],
+      "cost_reconciliations": [],
+      "decomposes_node_id": null,
       "edges": [
         {
           "coverage": 1.0,
@@ -232,6 +239,7 @@
             "boundary": "input"
           },
           "coverage": 1.0,
+          "decomposition_status": "none",
           "drilldown_view_id": null,
           "evidence": [
             "adapter:glm-moe-dsa",
@@ -249,10 +257,12 @@
           "key": "tokens",
           "kind": "input",
           "label": "Token IDs",
+          "metric_bindings": [],
           "opaque": false,
           "output_port_ids": [
             "gport_c89a85ca2c5150bf15b3f9ac"
           ],
+          "primitive_kind": null,
           "subject_ids": [
             "art_4060605075c9fea0f067f1c1"
           ]
@@ -262,6 +272,7 @@
             "vocab_size": 154880
           },
           "coverage": 1.0,
+          "decomposition_status": "none",
           "drilldown_view_id": null,
           "evidence": [
             "adapter:glm-moe-dsa",
@@ -281,10 +292,12 @@
           "key": "embedding",
           "kind": "embedding",
           "label": "Token Embedding",
+          "metric_bindings": [],
           "opaque": false,
           "output_port_ids": [
             "gport_56e313cfcc11f7a904a9bdb8"
           ],
+          "primitive_kind": null,
           "subject_ids": [
             "art_b7f500b34a74aa3a700e18f1",
             "art_2755a95ca0b34f6a01dea15a"
@@ -302,6 +315,7 @@
             "mlp_kind": "dense"
           },
           "coverage": 1.0,
+          "decomposition_status": "available",
           "drilldown_view_id": "gvw_30b4ee729d67b8acd56b7317",
           "evidence": [
             "adapter:glm-moe-dsa",
@@ -321,10 +335,12 @@
           "key": "dense_decoder_stage",
           "kind": "decoder_pattern",
           "label": "Dense DSA × 3",
+          "metric_bindings": [],
           "opaque": false,
           "output_port_ids": [
             "gport_0585a99cd0091ec5f3577482"
           ],
+          "primitive_kind": null,
           "subject_ids": [
             "art_e0416c9fe2d88c57ccbde805",
             "art_37eb263fb7f682b7fb741358",
@@ -426,6 +442,7 @@
             "top_k": 8
           },
           "coverage": 1.0,
+          "decomposition_status": "available",
           "drilldown_view_id": "gvw_3544ea8386077077e968f3ac",
           "evidence": [
             "adapter:glm-moe-dsa",
@@ -445,10 +462,12 @@
           "key": "sparse_decoder_stage",
           "kind": "decoder_pattern",
           "label": "Sparse DSA + MoE × 75",
+          "metric_bindings": [],
           "opaque": false,
           "output_port_ids": [
             "gport_4733817f9583ee8fc0c61111"
           ],
+          "primitive_kind": null,
           "subject_ids": [
             "art_e0416c9fe2d88c57ccbde805",
             "art_69481e2af7523914125295a0",
@@ -683,6 +702,7 @@
         {
           "attributes": {},
           "coverage": 1.0,
+          "decomposition_status": "none",
           "drilldown_view_id": null,
           "evidence": [
             "adapter:glm-moe-dsa",
@@ -701,10 +721,12 @@
           "key": "final_norm",
           "kind": "norm",
           "label": "Final Norm",
+          "metric_bindings": [],
           "opaque": false,
           "output_port_ids": [
             "gport_35f900a0ce87b87dd93a8d9a"
           ],
+          "primitive_kind": null,
           "subject_ids": [
             "art_fea6d1e795acb38e70320a87",
             "art_52a6f3f1d0e2560d7ab97b6f"
@@ -715,6 +737,7 @@
             "vocab_size": 154880
           },
           "coverage": 1.0,
+          "decomposition_status": "none",
           "drilldown_view_id": null,
           "evidence": [
             "adapter:glm-moe-dsa",
@@ -734,10 +757,12 @@
           "key": "lm_head",
           "kind": "lm_head",
           "label": "LM Head",
+          "metric_bindings": [],
           "opaque": false,
           "output_port_ids": [
             "gport_3811953ab167c83ec498a53a"
           ],
+          "primitive_kind": null,
           "subject_ids": [
             "art_340cf27bb7a6d8b561f5ffcc",
             "art_d65624f1004317a59df956f0"
@@ -748,6 +773,7 @@
             "boundary": "output"
           },
           "coverage": 1.0,
+          "decomposition_status": "none",
           "drilldown_view_id": null,
           "evidence": [
             "adapter:glm-moe-dsa",
@@ -767,8 +793,10 @@
           "key": "logits",
           "kind": "output",
           "label": "Logits",
+          "metric_bindings": [],
           "opaque": false,
           "output_port_ids": [],
+          "primitive_kind": null,
           "subject_ids": [
             "art_4060605075c9fea0f067f1c1"
           ]
@@ -779,6 +807,7 @@
             "instance_count": 1
           },
           "coverage": 1.0,
+          "decomposition_status": "none",
           "drilldown_view_id": null,
           "evidence": [
             "adapter:glm-moe-dsa",
@@ -798,10 +827,12 @@
           "key": "mtp",
           "kind": "mtp",
           "label": "MTP × 1 (conditional)",
+          "metric_bindings": [],
           "opaque": false,
           "output_port_ids": [
             "gport_ee4e022fb416e7945bc494ff"
           ],
+          "primitive_kind": null,
           "subject_ids": [
             "art_854b6eb8b6663845af52a491",
             "art_0390ff027be25fafc17e2302",
@@ -814,6 +845,7 @@
             "conditional": true
           },
           "coverage": 1.0,
+          "decomposition_status": "none",
           "drilldown_view_id": null,
           "evidence": [
             "adapter:glm-moe-dsa",
@@ -833,8 +865,10 @@
           "key": "mtp_logits",
           "kind": "output",
           "label": "MTP Draft Logits",
+          "metric_bindings": [],
           "opaque": false,
           "output_port_ids": [],
+          "primitive_kind": null,
           "subject_ids": [
             "art_854b6eb8b6663845af52a491",
             "art_0390ff027be25fafc17e2302",
@@ -1236,11 +1270,22 @@
       "root_group_id": "ggrp_b375601e328ac942decfc6e2"
     },
     {
+      "boundary_bindings": [],
       "breadcrumb": [
         "zai-org/GLM-5.3-BF16",
         "DSA Decoder",
         "D0"
       ],
+      "cost_frontier_node_ids": [
+        "gnode_b3ebf17326318af6abb40749",
+        "gnode_2bab95b11077ce11bfb8e696",
+        "gnode_e3ec3f8671cd3566f2ea7a33",
+        "gnode_c6b92ef25b1de1c8594c3f48",
+        "gnode_56dec331af9c2f63bf840ea4",
+        "gnode_16c6dc5f1798ca6e234d1286"
+      ],
+      "cost_reconciliations": [],
+      "decomposes_node_id": null,
       "edges": [
         {
           "coverage": 1.0,
@@ -1513,6 +1558,7 @@
         {
           "attributes": {},
           "coverage": 1.0,
+          "decomposition_status": "none",
           "drilldown_view_id": null,
           "evidence": [
             "adapter:glm-moe-dsa",
@@ -1533,10 +1579,12 @@
           "key": "hidden_in",
           "kind": "input",
           "label": "Hidden In",
+          "metric_bindings": [],
           "opaque": false,
           "output_port_ids": [
             "gport_ae052f14e2ce283d66e1e251"
           ],
+          "primitive_kind": null,
           "subject_ids": [
             "art_37eb263fb7f682b7fb741358",
             "art_3039ef4de4b06194f5211dbe"
@@ -1545,6 +1593,7 @@
         {
           "attributes": {},
           "coverage": 1.0,
+          "decomposition_status": "primitive",
           "drilldown_view_id": null,
           "evidence": [
             "adapter:glm-moe-dsa",
@@ -1566,10 +1615,12 @@
           "key": "input_norm",
           "kind": "norm",
           "label": "Input RMSNorm",
+          "metric_bindings": [],
           "opaque": false,
           "output_port_ids": [
             "gport_c2f829456fa7804523c72fb6"
           ],
+          "primitive_kind": "rms_norm",
           "subject_ids": [
             "art_37eb263fb7f682b7fb741358",
             "art_3039ef4de4b06194f5211dbe"
@@ -1582,6 +1633,7 @@
             "state_kind": "kv_cache"
           },
           "coverage": 0.0,
+          "decomposition_status": "opaque",
           "drilldown_view_id": null,
           "evidence": [
             "adapter:glm-moe-dsa",
@@ -1605,11 +1657,28 @@
           "key": "attention",
           "kind": "dsa",
           "label": "DSA (internals Unknown)",
+          "metric_bindings": [
+            {
+              "dimension": "flops",
+              "metric_name": null,
+              "parent_metric_name": "flops.attention",
+              "reason": "Opaque attention internals are not attributable.",
+              "status": "unknown"
+            },
+            {
+              "dimension": "logical_bytes",
+              "metric_name": null,
+              "parent_metric_name": "logical_bytes.attention",
+              "reason": "Opaque attention internals are not attributable.",
+              "status": "unknown"
+            }
+          ],
           "opaque": true,
           "output_port_ids": [
             "gport_941019e797b44a5ebb7d670b",
             "gport_937e80e48f97adafe61b7e26"
           ],
+          "primitive_kind": null,
           "subject_ids": [
             "art_37eb263fb7f682b7fb741358",
             "art_3039ef4de4b06194f5211dbe",
@@ -1619,6 +1688,7 @@
         {
           "attributes": {},
           "coverage": 1.0,
+          "decomposition_status": "primitive",
           "drilldown_view_id": null,
           "evidence": [
             "adapter:glm-moe-dsa",
@@ -1641,10 +1711,12 @@
           "key": "residual_1",
           "kind": "residual",
           "label": "Residual Add",
+          "metric_bindings": [],
           "opaque": false,
           "output_port_ids": [
             "gport_584baf63b633647020a34bb8"
           ],
+          "primitive_kind": "add",
           "subject_ids": [
             "art_37eb263fb7f682b7fb741358",
             "art_3039ef4de4b06194f5211dbe"
@@ -1653,6 +1725,7 @@
         {
           "attributes": {},
           "coverage": 1.0,
+          "decomposition_status": "primitive",
           "drilldown_view_id": null,
           "evidence": [
             "adapter:glm-moe-dsa",
@@ -1674,10 +1747,12 @@
           "key": "post_norm",
           "kind": "norm",
           "label": "Post-Attention RMSNorm",
+          "metric_bindings": [],
           "opaque": false,
           "output_port_ids": [
             "gport_c75313a98b9a7eda619da93f"
           ],
+          "primitive_kind": "rms_norm",
           "subject_ids": [
             "art_37eb263fb7f682b7fb741358",
             "art_3039ef4de4b06194f5211dbe"
@@ -1689,7 +1764,8 @@
             "mlp_kind": "dense"
           },
           "coverage": 1.0,
-          "drilldown_view_id": null,
+          "decomposition_status": "available",
+          "drilldown_view_id": "gvw_ee50aa0d7965cac948767080",
           "evidence": [
             "adapter:glm-moe-dsa",
             "source:config",
@@ -1710,10 +1786,27 @@
           "key": "ffn",
           "kind": "ffn",
           "label": "Dense Gated FFN",
+          "metric_bindings": [
+            {
+              "dimension": "flops",
+              "metric_name": null,
+              "parent_metric_name": "flops",
+              "reason": "GLM executed FFN/MoE cost is Unknown.",
+              "status": "unknown"
+            },
+            {
+              "dimension": "logical_bytes",
+              "metric_name": null,
+              "parent_metric_name": "logical_bytes",
+              "reason": "GLM executed FFN/MoE traffic is Unknown.",
+              "status": "unknown"
+            }
+          ],
           "opaque": false,
           "output_port_ids": [
             "gport_977c38da12d617b248f63652"
           ],
+          "primitive_kind": null,
           "subject_ids": [
             "art_37eb263fb7f682b7fb741358",
             "art_3039ef4de4b06194f5211dbe"
@@ -1722,6 +1815,7 @@
         {
           "attributes": {},
           "coverage": 1.0,
+          "decomposition_status": "primitive",
           "drilldown_view_id": null,
           "evidence": [
             "adapter:glm-moe-dsa",
@@ -1744,10 +1838,12 @@
           "key": "residual_2",
           "kind": "residual",
           "label": "Residual Add",
+          "metric_bindings": [],
           "opaque": false,
           "output_port_ids": [
             "gport_6825900151f3d47fd1226054"
           ],
+          "primitive_kind": "add",
           "subject_ids": [
             "art_37eb263fb7f682b7fb741358",
             "art_3039ef4de4b06194f5211dbe"
@@ -1756,6 +1852,7 @@
         {
           "attributes": {},
           "coverage": 1.0,
+          "decomposition_status": "none",
           "drilldown_view_id": null,
           "evidence": [
             "adapter:glm-moe-dsa",
@@ -1778,8 +1875,10 @@
           "key": "hidden_out",
           "kind": "output",
           "label": "Hidden Out",
+          "metric_bindings": [],
           "opaque": false,
           "output_port_ids": [],
+          "primitive_kind": null,
           "subject_ids": [
             "art_37eb263fb7f682b7fb741358",
             "art_3039ef4de4b06194f5211dbe"
@@ -1791,6 +1890,7 @@
             "state_kind": "cache"
           },
           "coverage": 0.0,
+          "decomposition_status": "none",
           "drilldown_view_id": null,
           "evidence": [
             "adapter:glm-moe-dsa",
@@ -1808,10 +1908,12 @@
           "key": "state_in",
           "kind": "state_boundary_in",
           "label": "KV Cache In",
+          "metric_bindings": [],
           "opaque": false,
           "output_port_ids": [
             "gport_7cc6e44917711f2f20320860"
           ],
+          "primitive_kind": null,
           "subject_ids": [
             "art_3039ef4de4b06194f5211dbe",
             "art_b1123b2f633fea6814c76f68"
@@ -1823,6 +1925,7 @@
             "state_kind": "cache"
           },
           "coverage": 0.0,
+          "decomposition_status": "none",
           "drilldown_view_id": null,
           "evidence": [
             "adapter:glm-moe-dsa",
@@ -1842,8 +1945,10 @@
           "key": "state_out",
           "kind": "state_boundary_out",
           "label": "KV Cache Out",
+          "metric_bindings": [],
           "opaque": false,
           "output_port_ids": [],
+          "primitive_kind": null,
           "subject_ids": [
             "art_3039ef4de4b06194f5211dbe",
             "art_b1123b2f633fea6814c76f68"
@@ -2368,11 +2473,959 @@
       "root_group_id": "ggrp_23767c5770a1d580829975ad"
     },
     {
+      "boundary_bindings": [
+        {
+          "child_port_id": "gport_48c188a0a9a6288a43d29917",
+          "evidence": [
+            "source:config",
+            "contract:decomposition-boundary",
+            "shape-preserved:true",
+            "target_model_forward:false"
+          ],
+          "id": "gbind_f3030c32b215419ff444ff1d",
+          "key": "ffn.hidden_in->hidden_in.hidden",
+          "kind": "input",
+          "parent_port_id": "gport_c16a0a95f8e07144f7976aee"
+        },
+        {
+          "child_port_id": "gport_d340ae1431ad7f20fac819c1",
+          "evidence": [
+            "source:config",
+            "contract:decomposition-boundary",
+            "shape-preserved:true",
+            "target_model_forward:false"
+          ],
+          "id": "gbind_1610a211f2cdcf318288ec86",
+          "key": "ffn.hidden->hidden_out.hidden",
+          "kind": "output",
+          "parent_port_id": "gport_977c38da12d617b248f63652"
+        }
+      ],
+      "breadcrumb": [
+        "zai-org/GLM-5.3-BF16",
+        "DSA Decoder",
+        "D0",
+        "Dense Gated FFN",
+        "Operators"
+      ],
+      "cost_frontier_node_ids": [
+        "gnode_0d1781c1aeac20f154256e35",
+        "gnode_7f0d8e46b86466c6ee45ae1e",
+        "gnode_4e9cfe2cfd3bf5a4c8325d94",
+        "gnode_d6e7f617b3b1ff190a28cda4",
+        "gnode_0249bdc1c9ff769f688fd6e5"
+      ],
+      "cost_reconciliations": [
+        {
+          "dimension": "flops",
+          "evidence": [
+            "source:config",
+            "cost:formula-scope",
+            "unknown-is-not-zero"
+          ],
+          "excluded_node_ids": [],
+          "known_child_metric_names": [],
+          "parent_metric_name": "flops",
+          "reason": "GLM executed FFN/MoE FLOPs remain Unknown without runtime route evidence.",
+          "status": "unknown",
+          "unattributed_node_ids": [
+            "gnode_0d1781c1aeac20f154256e35",
+            "gnode_7f0d8e46b86466c6ee45ae1e",
+            "gnode_4e9cfe2cfd3bf5a4c8325d94",
+            "gnode_d6e7f617b3b1ff190a28cda4",
+            "gnode_0249bdc1c9ff769f688fd6e5"
+          ]
+        },
+        {
+          "dimension": "logical_bytes",
+          "evidence": [
+            "source:config",
+            "cost:formula-scope",
+            "unknown-is-not-zero"
+          ],
+          "excluded_node_ids": [],
+          "known_child_metric_names": [],
+          "parent_metric_name": "logical_bytes",
+          "reason": "GLM executed FFN/MoE traffic remains Unknown without runtime route evidence.",
+          "status": "unknown",
+          "unattributed_node_ids": [
+            "gnode_0d1781c1aeac20f154256e35",
+            "gnode_7f0d8e46b86466c6ee45ae1e",
+            "gnode_4e9cfe2cfd3bf5a4c8325d94",
+            "gnode_d6e7f617b3b1ff190a28cda4",
+            "gnode_0249bdc1c9ff769f688fd6e5"
+          ]
+        }
+      ],
+      "decomposes_node_id": "gnode_56dec331af9c2f63bf840ea4",
+      "edges": [
+        {
+          "coverage": 1.0,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "edge:data"
+          ],
+          "id": "gedge_63e8bbce53437d81d83f8238",
+          "key": "input_gate",
+          "kind": "data",
+          "origin": "config",
+          "source_port_id": "gport_48c188a0a9a6288a43d29917",
+          "target_port_id": "gport_f869ed42f82d7781518f1b9a",
+          "tensor_spec_id": null
+        },
+        {
+          "coverage": 1.0,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "edge:data"
+          ],
+          "id": "gedge_8522c3abe538839f1eb51138",
+          "key": "input_up",
+          "kind": "data",
+          "origin": "config",
+          "source_port_id": "gport_48c188a0a9a6288a43d29917",
+          "target_port_id": "gport_a3912def8bb3e10d79af0851",
+          "tensor_spec_id": null
+        },
+        {
+          "coverage": 1.0,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "edge:data"
+          ],
+          "id": "gedge_814ff141cff720aba04cfb16",
+          "key": "gate_activation",
+          "kind": "data",
+          "origin": "config",
+          "source_port_id": "gport_777180e2262543326f66976b",
+          "target_port_id": "gport_124c2f6f309543741bb39df5",
+          "tensor_spec_id": null
+        },
+        {
+          "coverage": 1.0,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "edge:data"
+          ],
+          "id": "gedge_5cc8dd3205de8149253ca639",
+          "key": "activation_multiply",
+          "kind": "data",
+          "origin": "config",
+          "source_port_id": "gport_7e45b6a3af21a9b6fac6d2e0",
+          "target_port_id": "gport_8578c2be4809ac7278ec5c2c",
+          "tensor_spec_id": null
+        },
+        {
+          "coverage": 1.0,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "edge:data"
+          ],
+          "id": "gedge_5ae83bc56ac544428780690c",
+          "key": "up_multiply",
+          "kind": "data",
+          "origin": "config",
+          "source_port_id": "gport_42986f90688506ba22e34ad5",
+          "target_port_id": "gport_5da2dd19efa2f339a4a96727",
+          "tensor_spec_id": null
+        },
+        {
+          "coverage": 1.0,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "edge:data"
+          ],
+          "id": "gedge_9c672fc5df79c9e6afbec566",
+          "key": "multiply_down",
+          "kind": "data",
+          "origin": "config",
+          "source_port_id": "gport_33bda8adc68773f0cbc174c6",
+          "target_port_id": "gport_72be44cfead470bc3b051c2e",
+          "tensor_spec_id": null
+        },
+        {
+          "coverage": 1.0,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "edge:data"
+          ],
+          "id": "gedge_fd4d49e49297b2006decb27b",
+          "key": "ffn_output",
+          "kind": "data",
+          "origin": "config",
+          "source_port_id": "gport_cc6daad9e34a46bb2cd5dfc7",
+          "target_port_id": "gport_d340ae1431ad7f20fac819c1",
+          "tensor_spec_id": null
+        }
+      ],
+      "groups": [
+        {
+          "attributes": {},
+          "collapsed": false,
+          "id": "ggrp_cedaca738eafbd638c1a0d65",
+          "key": "root",
+          "kind": "operator_graph",
+          "label": "GLM Dense FFN · primitive operators",
+          "member_node_ids": [
+            "gnode_05db8c8a81f680ea17c0e0c8",
+            "gnode_c6e6cb01de54540e189a4b1f",
+            "gnode_0d1781c1aeac20f154256e35",
+            "gnode_7f0d8e46b86466c6ee45ae1e",
+            "gnode_4e9cfe2cfd3bf5a4c8325d94",
+            "gnode_d6e7f617b3b1ff190a28cda4",
+            "gnode_0249bdc1c9ff769f688fd6e5"
+          ],
+          "parent_group_id": null
+        }
+      ],
+      "id": "gvw_ee50aa0d7965cac948767080",
+      "key": "op_glm_dense_ffn",
+      "label": "GLM Dense FFN · primitive operators",
+      "layer_index": 0,
+      "level": "operator",
+      "metadata": {
+        "layout_direction": "RIGHT",
+        "primary_flow": "acyclic",
+        "selector_visible": false,
+        "semantic_primitive_ontology": "v1",
+        "target_model_forward": false,
+        "view_kind": "operator_decomposition"
+      },
+      "nodes": [
+        {
+          "attributes": {},
+          "coverage": 1.0,
+          "decomposition_status": "none",
+          "drilldown_view_id": null,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "contract:decomposition-boundary"
+          ],
+          "group_id": "ggrp_cedaca738eafbd638c1a0d65",
+          "id": "gnode_05db8c8a81f680ea17c0e0c8",
+          "input_port_ids": [],
+          "key": "hidden_in",
+          "kind": "boundary",
+          "label": "FFN In",
+          "metric_bindings": [],
+          "opaque": false,
+          "output_port_ids": [
+            "gport_48c188a0a9a6288a43d29917"
+          ],
+          "primitive_kind": null,
+          "subject_ids": [
+            "art_37eb263fb7f682b7fb741358",
+            "art_3039ef4de4b06194f5211dbe"
+          ]
+        },
+        {
+          "attributes": {},
+          "coverage": 1.0,
+          "decomposition_status": "none",
+          "drilldown_view_id": null,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "contract:decomposition-boundary"
+          ],
+          "group_id": "ggrp_cedaca738eafbd638c1a0d65",
+          "id": "gnode_c6e6cb01de54540e189a4b1f",
+          "input_port_ids": [
+            "gport_d340ae1431ad7f20fac819c1"
+          ],
+          "key": "hidden_out",
+          "kind": "boundary",
+          "label": "FFN Out",
+          "metric_bindings": [],
+          "opaque": false,
+          "output_port_ids": [],
+          "primitive_kind": null,
+          "subject_ids": [
+            "art_37eb263fb7f682b7fb741358",
+            "art_3039ef4de4b06194f5211dbe"
+          ]
+        },
+        {
+          "attributes": {
+            "operator_family": "gemm"
+          },
+          "coverage": 1.0,
+          "decomposition_status": "primitive",
+          "drilldown_view_id": null,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "projection:semantic-primitive-v1",
+            "primitive:gemm"
+          ],
+          "group_id": "ggrp_cedaca738eafbd638c1a0d65",
+          "id": "gnode_0d1781c1aeac20f154256e35",
+          "input_port_ids": [
+            "gport_f869ed42f82d7781518f1b9a"
+          ],
+          "key": "gate_proj",
+          "kind": "gemm",
+          "label": "Gate GEMM",
+          "metric_bindings": [
+            {
+              "dimension": "flops",
+              "metric_name": null,
+              "parent_metric_name": "flops",
+              "reason": "GLM executed FFN/MoE cost is Unknown.",
+              "status": "unknown"
+            },
+            {
+              "dimension": "logical_bytes",
+              "metric_name": null,
+              "parent_metric_name": "logical_bytes",
+              "reason": "GLM executed FFN/MoE traffic is Unknown.",
+              "status": "unknown"
+            }
+          ],
+          "opaque": false,
+          "output_port_ids": [
+            "gport_777180e2262543326f66976b"
+          ],
+          "primitive_kind": "gemm",
+          "subject_ids": [
+            "art_37eb263fb7f682b7fb741358",
+            "art_3039ef4de4b06194f5211dbe"
+          ]
+        },
+        {
+          "attributes": {
+            "operator_family": "gemm"
+          },
+          "coverage": 1.0,
+          "decomposition_status": "primitive",
+          "drilldown_view_id": null,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "projection:semantic-primitive-v1",
+            "primitive:gemm"
+          ],
+          "group_id": "ggrp_cedaca738eafbd638c1a0d65",
+          "id": "gnode_7f0d8e46b86466c6ee45ae1e",
+          "input_port_ids": [
+            "gport_a3912def8bb3e10d79af0851"
+          ],
+          "key": "up_proj",
+          "kind": "gemm",
+          "label": "Up GEMM",
+          "metric_bindings": [
+            {
+              "dimension": "flops",
+              "metric_name": null,
+              "parent_metric_name": "flops",
+              "reason": "GLM executed FFN/MoE cost is Unknown.",
+              "status": "unknown"
+            },
+            {
+              "dimension": "logical_bytes",
+              "metric_name": null,
+              "parent_metric_name": "logical_bytes",
+              "reason": "GLM executed FFN/MoE traffic is Unknown.",
+              "status": "unknown"
+            }
+          ],
+          "opaque": false,
+          "output_port_ids": [
+            "gport_42986f90688506ba22e34ad5"
+          ],
+          "primitive_kind": "gemm",
+          "subject_ids": [
+            "art_37eb263fb7f682b7fb741358",
+            "art_3039ef4de4b06194f5211dbe"
+          ]
+        },
+        {
+          "attributes": {
+            "operator_family": "silu"
+          },
+          "coverage": 1.0,
+          "decomposition_status": "primitive",
+          "drilldown_view_id": null,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "projection:semantic-primitive-v1",
+            "primitive:silu"
+          ],
+          "group_id": "ggrp_cedaca738eafbd638c1a0d65",
+          "id": "gnode_4e9cfe2cfd3bf5a4c8325d94",
+          "input_port_ids": [
+            "gport_124c2f6f309543741bb39df5"
+          ],
+          "key": "activation",
+          "kind": "silu",
+          "label": "SiLU",
+          "metric_bindings": [
+            {
+              "dimension": "flops",
+              "metric_name": null,
+              "parent_metric_name": "flops",
+              "reason": "GLM executed FFN/MoE cost is Unknown.",
+              "status": "unknown"
+            },
+            {
+              "dimension": "logical_bytes",
+              "metric_name": null,
+              "parent_metric_name": "logical_bytes",
+              "reason": "GLM executed FFN/MoE traffic is Unknown.",
+              "status": "unknown"
+            }
+          ],
+          "opaque": false,
+          "output_port_ids": [
+            "gport_7e45b6a3af21a9b6fac6d2e0"
+          ],
+          "primitive_kind": "silu",
+          "subject_ids": [
+            "art_37eb263fb7f682b7fb741358",
+            "art_3039ef4de4b06194f5211dbe"
+          ]
+        },
+        {
+          "attributes": {
+            "operator_family": "multiply"
+          },
+          "coverage": 1.0,
+          "decomposition_status": "primitive",
+          "drilldown_view_id": null,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "projection:semantic-primitive-v1",
+            "primitive:multiply"
+          ],
+          "group_id": "ggrp_cedaca738eafbd638c1a0d65",
+          "id": "gnode_d6e7f617b3b1ff190a28cda4",
+          "input_port_ids": [
+            "gport_8578c2be4809ac7278ec5c2c",
+            "gport_5da2dd19efa2f339a4a96727"
+          ],
+          "key": "multiply",
+          "kind": "multiply",
+          "label": "Gate × Up",
+          "metric_bindings": [
+            {
+              "dimension": "flops",
+              "metric_name": null,
+              "parent_metric_name": "flops",
+              "reason": "GLM executed FFN/MoE cost is Unknown.",
+              "status": "unknown"
+            },
+            {
+              "dimension": "logical_bytes",
+              "metric_name": null,
+              "parent_metric_name": "logical_bytes",
+              "reason": "GLM executed FFN/MoE traffic is Unknown.",
+              "status": "unknown"
+            }
+          ],
+          "opaque": false,
+          "output_port_ids": [
+            "gport_33bda8adc68773f0cbc174c6"
+          ],
+          "primitive_kind": "multiply",
+          "subject_ids": [
+            "art_37eb263fb7f682b7fb741358",
+            "art_3039ef4de4b06194f5211dbe"
+          ]
+        },
+        {
+          "attributes": {
+            "operator_family": "gemm"
+          },
+          "coverage": 1.0,
+          "decomposition_status": "primitive",
+          "drilldown_view_id": null,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "projection:semantic-primitive-v1",
+            "primitive:gemm"
+          ],
+          "group_id": "ggrp_cedaca738eafbd638c1a0d65",
+          "id": "gnode_0249bdc1c9ff769f688fd6e5",
+          "input_port_ids": [
+            "gport_72be44cfead470bc3b051c2e"
+          ],
+          "key": "down_proj",
+          "kind": "gemm",
+          "label": "Down GEMM",
+          "metric_bindings": [
+            {
+              "dimension": "flops",
+              "metric_name": null,
+              "parent_metric_name": "flops",
+              "reason": "GLM executed FFN/MoE cost is Unknown.",
+              "status": "unknown"
+            },
+            {
+              "dimension": "logical_bytes",
+              "metric_name": null,
+              "parent_metric_name": "logical_bytes",
+              "reason": "GLM executed FFN/MoE traffic is Unknown.",
+              "status": "unknown"
+            }
+          ],
+          "opaque": false,
+          "output_port_ids": [
+            "gport_cc6daad9e34a46bb2cd5dfc7"
+          ],
+          "primitive_kind": "gemm",
+          "subject_ids": [
+            "art_37eb263fb7f682b7fb741358",
+            "art_3039ef4de4b06194f5211dbe"
+          ]
+        }
+      ],
+      "parent_view_id": "gvw_30b4ee729d67b8acd56b7317",
+      "ports": [
+        {
+          "direction": "output",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected",
+            "contract:decomposition-boundary"
+          ],
+          "id": "gport_48c188a0a9a6288a43d29917",
+          "key": "hidden_in.hidden",
+          "name": "hidden_states",
+          "node_id": "gnode_05db8c8a81f680ea17c0e0c8",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T",
+            6144
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "input",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected",
+            "contract:decomposition-boundary"
+          ],
+          "id": "gport_d340ae1431ad7f20fac819c1",
+          "key": "hidden_out.hidden",
+          "name": "ffn_output",
+          "node_id": "gnode_c6e6cb01de54540e189a4b1f",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T",
+            6144
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "input",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected"
+          ],
+          "id": "gport_f869ed42f82d7781518f1b9a",
+          "key": "gate_proj.in",
+          "name": "in",
+          "node_id": "gnode_0d1781c1aeac20f154256e35",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T",
+            6144
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "output",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected"
+          ],
+          "id": "gport_777180e2262543326f66976b",
+          "key": "gate_proj.out",
+          "name": "out",
+          "node_id": "gnode_0d1781c1aeac20f154256e35",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T",
+            12288
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "input",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected"
+          ],
+          "id": "gport_a3912def8bb3e10d79af0851",
+          "key": "up_proj.in",
+          "name": "in",
+          "node_id": "gnode_7f0d8e46b86466c6ee45ae1e",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T",
+            6144
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "output",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected"
+          ],
+          "id": "gport_42986f90688506ba22e34ad5",
+          "key": "up_proj.out",
+          "name": "out",
+          "node_id": "gnode_7f0d8e46b86466c6ee45ae1e",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T",
+            12288
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "input",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected"
+          ],
+          "id": "gport_124c2f6f309543741bb39df5",
+          "key": "activation.in",
+          "name": "in",
+          "node_id": "gnode_4e9cfe2cfd3bf5a4c8325d94",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T",
+            12288
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "output",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected"
+          ],
+          "id": "gport_7e45b6a3af21a9b6fac6d2e0",
+          "key": "activation.out",
+          "name": "out",
+          "node_id": "gnode_4e9cfe2cfd3bf5a4c8325d94",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T",
+            12288
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "input",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected"
+          ],
+          "id": "gport_8578c2be4809ac7278ec5c2c",
+          "key": "multiply.gate",
+          "name": "gate",
+          "node_id": "gnode_d6e7f617b3b1ff190a28cda4",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T",
+            12288
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "input",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected"
+          ],
+          "id": "gport_5da2dd19efa2f339a4a96727",
+          "key": "multiply.up",
+          "name": "up",
+          "node_id": "gnode_d6e7f617b3b1ff190a28cda4",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T",
+            12288
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "output",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected"
+          ],
+          "id": "gport_33bda8adc68773f0cbc174c6",
+          "key": "multiply.out",
+          "name": "out",
+          "node_id": "gnode_d6e7f617b3b1ff190a28cda4",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T",
+            12288
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "input",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected"
+          ],
+          "id": "gport_72be44cfead470bc3b051c2e",
+          "key": "down_proj.in",
+          "name": "in",
+          "node_id": "gnode_0249bdc1c9ff769f688fd6e5",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T",
+            12288
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "output",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected"
+          ],
+          "id": "gport_cc6daad9e34a46bb2cd5dfc7",
+          "key": "down_proj.out",
+          "name": "out",
+          "node_id": "gnode_0249bdc1c9ff769f688fd6e5",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T",
+            6144
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        }
+      ],
+      "root_group_id": "ggrp_cedaca738eafbd638c1a0d65"
+    },
+    {
+      "boundary_bindings": [],
       "breadcrumb": [
         "zai-org/GLM-5.3-BF16",
         "DSA Decoder",
         "M3"
       ],
+      "cost_frontier_node_ids": [
+        "gnode_155b0a518056501962a8da11",
+        "gnode_e3f5b424bedd537a3aa73925",
+        "gnode_a0df8e74060944467e7eb38d",
+        "gnode_0cb3d35510de10f42ab301ae",
+        "gnode_87bfc0d3e3fb44d163188f6c",
+        "gnode_40d2d541434609c8f6526d89",
+        "gnode_22b34bdf41821162109d78df",
+        "gnode_eb53933dbba7e4d8eae35e47",
+        "gnode_d9009a6c7698182bd05275a9",
+        "gnode_4b3b3aaa2502a7810891759e"
+      ],
+      "cost_reconciliations": [],
+      "decomposes_node_id": null,
       "edges": [
         {
           "coverage": 1.0,
@@ -2544,13 +3597,33 @@
             "weights_loaded:false",
             "target_model_constructed:false",
             "target_model_forward:false",
+            "edge:data"
+          ],
+          "id": "gedge_9e246f36b35fa807916e1457",
+          "key": "router_to_topk",
+          "kind": "data",
+          "origin": "config",
+          "source_port_id": "gport_e0abd3dd036c22585e5bf883",
+          "target_port_id": "gport_c7b37a9bd7a6fb5825d884ee",
+          "tensor_spec_id": null
+        },
+        {
+          "coverage": 1.0,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
             "edge:route"
           ],
-          "id": "gedge_e9ed5054f37856afeec89712",
-          "key": "router_to_pool",
+          "id": "gedge_4f1c8223ee9af1f665598c0f",
+          "key": "topk_to_pool",
           "kind": "route",
           "origin": "config",
-          "source_port_id": "gport_d30852d2b9e9a146d689e0ca",
+          "source_port_id": "gport_5eedd536767f643ad06a1886",
           "target_port_id": "gport_d6c0068429f39a4b39238b5b",
           "tensor_spec_id": null
         },
@@ -2566,12 +3639,32 @@
             "target_model_forward:false",
             "edge:control"
           ],
-          "id": "gedge_bfe4723149d5b675971a8b45",
-          "key": "router_to_combine",
+          "id": "gedge_6c5a7874efd5438e3d8acebc",
+          "key": "topk_to_combine",
           "kind": "control",
           "origin": "config",
-          "source_port_id": "gport_86510d84e476cdb567c6e42c",
+          "source_port_id": "gport_1616ffa620dfdabea0cb4607",
           "target_port_id": "gport_9cd5e60aa97fb6860643f993",
+          "tensor_spec_id": null
+        },
+        {
+          "coverage": 1.0,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "edge:route"
+          ],
+          "id": "gedge_e70224d781de6e98bd1642a3",
+          "key": "topk_weights_to_combine",
+          "kind": "route",
+          "origin": "config",
+          "source_port_id": "gport_9a8ba7237f1527d759e64315",
+          "target_port_id": "gport_13075158993f34aa8f0d3865",
           "tensor_spec_id": null
         },
         {
@@ -2739,6 +3832,7 @@
             "gnode_a0df8e74060944467e7eb38d",
             "gnode_0cb3d35510de10f42ab301ae",
             "gnode_87bfc0d3e3fb44d163188f6c",
+            "gnode_40d2d541434609c8f6526d89",
             "gnode_22b34bdf41821162109d78df",
             "gnode_eb53933dbba7e4d8eae35e47",
             "gnode_d9009a6c7698182bd05275a9",
@@ -2768,6 +3862,7 @@
         {
           "attributes": {},
           "coverage": 1.0,
+          "decomposition_status": "none",
           "drilldown_view_id": null,
           "evidence": [
             "adapter:glm-moe-dsa",
@@ -2788,10 +3883,12 @@
           "key": "hidden_in",
           "kind": "input",
           "label": "Hidden In",
+          "metric_bindings": [],
           "opaque": false,
           "output_port_ids": [
             "gport_3dd13389193035d071b93e4c"
           ],
+          "primitive_kind": null,
           "subject_ids": [
             "art_69481e2af7523914125295a0",
             "art_dcf60fab1f468b4a7f083475"
@@ -2800,6 +3897,7 @@
         {
           "attributes": {},
           "coverage": 1.0,
+          "decomposition_status": "primitive",
           "drilldown_view_id": null,
           "evidence": [
             "adapter:glm-moe-dsa",
@@ -2821,10 +3919,12 @@
           "key": "input_norm",
           "kind": "norm",
           "label": "Input RMSNorm",
+          "metric_bindings": [],
           "opaque": false,
           "output_port_ids": [
             "gport_a15c825cc6fb5f6d7983596a"
           ],
+          "primitive_kind": "rms_norm",
           "subject_ids": [
             "art_69481e2af7523914125295a0",
             "art_dcf60fab1f468b4a7f083475"
@@ -2837,6 +3937,7 @@
             "state_kind": "kv_cache"
           },
           "coverage": 0.0,
+          "decomposition_status": "opaque",
           "drilldown_view_id": null,
           "evidence": [
             "adapter:glm-moe-dsa",
@@ -2860,11 +3961,13 @@
           "key": "attention",
           "kind": "dsa",
           "label": "DSA (internals Unknown)",
+          "metric_bindings": [],
           "opaque": true,
           "output_port_ids": [
             "gport_f9d9a20ea3b98de050dde6d0",
             "gport_5b3ba12aae5d20fec999b36d"
           ],
+          "primitive_kind": null,
           "subject_ids": [
             "art_69481e2af7523914125295a0",
             "art_dcf60fab1f468b4a7f083475",
@@ -2874,6 +3977,7 @@
         {
           "attributes": {},
           "coverage": 1.0,
+          "decomposition_status": "primitive",
           "drilldown_view_id": null,
           "evidence": [
             "adapter:glm-moe-dsa",
@@ -2896,10 +4000,12 @@
           "key": "residual_1",
           "kind": "residual",
           "label": "Residual Add",
+          "metric_bindings": [],
           "opaque": false,
           "output_port_ids": [
             "gport_0e1e3d627a99364128c62a6f"
           ],
+          "primitive_kind": "add",
           "subject_ids": [
             "art_69481e2af7523914125295a0",
             "art_dcf60fab1f468b4a7f083475"
@@ -2908,6 +4014,7 @@
         {
           "attributes": {},
           "coverage": 1.0,
+          "decomposition_status": "primitive",
           "drilldown_view_id": null,
           "evidence": [
             "adapter:glm-moe-dsa",
@@ -2929,10 +4036,12 @@
           "key": "post_norm",
           "kind": "norm",
           "label": "Post-Attention RMSNorm",
+          "metric_bindings": [],
           "opaque": false,
           "output_port_ids": [
             "gport_3f6aff7f1734dfb7e3f63c04"
           ],
+          "primitive_kind": "rms_norm",
           "subject_ids": [
             "art_69481e2af7523914125295a0",
             "art_dcf60fab1f468b4a7f083475"
@@ -2941,9 +4050,11 @@
         {
           "attributes": {
             "routed_experts": 256,
+            "runtime_route_known": false,
             "top_k": 8
           },
           "coverage": 1.0,
+          "decomposition_status": "primitive",
           "drilldown_view_id": null,
           "evidence": [
             "adapter:glm-moe-dsa",
@@ -2964,13 +4075,90 @@
             "gport_292710fec80242f983b1b468"
           ],
           "key": "router",
-          "kind": "moe_router",
-          "label": "MoE Router",
+          "kind": "gemm",
+          "label": "Router GEMM",
+          "metric_bindings": [
+            {
+              "dimension": "flops",
+              "metric_name": null,
+              "parent_metric_name": "flops",
+              "reason": "GLM executed MoE cost is Unknown without route evidence.",
+              "status": "unknown"
+            },
+            {
+              "dimension": "logical_bytes",
+              "metric_name": null,
+              "parent_metric_name": "logical_bytes",
+              "reason": "GLM executed MoE traffic is Unknown without route evidence.",
+              "status": "unknown"
+            }
+          ],
           "opaque": false,
           "output_port_ids": [
-            "gport_d30852d2b9e9a146d689e0ca",
-            "gport_86510d84e476cdb567c6e42c"
+            "gport_e0abd3dd036c22585e5bf883"
           ],
+          "primitive_kind": "gemm",
+          "subject_ids": [
+            "art_69481e2af7523914125295a0",
+            "art_dcf60fab1f468b4a7f083475"
+          ]
+        },
+        {
+          "attributes": {
+            "routed_experts": 256,
+            "routing_weight_values_known": false,
+            "runtime_route_known": false,
+            "selected_expert_ids": null,
+            "top_k": 8
+          },
+          "coverage": 1.0,
+          "decomposition_status": "primitive",
+          "drilldown_view_id": null,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "layer_strip:layer_index=3",
+            "layer_strip:attention_kind=dsa",
+            "layer_strip:mlp_kind=sparse",
+            "config:num_experts_per_tok",
+            "runtime_route_known:false"
+          ],
+          "group_id": "ggrp_fcaf0660f0126ae6950d676a",
+          "id": "gnode_40d2d541434609c8f6526d89",
+          "input_port_ids": [
+            "gport_c7b37a9bd7a6fb5825d884ee"
+          ],
+          "key": "topk",
+          "kind": "top_k",
+          "label": "TopK (k=8)",
+          "metric_bindings": [
+            {
+              "dimension": "flops",
+              "metric_name": null,
+              "parent_metric_name": "flops",
+              "reason": "TopK execution cost is Unknown at config-only capability.",
+              "status": "unknown"
+            },
+            {
+              "dimension": "logical_bytes",
+              "metric_name": null,
+              "parent_metric_name": "logical_bytes",
+              "reason": "TopK traffic is Unknown at config-only capability.",
+              "status": "unknown"
+            }
+          ],
+          "opaque": false,
+          "output_port_ids": [
+            "gport_5eedd536767f643ad06a1886",
+            "gport_1616ffa620dfdabea0cb4607",
+            "gport_9a8ba7237f1527d759e64315"
+          ],
+          "primitive_kind": "top_k",
           "subject_ids": [
             "art_69481e2af7523914125295a0",
             "art_dcf60fab1f468b4a7f083475"
@@ -2981,11 +4169,13 @@
             "experts_expanded": false,
             "experts_materialized": 0,
             "routed_experts": 256,
+            "runtime_route_known": false,
             "top_k": 8,
             "virtual": true
           },
           "coverage": 1.0,
-          "drilldown_view_id": null,
+          "decomposition_status": "available",
+          "drilldown_view_id": "gvw_c56964a2ac26f3517d82fb08",
           "evidence": [
             "adapter:glm-moe-dsa",
             "source:config",
@@ -3009,10 +4199,12 @@
           "key": "expert_pool",
           "kind": "expert_pool",
           "label": "Expert Pool [256 total, top-8 active]",
+          "metric_bindings": [],
           "opaque": false,
           "output_port_ids": [
             "gport_9d7bde6db7a05766f4b3b8bd"
           ],
+          "primitive_kind": null,
           "subject_ids": [
             "art_b2bc3931c084e939d328ea5e",
             "art_c7f6b5b1c9524befff4add1b",
@@ -3021,10 +4213,12 @@
         },
         {
           "attributes": {
+            "runtime_route_known": false,
             "shared_experts": 1
           },
           "coverage": 1.0,
-          "drilldown_view_id": null,
+          "decomposition_status": "available",
+          "drilldown_view_id": "gvw_2878a6013159cc0e9c7b8c5b",
           "evidence": [
             "adapter:glm-moe-dsa",
             "source:config",
@@ -3046,10 +4240,12 @@
           "key": "shared_expert",
           "kind": "shared_expert",
           "label": "Shared Expert × 1",
+          "metric_bindings": [],
           "opaque": false,
           "output_port_ids": [
             "gport_89a77d6acffcbcf103aaae1a"
           ],
+          "primitive_kind": null,
           "subject_ids": [
             "art_69481e2af7523914125295a0",
             "art_dcf60fab1f468b4a7f083475"
@@ -3058,6 +4254,7 @@
         {
           "attributes": {},
           "coverage": 1.0,
+          "decomposition_status": "primitive",
           "drilldown_view_id": null,
           "evidence": [
             "adapter:glm-moe-dsa",
@@ -3076,15 +4273,18 @@
           "input_port_ids": [
             "gport_f0c69127c74b5db2650da5c8",
             "gport_0bc2746120699189cb73ae0a",
-            "gport_9cd5e60aa97fb6860643f993"
+            "gport_9cd5e60aa97fb6860643f993",
+            "gport_13075158993f34aa8f0d3865"
           ],
           "key": "combine",
           "kind": "moe_combine",
           "label": "MoE Combine",
+          "metric_bindings": [],
           "opaque": false,
           "output_port_ids": [
             "gport_4c8416ede8d62f201bfd3ff5"
           ],
+          "primitive_kind": "reduce",
           "subject_ids": [
             "art_69481e2af7523914125295a0",
             "art_dcf60fab1f468b4a7f083475"
@@ -3093,6 +4293,7 @@
         {
           "attributes": {},
           "coverage": 1.0,
+          "decomposition_status": "primitive",
           "drilldown_view_id": null,
           "evidence": [
             "adapter:glm-moe-dsa",
@@ -3115,10 +4316,12 @@
           "key": "residual_2",
           "kind": "residual",
           "label": "Residual Add",
+          "metric_bindings": [],
           "opaque": false,
           "output_port_ids": [
             "gport_0699acb0fb31f35f4eaf1ea1"
           ],
+          "primitive_kind": "add",
           "subject_ids": [
             "art_69481e2af7523914125295a0",
             "art_dcf60fab1f468b4a7f083475"
@@ -3127,6 +4330,7 @@
         {
           "attributes": {},
           "coverage": 1.0,
+          "decomposition_status": "none",
           "drilldown_view_id": null,
           "evidence": [
             "adapter:glm-moe-dsa",
@@ -3149,8 +4353,10 @@
           "key": "hidden_out",
           "kind": "output",
           "label": "Hidden Out",
+          "metric_bindings": [],
           "opaque": false,
           "output_port_ids": [],
+          "primitive_kind": null,
           "subject_ids": [
             "art_69481e2af7523914125295a0",
             "art_dcf60fab1f468b4a7f083475"
@@ -3162,6 +4368,7 @@
             "state_kind": "cache"
           },
           "coverage": 0.0,
+          "decomposition_status": "none",
           "drilldown_view_id": null,
           "evidence": [
             "adapter:glm-moe-dsa",
@@ -3179,10 +4386,12 @@
           "key": "state_in",
           "kind": "state_boundary_in",
           "label": "KV Cache In",
+          "metric_bindings": [],
           "opaque": false,
           "output_port_ids": [
             "gport_1ea54b98cf157cd5f5526ec1"
           ],
+          "primitive_kind": null,
           "subject_ids": [
             "art_dcf60fab1f468b4a7f083475",
             "art_60e18e5ca776aa4b9bee04de"
@@ -3194,6 +4403,7 @@
             "state_kind": "cache"
           },
           "coverage": 0.0,
+          "decomposition_status": "none",
           "drilldown_view_id": null,
           "evidence": [
             "adapter:glm-moe-dsa",
@@ -3213,8 +4423,10 @@
           "key": "state_out",
           "kind": "state_boundary_out",
           "label": "KV Cache Out",
+          "metric_bindings": [],
           "opaque": false,
           "output_port_ids": [],
+          "primitive_kind": null,
           "subject_ids": [
             "art_dcf60fab1f468b4a7f083475",
             "art_60e18e5ca776aa4b9bee04de"
@@ -3511,6 +4723,66 @@
         },
         {
           "direction": "output",
+          "dtype": "float32",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "layer_strip:layer_index=3",
+            "layer_strip:attention_kind=dsa",
+            "layer_strip:mlp_kind=sparse",
+            "config:n_routed_experts",
+            "config:moe_router_dtype"
+          ],
+          "id": "gport_e0abd3dd036c22585e5bf883",
+          "key": "router.scores",
+          "name": "router_scores",
+          "node_id": "gnode_87bfc0d3e3fb44d163188f6c",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T",
+            256
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "input",
+          "dtype": "float32",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "layer_strip:layer_index=3",
+            "layer_strip:attention_kind=dsa",
+            "layer_strip:mlp_kind=sparse",
+            "config:n_routed_experts",
+            "config:moe_router_dtype"
+          ],
+          "id": "gport_c7b37a9bd7a6fb5825d884ee",
+          "key": "topk.scores",
+          "name": "router_scores",
+          "node_id": "gnode_40d2d541434609c8f6526d89",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T",
+            256
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "output",
           "dtype": "int64",
           "evidence": [
             "adapter:glm-moe-dsa",
@@ -3523,12 +4795,13 @@
             "layer_strip:layer_index=3",
             "layer_strip:attention_kind=dsa",
             "layer_strip:mlp_kind=sparse",
-            "config:num_experts_per_tok"
+            "config:num_experts_per_tok",
+            "runtime_route_known:false"
           ],
-          "id": "gport_d30852d2b9e9a146d689e0ca",
-          "key": "router.routes",
+          "id": "gport_5eedd536767f643ad06a1886",
+          "key": "topk.routes",
           "name": "expert_indices",
-          "node_id": "gnode_87bfc0d3e3fb44d163188f6c",
+          "node_id": "gnode_40d2d541434609c8f6526d89",
           "role": "route",
           "shape": [
             "B",
@@ -3554,13 +4827,44 @@
             "layer_strip:mlp_kind=sparse",
             "config:virtual_expert_pool"
           ],
-          "id": "gport_86510d84e476cdb567c6e42c",
-          "key": "router.dispatch",
+          "id": "gport_1616ffa620dfdabea0cb4607",
+          "key": "topk.dispatch",
           "name": "dispatch_control",
-          "node_id": "gnode_87bfc0d3e3fb44d163188f6c",
+          "node_id": "gnode_40d2d541434609c8f6526d89",
           "role": "control",
           "shape": null,
           "shape_known": false,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "output",
+          "dtype": "float32",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "layer_strip:layer_index=3",
+            "layer_strip:attention_kind=dsa",
+            "layer_strip:mlp_kind=sparse",
+            "config:num_experts_per_tok",
+            "config:moe_router_dtype",
+            "runtime_route_known:false"
+          ],
+          "id": "gport_9a8ba7237f1527d759e64315",
+          "key": "topk.weights",
+          "name": "routing_weights",
+          "node_id": "gnode_40d2d541434609c8f6526d89",
+          "role": "route",
+          "shape": [
+            "B",
+            "T",
+            8
+          ],
+          "shape_known": true,
           "tensor_spec_id": null
         },
         {
@@ -3771,6 +5075,37 @@
           "role": "control",
           "shape": null,
           "shape_known": false,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "input",
+          "dtype": "float32",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "layer_strip:layer_index=3",
+            "layer_strip:attention_kind=dsa",
+            "layer_strip:mlp_kind=sparse",
+            "config:num_experts_per_tok",
+            "config:moe_router_dtype",
+            "runtime_route_known:false"
+          ],
+          "id": "gport_13075158993f34aa8f0d3865",
+          "key": "combine.routing_weights",
+          "name": "routing_weights",
+          "node_id": "gnode_d9009a6c7698182bd05275a9",
+          "role": "route",
+          "shape": [
+            "B",
+            "T",
+            8
+          ],
+          "shape_known": true,
           "tensor_spec_id": null
         },
         {
@@ -4001,6 +5336,2272 @@
         }
       ],
       "root_group_id": "ggrp_fcaf0660f0126ae6950d676a"
+    },
+    {
+      "boundary_bindings": [
+        {
+          "child_port_id": "gport_42eba1b2d38eeeca7f3ed084",
+          "evidence": [
+            "source:config",
+            "contract:decomposition-boundary",
+            "shape-preserved:true",
+            "target_model_forward:false"
+          ],
+          "id": "gbind_c255d12e3ade34c39f404675",
+          "key": "expert_pool.hidden_in->hidden_in.hidden",
+          "kind": "input",
+          "parent_port_id": "gport_bdb4ad7f8fb6156f6504ff66"
+        },
+        {
+          "child_port_id": "gport_418a8ccba8d63753107c11ff",
+          "evidence": [
+            "source:config",
+            "contract:decomposition-boundary",
+            "shape-preserved:true",
+            "target_model_forward:false"
+          ],
+          "id": "gbind_229bf10ca96f9392a2733ba9",
+          "key": "expert_pool.hidden->hidden_out.hidden",
+          "kind": "output",
+          "parent_port_id": "gport_9d7bde6db7a05766f4b3b8bd"
+        },
+        {
+          "child_port_id": "gport_3bc39a333e7606cadb922035",
+          "evidence": [
+            "source:config",
+            "contract:decomposition-boundary",
+            "shape-preserved:true",
+            "target_model_forward:false"
+          ],
+          "id": "gbind_c31f5451ae5209b19696a884",
+          "key": "expert_pool.routes->route_in.routes",
+          "kind": "input",
+          "parent_port_id": "gport_d6c0068429f39a4b39238b5b"
+        }
+      ],
+      "breadcrumb": [
+        "zai-org/GLM-5.3-BF16",
+        "DSA Decoder",
+        "M3",
+        "Expert Pool [256 total, top-8 active]",
+        "Operators"
+      ],
+      "cost_frontier_node_ids": [
+        "gnode_bb7289e72e65b7a224880f31",
+        "gnode_e615c12f079795c7a64a5219",
+        "gnode_aa958d681c6a8a31ecf76255",
+        "gnode_8be7bd493b5bbf095b113d65",
+        "gnode_7fc40c6f7b8258427dbff10b",
+        "gnode_f43fa9c1aa18982149752de2",
+        "gnode_8bb01b0a2ac08ae7296fb548"
+      ],
+      "cost_reconciliations": [
+        {
+          "dimension": "flops",
+          "evidence": [
+            "source:config",
+            "cost:formula-scope",
+            "unknown-is-not-zero"
+          ],
+          "excluded_node_ids": [],
+          "known_child_metric_names": [],
+          "parent_metric_name": "flops",
+          "reason": "GLM executed FFN/MoE FLOPs remain Unknown without runtime route evidence.",
+          "status": "unknown",
+          "unattributed_node_ids": [
+            "gnode_bb7289e72e65b7a224880f31",
+            "gnode_e615c12f079795c7a64a5219",
+            "gnode_aa958d681c6a8a31ecf76255",
+            "gnode_8be7bd493b5bbf095b113d65",
+            "gnode_7fc40c6f7b8258427dbff10b",
+            "gnode_f43fa9c1aa18982149752de2",
+            "gnode_8bb01b0a2ac08ae7296fb548"
+          ]
+        },
+        {
+          "dimension": "logical_bytes",
+          "evidence": [
+            "source:config",
+            "cost:formula-scope",
+            "unknown-is-not-zero"
+          ],
+          "excluded_node_ids": [],
+          "known_child_metric_names": [],
+          "parent_metric_name": "logical_bytes",
+          "reason": "GLM executed FFN/MoE traffic remains Unknown without runtime route evidence.",
+          "status": "unknown",
+          "unattributed_node_ids": [
+            "gnode_bb7289e72e65b7a224880f31",
+            "gnode_e615c12f079795c7a64a5219",
+            "gnode_aa958d681c6a8a31ecf76255",
+            "gnode_8be7bd493b5bbf095b113d65",
+            "gnode_7fc40c6f7b8258427dbff10b",
+            "gnode_f43fa9c1aa18982149752de2",
+            "gnode_8bb01b0a2ac08ae7296fb548"
+          ]
+        }
+      ],
+      "decomposes_node_id": "gnode_22b34bdf41821162109d78df",
+      "edges": [
+        {
+          "coverage": 1.0,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "edge:data"
+          ],
+          "id": "gedge_4fbd3a550b696e47d4cbc7bf",
+          "key": "route_hidden",
+          "kind": "data",
+          "origin": "config",
+          "source_port_id": "gport_42eba1b2d38eeeca7f3ed084",
+          "target_port_id": "gport_252b1376d839e4df03db897f",
+          "tensor_spec_id": null
+        },
+        {
+          "coverage": 1.0,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "edge:route"
+          ],
+          "id": "gedge_c18113b562191f9ef587a7bb",
+          "key": "route_indices",
+          "kind": "route",
+          "origin": "config",
+          "source_port_id": "gport_3bc39a333e7606cadb922035",
+          "target_port_id": "gport_df76d0fefbd9f5d6018daa0e",
+          "tensor_spec_id": null
+        },
+        {
+          "coverage": 1.0,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "edge:data"
+          ],
+          "id": "gedge_15f726b735749b9b9a91f097",
+          "key": "input_gate",
+          "kind": "data",
+          "origin": "config",
+          "source_port_id": "gport_851e13597e22ef07ef6556de",
+          "target_port_id": "gport_d172d8c830d3fe097f1e2204",
+          "tensor_spec_id": null
+        },
+        {
+          "coverage": 1.0,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "edge:data"
+          ],
+          "id": "gedge_fbc08b67773999df0b074182",
+          "key": "input_up",
+          "kind": "data",
+          "origin": "config",
+          "source_port_id": "gport_851e13597e22ef07ef6556de",
+          "target_port_id": "gport_05ed73594a0c9600e3666be7",
+          "tensor_spec_id": null
+        },
+        {
+          "coverage": 1.0,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "edge:data"
+          ],
+          "id": "gedge_169e3b4217a51943ea2987d1",
+          "key": "gate_activation",
+          "kind": "data",
+          "origin": "config",
+          "source_port_id": "gport_c9bb75c53b0eb4764f96b63b",
+          "target_port_id": "gport_37ef05e7547a6b6d6012860c",
+          "tensor_spec_id": null
+        },
+        {
+          "coverage": 1.0,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "edge:data"
+          ],
+          "id": "gedge_6311be3cac892efa5686aa22",
+          "key": "activation_multiply",
+          "kind": "data",
+          "origin": "config",
+          "source_port_id": "gport_428980273fe03566eb056361",
+          "target_port_id": "gport_44919f6f774af6a0c7ac8e72",
+          "tensor_spec_id": null
+        },
+        {
+          "coverage": 1.0,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "edge:data"
+          ],
+          "id": "gedge_0f674f0e638ba9514bc9a83a",
+          "key": "up_multiply",
+          "kind": "data",
+          "origin": "config",
+          "source_port_id": "gport_580d33e82c3dc30fa6f0672f",
+          "target_port_id": "gport_f0ab12d165eb238b1df396e1",
+          "tensor_spec_id": null
+        },
+        {
+          "coverage": 1.0,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "edge:data"
+          ],
+          "id": "gedge_437770a143132174407f9c2a",
+          "key": "multiply_down",
+          "kind": "data",
+          "origin": "config",
+          "source_port_id": "gport_41117cd409844888e94bcba4",
+          "target_port_id": "gport_05c3b4c852011c051faaf6fb",
+          "tensor_spec_id": null
+        },
+        {
+          "coverage": 1.0,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "edge:data"
+          ],
+          "id": "gedge_75f1002851caa393f08696f4",
+          "key": "down_scatter",
+          "kind": "data",
+          "origin": "config",
+          "source_port_id": "gport_c918ce3dc89859f52c650e9c",
+          "target_port_id": "gport_f6e4a7d50099dbdc002dc77a",
+          "tensor_spec_id": null
+        },
+        {
+          "coverage": 1.0,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "edge:data"
+          ],
+          "id": "gedge_5773b7b1a6a2d20ced5c4acb",
+          "key": "scatter_output",
+          "kind": "data",
+          "origin": "config",
+          "source_port_id": "gport_85b0e953145d6dd883fda80f",
+          "target_port_id": "gport_418a8ccba8d63753107c11ff",
+          "tensor_spec_id": null
+        }
+      ],
+      "groups": [
+        {
+          "attributes": {},
+          "collapsed": false,
+          "id": "ggrp_6872e18401539fa1fcae1797",
+          "key": "root",
+          "kind": "operator_graph",
+          "label": "Symbolic routed Expert FFN · primitive operators",
+          "member_node_ids": [
+            "gnode_9f65817a0235eb949b4754bd",
+            "gnode_9fc7b41752fa06607f44640d",
+            "gnode_964e353fa24364a3201421ae",
+            "gnode_bb7289e72e65b7a224880f31",
+            "gnode_e615c12f079795c7a64a5219",
+            "gnode_aa958d681c6a8a31ecf76255",
+            "gnode_8be7bd493b5bbf095b113d65",
+            "gnode_7fc40c6f7b8258427dbff10b",
+            "gnode_f43fa9c1aa18982149752de2",
+            "gnode_8bb01b0a2ac08ae7296fb548"
+          ],
+          "parent_group_id": null
+        }
+      ],
+      "id": "gvw_c56964a2ac26f3517d82fb08",
+      "key": "op_glm_routed_expert_ffn",
+      "label": "Symbolic routed Expert FFN · primitive operators",
+      "layer_index": 3,
+      "level": "operator",
+      "metadata": {
+        "layout_direction": "RIGHT",
+        "primary_flow": "acyclic",
+        "selector_visible": false,
+        "semantic_primitive_ontology": "v1",
+        "target_model_forward": false,
+        "view_kind": "operator_decomposition"
+      },
+      "nodes": [
+        {
+          "attributes": {},
+          "coverage": 1.0,
+          "decomposition_status": "none",
+          "drilldown_view_id": null,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "contract:decomposition-boundary"
+          ],
+          "group_id": "ggrp_6872e18401539fa1fcae1797",
+          "id": "gnode_9f65817a0235eb949b4754bd",
+          "input_port_ids": [],
+          "key": "hidden_in",
+          "kind": "boundary",
+          "label": "FFN In",
+          "metric_bindings": [],
+          "opaque": false,
+          "output_port_ids": [
+            "gport_42eba1b2d38eeeca7f3ed084"
+          ],
+          "primitive_kind": null,
+          "subject_ids": [
+            "art_b2bc3931c084e939d328ea5e",
+            "art_c7f6b5b1c9524befff4add1b",
+            "art_56d2b267ac211a8a74700429"
+          ]
+        },
+        {
+          "attributes": {},
+          "coverage": 1.0,
+          "decomposition_status": "none",
+          "drilldown_view_id": null,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "contract:decomposition-boundary"
+          ],
+          "group_id": "ggrp_6872e18401539fa1fcae1797",
+          "id": "gnode_9fc7b41752fa06607f44640d",
+          "input_port_ids": [
+            "gport_418a8ccba8d63753107c11ff"
+          ],
+          "key": "hidden_out",
+          "kind": "boundary",
+          "label": "FFN Out",
+          "metric_bindings": [],
+          "opaque": false,
+          "output_port_ids": [],
+          "primitive_kind": null,
+          "subject_ids": [
+            "art_b2bc3931c084e939d328ea5e",
+            "art_c7f6b5b1c9524befff4add1b",
+            "art_56d2b267ac211a8a74700429"
+          ]
+        },
+        {
+          "attributes": {},
+          "coverage": 1.0,
+          "decomposition_status": "none",
+          "drilldown_view_id": null,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "contract:decomposition-boundary",
+            "runtime_route_known:false"
+          ],
+          "group_id": "ggrp_6872e18401539fa1fcae1797",
+          "id": "gnode_964e353fa24364a3201421ae",
+          "input_port_ids": [],
+          "key": "route_in",
+          "kind": "boundary",
+          "label": "Static TopK route",
+          "metric_bindings": [],
+          "opaque": false,
+          "output_port_ids": [
+            "gport_3bc39a333e7606cadb922035"
+          ],
+          "primitive_kind": null,
+          "subject_ids": [
+            "art_b2bc3931c084e939d328ea5e",
+            "art_c7f6b5b1c9524befff4add1b",
+            "art_56d2b267ac211a8a74700429"
+          ]
+        },
+        {
+          "attributes": {
+            "operator_family": "gather",
+            "runtime_route_known": false
+          },
+          "coverage": 1.0,
+          "decomposition_status": "primitive",
+          "drilldown_view_id": null,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "projection:semantic-primitive-v1",
+            "primitive:gather"
+          ],
+          "group_id": "ggrp_6872e18401539fa1fcae1797",
+          "id": "gnode_bb7289e72e65b7a224880f31",
+          "input_port_ids": [
+            "gport_252b1376d839e4df03db897f",
+            "gport_df76d0fefbd9f5d6018daa0e"
+          ],
+          "key": "gather",
+          "kind": "gather",
+          "label": "Gather selected expert inputs",
+          "metric_bindings": [
+            {
+              "dimension": "flops",
+              "metric_name": null,
+              "parent_metric_name": "flops",
+              "reason": "Runtime token-to-expert assignment is Unknown.",
+              "status": "unknown"
+            },
+            {
+              "dimension": "logical_bytes",
+              "metric_name": null,
+              "parent_metric_name": "logical_bytes",
+              "reason": "Runtime token-to-expert dispatch traffic is Unknown.",
+              "status": "unknown"
+            }
+          ],
+          "opaque": false,
+          "output_port_ids": [
+            "gport_851e13597e22ef07ef6556de"
+          ],
+          "primitive_kind": "gather",
+          "subject_ids": [
+            "art_b2bc3931c084e939d328ea5e",
+            "art_c7f6b5b1c9524befff4add1b",
+            "art_56d2b267ac211a8a74700429"
+          ]
+        },
+        {
+          "attributes": {
+            "operator_family": "scatter",
+            "runtime_route_known": false
+          },
+          "coverage": 1.0,
+          "decomposition_status": "primitive",
+          "drilldown_view_id": null,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "projection:semantic-primitive-v1",
+            "primitive:scatter"
+          ],
+          "group_id": "ggrp_6872e18401539fa1fcae1797",
+          "id": "gnode_e615c12f079795c7a64a5219",
+          "input_port_ids": [
+            "gport_f6e4a7d50099dbdc002dc77a"
+          ],
+          "key": "scatter",
+          "kind": "scatter",
+          "label": "Scatter expert outputs",
+          "metric_bindings": [
+            {
+              "dimension": "flops",
+              "metric_name": null,
+              "parent_metric_name": "flops",
+              "reason": "Runtime token-to-expert assignment is Unknown.",
+              "status": "unknown"
+            },
+            {
+              "dimension": "logical_bytes",
+              "metric_name": null,
+              "parent_metric_name": "logical_bytes",
+              "reason": "Runtime token-to-expert dispatch traffic is Unknown.",
+              "status": "unknown"
+            }
+          ],
+          "opaque": false,
+          "output_port_ids": [
+            "gport_85b0e953145d6dd883fda80f"
+          ],
+          "primitive_kind": "scatter",
+          "subject_ids": [
+            "art_b2bc3931c084e939d328ea5e",
+            "art_c7f6b5b1c9524befff4add1b",
+            "art_56d2b267ac211a8a74700429"
+          ]
+        },
+        {
+          "attributes": {
+            "operator_family": "gemm",
+            "runtime_route_known": false
+          },
+          "coverage": 1.0,
+          "decomposition_status": "primitive",
+          "drilldown_view_id": null,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "projection:semantic-primitive-v1",
+            "primitive:gemm"
+          ],
+          "group_id": "ggrp_6872e18401539fa1fcae1797",
+          "id": "gnode_aa958d681c6a8a31ecf76255",
+          "input_port_ids": [
+            "gport_d172d8c830d3fe097f1e2204"
+          ],
+          "key": "gate_proj",
+          "kind": "gemm",
+          "label": "Gate GEMM",
+          "metric_bindings": [
+            {
+              "dimension": "flops",
+              "metric_name": null,
+              "parent_metric_name": "flops",
+              "reason": "GLM executed FFN/MoE cost is Unknown.",
+              "status": "unknown"
+            },
+            {
+              "dimension": "logical_bytes",
+              "metric_name": null,
+              "parent_metric_name": "logical_bytes",
+              "reason": "GLM executed FFN/MoE traffic is Unknown.",
+              "status": "unknown"
+            }
+          ],
+          "opaque": false,
+          "output_port_ids": [
+            "gport_c9bb75c53b0eb4764f96b63b"
+          ],
+          "primitive_kind": "gemm",
+          "subject_ids": [
+            "art_b2bc3931c084e939d328ea5e",
+            "art_c7f6b5b1c9524befff4add1b",
+            "art_56d2b267ac211a8a74700429"
+          ]
+        },
+        {
+          "attributes": {
+            "operator_family": "gemm",
+            "runtime_route_known": false
+          },
+          "coverage": 1.0,
+          "decomposition_status": "primitive",
+          "drilldown_view_id": null,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "projection:semantic-primitive-v1",
+            "primitive:gemm"
+          ],
+          "group_id": "ggrp_6872e18401539fa1fcae1797",
+          "id": "gnode_8be7bd493b5bbf095b113d65",
+          "input_port_ids": [
+            "gport_05ed73594a0c9600e3666be7"
+          ],
+          "key": "up_proj",
+          "kind": "gemm",
+          "label": "Up GEMM",
+          "metric_bindings": [
+            {
+              "dimension": "flops",
+              "metric_name": null,
+              "parent_metric_name": "flops",
+              "reason": "GLM executed FFN/MoE cost is Unknown.",
+              "status": "unknown"
+            },
+            {
+              "dimension": "logical_bytes",
+              "metric_name": null,
+              "parent_metric_name": "logical_bytes",
+              "reason": "GLM executed FFN/MoE traffic is Unknown.",
+              "status": "unknown"
+            }
+          ],
+          "opaque": false,
+          "output_port_ids": [
+            "gport_580d33e82c3dc30fa6f0672f"
+          ],
+          "primitive_kind": "gemm",
+          "subject_ids": [
+            "art_b2bc3931c084e939d328ea5e",
+            "art_c7f6b5b1c9524befff4add1b",
+            "art_56d2b267ac211a8a74700429"
+          ]
+        },
+        {
+          "attributes": {
+            "operator_family": "silu",
+            "runtime_route_known": false
+          },
+          "coverage": 1.0,
+          "decomposition_status": "primitive",
+          "drilldown_view_id": null,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "projection:semantic-primitive-v1",
+            "primitive:silu"
+          ],
+          "group_id": "ggrp_6872e18401539fa1fcae1797",
+          "id": "gnode_7fc40c6f7b8258427dbff10b",
+          "input_port_ids": [
+            "gport_37ef05e7547a6b6d6012860c"
+          ],
+          "key": "activation",
+          "kind": "silu",
+          "label": "SiLU",
+          "metric_bindings": [
+            {
+              "dimension": "flops",
+              "metric_name": null,
+              "parent_metric_name": "flops",
+              "reason": "GLM executed FFN/MoE cost is Unknown.",
+              "status": "unknown"
+            },
+            {
+              "dimension": "logical_bytes",
+              "metric_name": null,
+              "parent_metric_name": "logical_bytes",
+              "reason": "GLM executed FFN/MoE traffic is Unknown.",
+              "status": "unknown"
+            }
+          ],
+          "opaque": false,
+          "output_port_ids": [
+            "gport_428980273fe03566eb056361"
+          ],
+          "primitive_kind": "silu",
+          "subject_ids": [
+            "art_b2bc3931c084e939d328ea5e",
+            "art_c7f6b5b1c9524befff4add1b",
+            "art_56d2b267ac211a8a74700429"
+          ]
+        },
+        {
+          "attributes": {
+            "operator_family": "multiply",
+            "runtime_route_known": false
+          },
+          "coverage": 1.0,
+          "decomposition_status": "primitive",
+          "drilldown_view_id": null,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "projection:semantic-primitive-v1",
+            "primitive:multiply"
+          ],
+          "group_id": "ggrp_6872e18401539fa1fcae1797",
+          "id": "gnode_f43fa9c1aa18982149752de2",
+          "input_port_ids": [
+            "gport_44919f6f774af6a0c7ac8e72",
+            "gport_f0ab12d165eb238b1df396e1"
+          ],
+          "key": "multiply",
+          "kind": "multiply",
+          "label": "Gate × Up",
+          "metric_bindings": [
+            {
+              "dimension": "flops",
+              "metric_name": null,
+              "parent_metric_name": "flops",
+              "reason": "GLM executed FFN/MoE cost is Unknown.",
+              "status": "unknown"
+            },
+            {
+              "dimension": "logical_bytes",
+              "metric_name": null,
+              "parent_metric_name": "logical_bytes",
+              "reason": "GLM executed FFN/MoE traffic is Unknown.",
+              "status": "unknown"
+            }
+          ],
+          "opaque": false,
+          "output_port_ids": [
+            "gport_41117cd409844888e94bcba4"
+          ],
+          "primitive_kind": "multiply",
+          "subject_ids": [
+            "art_b2bc3931c084e939d328ea5e",
+            "art_c7f6b5b1c9524befff4add1b",
+            "art_56d2b267ac211a8a74700429"
+          ]
+        },
+        {
+          "attributes": {
+            "operator_family": "gemm",
+            "runtime_route_known": false
+          },
+          "coverage": 1.0,
+          "decomposition_status": "primitive",
+          "drilldown_view_id": null,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "projection:semantic-primitive-v1",
+            "primitive:gemm"
+          ],
+          "group_id": "ggrp_6872e18401539fa1fcae1797",
+          "id": "gnode_8bb01b0a2ac08ae7296fb548",
+          "input_port_ids": [
+            "gport_05c3b4c852011c051faaf6fb"
+          ],
+          "key": "down_proj",
+          "kind": "gemm",
+          "label": "Down GEMM",
+          "metric_bindings": [
+            {
+              "dimension": "flops",
+              "metric_name": null,
+              "parent_metric_name": "flops",
+              "reason": "GLM executed FFN/MoE cost is Unknown.",
+              "status": "unknown"
+            },
+            {
+              "dimension": "logical_bytes",
+              "metric_name": null,
+              "parent_metric_name": "logical_bytes",
+              "reason": "GLM executed FFN/MoE traffic is Unknown.",
+              "status": "unknown"
+            }
+          ],
+          "opaque": false,
+          "output_port_ids": [
+            "gport_c918ce3dc89859f52c650e9c"
+          ],
+          "primitive_kind": "gemm",
+          "subject_ids": [
+            "art_b2bc3931c084e939d328ea5e",
+            "art_c7f6b5b1c9524befff4add1b",
+            "art_56d2b267ac211a8a74700429"
+          ]
+        }
+      ],
+      "parent_view_id": "gvw_3544ea8386077077e968f3ac",
+      "ports": [
+        {
+          "direction": "output",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected",
+            "contract:decomposition-boundary"
+          ],
+          "id": "gport_42eba1b2d38eeeca7f3ed084",
+          "key": "hidden_in.hidden",
+          "name": "hidden_states",
+          "node_id": "gnode_9f65817a0235eb949b4754bd",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T",
+            6144
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "input",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected",
+            "contract:decomposition-boundary"
+          ],
+          "id": "gport_418a8ccba8d63753107c11ff",
+          "key": "hidden_out.hidden",
+          "name": "routed_output",
+          "node_id": "gnode_9fc7b41752fa06607f44640d",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T",
+            6144
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "output",
+          "dtype": "int64",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "layer_strip:layer_index=3",
+            "layer_strip:attention_kind=dsa",
+            "layer_strip:mlp_kind=sparse",
+            "config:num_experts_per_tok",
+            "contract:decomposition-boundary"
+          ],
+          "id": "gport_3bc39a333e7606cadb922035",
+          "key": "route_in.routes",
+          "name": "expert_indices",
+          "node_id": "gnode_964e353fa24364a3201421ae",
+          "role": "route",
+          "shape": [
+            "B",
+            "T",
+            8
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "input",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected"
+          ],
+          "id": "gport_252b1376d839e4df03db897f",
+          "key": "gather.hidden",
+          "name": "hidden",
+          "node_id": "gnode_bb7289e72e65b7a224880f31",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T",
+            6144
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "input",
+          "dtype": "int64",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "layer_strip:layer_index=3",
+            "layer_strip:attention_kind=dsa",
+            "layer_strip:mlp_kind=sparse",
+            "config:num_experts_per_tok"
+          ],
+          "id": "gport_df76d0fefbd9f5d6018daa0e",
+          "key": "gather.routes",
+          "name": "expert_indices",
+          "node_id": "gnode_bb7289e72e65b7a224880f31",
+          "role": "route",
+          "shape": [
+            "B",
+            "T",
+            8
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "output",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected"
+          ],
+          "id": "gport_851e13597e22ef07ef6556de",
+          "key": "gather.selected",
+          "name": "selected",
+          "node_id": "gnode_bb7289e72e65b7a224880f31",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T_selected",
+            6144
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "input",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected"
+          ],
+          "id": "gport_f6e4a7d50099dbdc002dc77a",
+          "key": "scatter.selected",
+          "name": "selected",
+          "node_id": "gnode_e615c12f079795c7a64a5219",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T_selected",
+            6144
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "output",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected"
+          ],
+          "id": "gport_85b0e953145d6dd883fda80f",
+          "key": "scatter.hidden",
+          "name": "hidden",
+          "node_id": "gnode_e615c12f079795c7a64a5219",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T",
+            6144
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "input",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected"
+          ],
+          "id": "gport_d172d8c830d3fe097f1e2204",
+          "key": "gate_proj.in",
+          "name": "in",
+          "node_id": "gnode_aa958d681c6a8a31ecf76255",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T_selected",
+            6144
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "output",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected"
+          ],
+          "id": "gport_c9bb75c53b0eb4764f96b63b",
+          "key": "gate_proj.out",
+          "name": "out",
+          "node_id": "gnode_aa958d681c6a8a31ecf76255",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T_selected",
+            2048
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "input",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected"
+          ],
+          "id": "gport_05ed73594a0c9600e3666be7",
+          "key": "up_proj.in",
+          "name": "in",
+          "node_id": "gnode_8be7bd493b5bbf095b113d65",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T_selected",
+            6144
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "output",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected"
+          ],
+          "id": "gport_580d33e82c3dc30fa6f0672f",
+          "key": "up_proj.out",
+          "name": "out",
+          "node_id": "gnode_8be7bd493b5bbf095b113d65",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T_selected",
+            2048
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "input",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected"
+          ],
+          "id": "gport_37ef05e7547a6b6d6012860c",
+          "key": "activation.in",
+          "name": "in",
+          "node_id": "gnode_7fc40c6f7b8258427dbff10b",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T_selected",
+            2048
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "output",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected"
+          ],
+          "id": "gport_428980273fe03566eb056361",
+          "key": "activation.out",
+          "name": "out",
+          "node_id": "gnode_7fc40c6f7b8258427dbff10b",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T_selected",
+            2048
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "input",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected"
+          ],
+          "id": "gport_44919f6f774af6a0c7ac8e72",
+          "key": "multiply.gate",
+          "name": "gate",
+          "node_id": "gnode_f43fa9c1aa18982149752de2",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T_selected",
+            2048
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "input",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected"
+          ],
+          "id": "gport_f0ab12d165eb238b1df396e1",
+          "key": "multiply.up",
+          "name": "up",
+          "node_id": "gnode_f43fa9c1aa18982149752de2",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T_selected",
+            2048
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "output",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected"
+          ],
+          "id": "gport_41117cd409844888e94bcba4",
+          "key": "multiply.out",
+          "name": "out",
+          "node_id": "gnode_f43fa9c1aa18982149752de2",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T_selected",
+            2048
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "input",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected"
+          ],
+          "id": "gport_05c3b4c852011c051faaf6fb",
+          "key": "down_proj.in",
+          "name": "in",
+          "node_id": "gnode_8bb01b0a2ac08ae7296fb548",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T_selected",
+            2048
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "output",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected"
+          ],
+          "id": "gport_c918ce3dc89859f52c650e9c",
+          "key": "down_proj.out",
+          "name": "out",
+          "node_id": "gnode_8bb01b0a2ac08ae7296fb548",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T_selected",
+            6144
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        }
+      ],
+      "root_group_id": "ggrp_6872e18401539fa1fcae1797"
+    },
+    {
+      "boundary_bindings": [
+        {
+          "child_port_id": "gport_d67ccc6eda09134ffbc66d46",
+          "evidence": [
+            "source:config",
+            "contract:decomposition-boundary",
+            "shape-preserved:true",
+            "target_model_forward:false"
+          ],
+          "id": "gbind_ed8f43d97b93e48a12815620",
+          "key": "shared_expert.hidden_in->hidden_in.hidden",
+          "kind": "input",
+          "parent_port_id": "gport_4ba1b4deb149d3d2a9cbc112"
+        },
+        {
+          "child_port_id": "gport_ecd44c1d93df620d590f4d5c",
+          "evidence": [
+            "source:config",
+            "contract:decomposition-boundary",
+            "shape-preserved:true",
+            "target_model_forward:false"
+          ],
+          "id": "gbind_ac003b5af6b3a9818e1a82fc",
+          "key": "shared_expert.hidden->hidden_out.hidden",
+          "kind": "output",
+          "parent_port_id": "gport_89a77d6acffcbcf103aaae1a"
+        }
+      ],
+      "breadcrumb": [
+        "zai-org/GLM-5.3-BF16",
+        "DSA Decoder",
+        "M3",
+        "Shared Expert × 1",
+        "Operators"
+      ],
+      "cost_frontier_node_ids": [
+        "gnode_91b39d154d3dd243785a1919",
+        "gnode_d4010e008d0977a324b53022",
+        "gnode_d06ee968c60c465f601db1dd",
+        "gnode_c52357f328f146de629113a2",
+        "gnode_827c1ae84b56c474d4bb3735"
+      ],
+      "cost_reconciliations": [
+        {
+          "dimension": "flops",
+          "evidence": [
+            "source:config",
+            "cost:formula-scope",
+            "unknown-is-not-zero"
+          ],
+          "excluded_node_ids": [],
+          "known_child_metric_names": [],
+          "parent_metric_name": "flops",
+          "reason": "GLM executed FFN/MoE FLOPs remain Unknown without runtime route evidence.",
+          "status": "unknown",
+          "unattributed_node_ids": [
+            "gnode_91b39d154d3dd243785a1919",
+            "gnode_d4010e008d0977a324b53022",
+            "gnode_d06ee968c60c465f601db1dd",
+            "gnode_c52357f328f146de629113a2",
+            "gnode_827c1ae84b56c474d4bb3735"
+          ]
+        },
+        {
+          "dimension": "logical_bytes",
+          "evidence": [
+            "source:config",
+            "cost:formula-scope",
+            "unknown-is-not-zero"
+          ],
+          "excluded_node_ids": [],
+          "known_child_metric_names": [],
+          "parent_metric_name": "logical_bytes",
+          "reason": "GLM executed FFN/MoE traffic remains Unknown without runtime route evidence.",
+          "status": "unknown",
+          "unattributed_node_ids": [
+            "gnode_91b39d154d3dd243785a1919",
+            "gnode_d4010e008d0977a324b53022",
+            "gnode_d06ee968c60c465f601db1dd",
+            "gnode_c52357f328f146de629113a2",
+            "gnode_827c1ae84b56c474d4bb3735"
+          ]
+        }
+      ],
+      "decomposes_node_id": "gnode_eb53933dbba7e4d8eae35e47",
+      "edges": [
+        {
+          "coverage": 1.0,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "edge:data"
+          ],
+          "id": "gedge_6f4a59bcd19aa5fcdcf40b65",
+          "key": "input_gate",
+          "kind": "data",
+          "origin": "config",
+          "source_port_id": "gport_d67ccc6eda09134ffbc66d46",
+          "target_port_id": "gport_512e7a009cd16ddfb941a0d9",
+          "tensor_spec_id": null
+        },
+        {
+          "coverage": 1.0,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "edge:data"
+          ],
+          "id": "gedge_fd9303a65bffe1dfe77658ce",
+          "key": "input_up",
+          "kind": "data",
+          "origin": "config",
+          "source_port_id": "gport_d67ccc6eda09134ffbc66d46",
+          "target_port_id": "gport_7bdc05b30336d16ab4abb385",
+          "tensor_spec_id": null
+        },
+        {
+          "coverage": 1.0,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "edge:data"
+          ],
+          "id": "gedge_f5f43cbd7081893827c00367",
+          "key": "gate_activation",
+          "kind": "data",
+          "origin": "config",
+          "source_port_id": "gport_a329ed18ace61a2d30c1eacc",
+          "target_port_id": "gport_5fb3ef0d395077852a17eb2e",
+          "tensor_spec_id": null
+        },
+        {
+          "coverage": 1.0,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "edge:data"
+          ],
+          "id": "gedge_0a8c677261ba11f27f3711bc",
+          "key": "activation_multiply",
+          "kind": "data",
+          "origin": "config",
+          "source_port_id": "gport_05c415e6bffd44dd3df37b95",
+          "target_port_id": "gport_f19c29e9f2e3e96bc9e198bd",
+          "tensor_spec_id": null
+        },
+        {
+          "coverage": 1.0,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "edge:data"
+          ],
+          "id": "gedge_4662d726bd93d02f6c413aa0",
+          "key": "up_multiply",
+          "kind": "data",
+          "origin": "config",
+          "source_port_id": "gport_5a3d0118937034f351bc1a37",
+          "target_port_id": "gport_80150a2a6e3ad53d726ae32e",
+          "tensor_spec_id": null
+        },
+        {
+          "coverage": 1.0,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "edge:data"
+          ],
+          "id": "gedge_e342db1bde32f9342ef0fcbd",
+          "key": "multiply_down",
+          "kind": "data",
+          "origin": "config",
+          "source_port_id": "gport_d595b33ce82d790ff0b25618",
+          "target_port_id": "gport_57abd86b47df38b9a81cca5c",
+          "tensor_spec_id": null
+        },
+        {
+          "coverage": 1.0,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "edge:data"
+          ],
+          "id": "gedge_22f437aaf21abee90ae6ffc4",
+          "key": "ffn_output",
+          "kind": "data",
+          "origin": "config",
+          "source_port_id": "gport_be59efcb1bb134696dd8426e",
+          "target_port_id": "gport_ecd44c1d93df620d590f4d5c",
+          "tensor_spec_id": null
+        }
+      ],
+      "groups": [
+        {
+          "attributes": {},
+          "collapsed": false,
+          "id": "ggrp_4580c54e7973f2836f54885b",
+          "key": "root",
+          "kind": "operator_graph",
+          "label": "Shared Expert FFN · primitive operators",
+          "member_node_ids": [
+            "gnode_fb36e9b02cf15c32205dac3e",
+            "gnode_2a2873c8c15bde227b83c203",
+            "gnode_91b39d154d3dd243785a1919",
+            "gnode_d4010e008d0977a324b53022",
+            "gnode_d06ee968c60c465f601db1dd",
+            "gnode_c52357f328f146de629113a2",
+            "gnode_827c1ae84b56c474d4bb3735"
+          ],
+          "parent_group_id": null
+        }
+      ],
+      "id": "gvw_2878a6013159cc0e9c7b8c5b",
+      "key": "op_glm_shared_expert_ffn",
+      "label": "Shared Expert FFN · primitive operators",
+      "layer_index": 3,
+      "level": "operator",
+      "metadata": {
+        "layout_direction": "RIGHT",
+        "primary_flow": "acyclic",
+        "selector_visible": false,
+        "semantic_primitive_ontology": "v1",
+        "target_model_forward": false,
+        "view_kind": "operator_decomposition"
+      },
+      "nodes": [
+        {
+          "attributes": {},
+          "coverage": 1.0,
+          "decomposition_status": "none",
+          "drilldown_view_id": null,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "contract:decomposition-boundary"
+          ],
+          "group_id": "ggrp_4580c54e7973f2836f54885b",
+          "id": "gnode_fb36e9b02cf15c32205dac3e",
+          "input_port_ids": [],
+          "key": "hidden_in",
+          "kind": "boundary",
+          "label": "FFN In",
+          "metric_bindings": [],
+          "opaque": false,
+          "output_port_ids": [
+            "gport_d67ccc6eda09134ffbc66d46"
+          ],
+          "primitive_kind": null,
+          "subject_ids": [
+            "art_69481e2af7523914125295a0",
+            "art_dcf60fab1f468b4a7f083475"
+          ]
+        },
+        {
+          "attributes": {},
+          "coverage": 1.0,
+          "decomposition_status": "none",
+          "drilldown_view_id": null,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "contract:decomposition-boundary"
+          ],
+          "group_id": "ggrp_4580c54e7973f2836f54885b",
+          "id": "gnode_2a2873c8c15bde227b83c203",
+          "input_port_ids": [
+            "gport_ecd44c1d93df620d590f4d5c"
+          ],
+          "key": "hidden_out",
+          "kind": "boundary",
+          "label": "FFN Out",
+          "metric_bindings": [],
+          "opaque": false,
+          "output_port_ids": [],
+          "primitive_kind": null,
+          "subject_ids": [
+            "art_69481e2af7523914125295a0",
+            "art_dcf60fab1f468b4a7f083475"
+          ]
+        },
+        {
+          "attributes": {
+            "operator_family": "gemm"
+          },
+          "coverage": 1.0,
+          "decomposition_status": "primitive",
+          "drilldown_view_id": null,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "projection:semantic-primitive-v1",
+            "primitive:gemm"
+          ],
+          "group_id": "ggrp_4580c54e7973f2836f54885b",
+          "id": "gnode_91b39d154d3dd243785a1919",
+          "input_port_ids": [
+            "gport_512e7a009cd16ddfb941a0d9"
+          ],
+          "key": "gate_proj",
+          "kind": "gemm",
+          "label": "Gate GEMM",
+          "metric_bindings": [
+            {
+              "dimension": "flops",
+              "metric_name": null,
+              "parent_metric_name": "flops",
+              "reason": "GLM executed FFN/MoE cost is Unknown.",
+              "status": "unknown"
+            },
+            {
+              "dimension": "logical_bytes",
+              "metric_name": null,
+              "parent_metric_name": "logical_bytes",
+              "reason": "GLM executed FFN/MoE traffic is Unknown.",
+              "status": "unknown"
+            }
+          ],
+          "opaque": false,
+          "output_port_ids": [
+            "gport_a329ed18ace61a2d30c1eacc"
+          ],
+          "primitive_kind": "gemm",
+          "subject_ids": [
+            "art_69481e2af7523914125295a0",
+            "art_dcf60fab1f468b4a7f083475"
+          ]
+        },
+        {
+          "attributes": {
+            "operator_family": "gemm"
+          },
+          "coverage": 1.0,
+          "decomposition_status": "primitive",
+          "drilldown_view_id": null,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "projection:semantic-primitive-v1",
+            "primitive:gemm"
+          ],
+          "group_id": "ggrp_4580c54e7973f2836f54885b",
+          "id": "gnode_d4010e008d0977a324b53022",
+          "input_port_ids": [
+            "gport_7bdc05b30336d16ab4abb385"
+          ],
+          "key": "up_proj",
+          "kind": "gemm",
+          "label": "Up GEMM",
+          "metric_bindings": [
+            {
+              "dimension": "flops",
+              "metric_name": null,
+              "parent_metric_name": "flops",
+              "reason": "GLM executed FFN/MoE cost is Unknown.",
+              "status": "unknown"
+            },
+            {
+              "dimension": "logical_bytes",
+              "metric_name": null,
+              "parent_metric_name": "logical_bytes",
+              "reason": "GLM executed FFN/MoE traffic is Unknown.",
+              "status": "unknown"
+            }
+          ],
+          "opaque": false,
+          "output_port_ids": [
+            "gport_5a3d0118937034f351bc1a37"
+          ],
+          "primitive_kind": "gemm",
+          "subject_ids": [
+            "art_69481e2af7523914125295a0",
+            "art_dcf60fab1f468b4a7f083475"
+          ]
+        },
+        {
+          "attributes": {
+            "operator_family": "silu"
+          },
+          "coverage": 1.0,
+          "decomposition_status": "primitive",
+          "drilldown_view_id": null,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "projection:semantic-primitive-v1",
+            "primitive:silu"
+          ],
+          "group_id": "ggrp_4580c54e7973f2836f54885b",
+          "id": "gnode_d06ee968c60c465f601db1dd",
+          "input_port_ids": [
+            "gport_5fb3ef0d395077852a17eb2e"
+          ],
+          "key": "activation",
+          "kind": "silu",
+          "label": "SiLU",
+          "metric_bindings": [
+            {
+              "dimension": "flops",
+              "metric_name": null,
+              "parent_metric_name": "flops",
+              "reason": "GLM executed FFN/MoE cost is Unknown.",
+              "status": "unknown"
+            },
+            {
+              "dimension": "logical_bytes",
+              "metric_name": null,
+              "parent_metric_name": "logical_bytes",
+              "reason": "GLM executed FFN/MoE traffic is Unknown.",
+              "status": "unknown"
+            }
+          ],
+          "opaque": false,
+          "output_port_ids": [
+            "gport_05c415e6bffd44dd3df37b95"
+          ],
+          "primitive_kind": "silu",
+          "subject_ids": [
+            "art_69481e2af7523914125295a0",
+            "art_dcf60fab1f468b4a7f083475"
+          ]
+        },
+        {
+          "attributes": {
+            "operator_family": "multiply"
+          },
+          "coverage": 1.0,
+          "decomposition_status": "primitive",
+          "drilldown_view_id": null,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "projection:semantic-primitive-v1",
+            "primitive:multiply"
+          ],
+          "group_id": "ggrp_4580c54e7973f2836f54885b",
+          "id": "gnode_c52357f328f146de629113a2",
+          "input_port_ids": [
+            "gport_f19c29e9f2e3e96bc9e198bd",
+            "gport_80150a2a6e3ad53d726ae32e"
+          ],
+          "key": "multiply",
+          "kind": "multiply",
+          "label": "Gate × Up",
+          "metric_bindings": [
+            {
+              "dimension": "flops",
+              "metric_name": null,
+              "parent_metric_name": "flops",
+              "reason": "GLM executed FFN/MoE cost is Unknown.",
+              "status": "unknown"
+            },
+            {
+              "dimension": "logical_bytes",
+              "metric_name": null,
+              "parent_metric_name": "logical_bytes",
+              "reason": "GLM executed FFN/MoE traffic is Unknown.",
+              "status": "unknown"
+            }
+          ],
+          "opaque": false,
+          "output_port_ids": [
+            "gport_d595b33ce82d790ff0b25618"
+          ],
+          "primitive_kind": "multiply",
+          "subject_ids": [
+            "art_69481e2af7523914125295a0",
+            "art_dcf60fab1f468b4a7f083475"
+          ]
+        },
+        {
+          "attributes": {
+            "operator_family": "gemm"
+          },
+          "coverage": 1.0,
+          "decomposition_status": "primitive",
+          "drilldown_view_id": null,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "projection:semantic-primitive-v1",
+            "primitive:gemm"
+          ],
+          "group_id": "ggrp_4580c54e7973f2836f54885b",
+          "id": "gnode_827c1ae84b56c474d4bb3735",
+          "input_port_ids": [
+            "gport_57abd86b47df38b9a81cca5c"
+          ],
+          "key": "down_proj",
+          "kind": "gemm",
+          "label": "Down GEMM",
+          "metric_bindings": [
+            {
+              "dimension": "flops",
+              "metric_name": null,
+              "parent_metric_name": "flops",
+              "reason": "GLM executed FFN/MoE cost is Unknown.",
+              "status": "unknown"
+            },
+            {
+              "dimension": "logical_bytes",
+              "metric_name": null,
+              "parent_metric_name": "logical_bytes",
+              "reason": "GLM executed FFN/MoE traffic is Unknown.",
+              "status": "unknown"
+            }
+          ],
+          "opaque": false,
+          "output_port_ids": [
+            "gport_be59efcb1bb134696dd8426e"
+          ],
+          "primitive_kind": "gemm",
+          "subject_ids": [
+            "art_69481e2af7523914125295a0",
+            "art_dcf60fab1f468b4a7f083475"
+          ]
+        }
+      ],
+      "parent_view_id": "gvw_3544ea8386077077e968f3ac",
+      "ports": [
+        {
+          "direction": "output",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected",
+            "contract:decomposition-boundary"
+          ],
+          "id": "gport_d67ccc6eda09134ffbc66d46",
+          "key": "hidden_in.hidden",
+          "name": "hidden_states",
+          "node_id": "gnode_fb36e9b02cf15c32205dac3e",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T",
+            6144
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "input",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected",
+            "contract:decomposition-boundary"
+          ],
+          "id": "gport_ecd44c1d93df620d590f4d5c",
+          "key": "hidden_out.hidden",
+          "name": "shared_output",
+          "node_id": "gnode_2a2873c8c15bde227b83c203",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T",
+            6144
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "input",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected"
+          ],
+          "id": "gport_512e7a009cd16ddfb941a0d9",
+          "key": "gate_proj.in",
+          "name": "in",
+          "node_id": "gnode_91b39d154d3dd243785a1919",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T",
+            6144
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "output",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected"
+          ],
+          "id": "gport_a329ed18ace61a2d30c1eacc",
+          "key": "gate_proj.out",
+          "name": "out",
+          "node_id": "gnode_91b39d154d3dd243785a1919",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T",
+            2048
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "input",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected"
+          ],
+          "id": "gport_7bdc05b30336d16ab4abb385",
+          "key": "up_proj.in",
+          "name": "in",
+          "node_id": "gnode_d4010e008d0977a324b53022",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T",
+            6144
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "output",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected"
+          ],
+          "id": "gport_5a3d0118937034f351bc1a37",
+          "key": "up_proj.out",
+          "name": "out",
+          "node_id": "gnode_d4010e008d0977a324b53022",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T",
+            2048
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "input",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected"
+          ],
+          "id": "gport_5fb3ef0d395077852a17eb2e",
+          "key": "activation.in",
+          "name": "in",
+          "node_id": "gnode_d06ee968c60c465f601db1dd",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T",
+            2048
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "output",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected"
+          ],
+          "id": "gport_05c415e6bffd44dd3df37b95",
+          "key": "activation.out",
+          "name": "out",
+          "node_id": "gnode_d06ee968c60c465f601db1dd",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T",
+            2048
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "input",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected"
+          ],
+          "id": "gport_f19c29e9f2e3e96bc9e198bd",
+          "key": "multiply.gate",
+          "name": "gate",
+          "node_id": "gnode_c52357f328f146de629113a2",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T",
+            2048
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "input",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected"
+          ],
+          "id": "gport_80150a2a6e3ad53d726ae32e",
+          "key": "multiply.up",
+          "name": "up",
+          "node_id": "gnode_c52357f328f146de629113a2",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T",
+            2048
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "output",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected"
+          ],
+          "id": "gport_d595b33ce82d790ff0b25618",
+          "key": "multiply.out",
+          "name": "out",
+          "node_id": "gnode_c52357f328f146de629113a2",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T",
+            2048
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "input",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected"
+          ],
+          "id": "gport_57abd86b47df38b9a81cca5c",
+          "key": "down_proj.in",
+          "name": "in",
+          "node_id": "gnode_827c1ae84b56c474d4bb3735",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T",
+            2048
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "output",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected"
+          ],
+          "id": "gport_be59efcb1bb134696dd8426e",
+          "key": "down_proj.out",
+          "name": "out",
+          "node_id": "gnode_827c1ae84b56c474d4bb3735",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T",
+            6144
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        }
+      ],
+      "root_group_id": "ggrp_4580c54e7973f2836f54885b"
     }
   ]
 }

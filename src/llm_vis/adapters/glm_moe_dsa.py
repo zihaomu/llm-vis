@@ -321,6 +321,7 @@ class GlmMoeDsaAdapter(ConfigFirstAdapter):
                     "intermediate_size": intermediate_size,
                     "kv_lora_rank": config.get("kv_lora_rank"),
                     "moe_intermediate_size": moe_intermediate_size,
+                    "moe_router_dtype": config.get("moe_router_dtype"),
                     "n_routed_experts": routed_experts,
                     "n_shared_experts": shared_experts,
                     "num_attention_heads": config.get("num_attention_heads"),

@@ -39,14 +39,18 @@ def test_all_checked_in_milestone_assets_pass_without_importing_torch() -> None:
         "M2",
         "M3",
         "M3.5",
+        "M3.6",
     }
     assert any(result.name == "decision:DR-0009" for result in report.results)
     assert any(result.name == "decision:DR-0010" for result in report.results)
+    assert any(result.name == "decision:DR-0011" for result in report.results)
     assert sum(result.name.startswith("schema:") for result in report.results) == 4
     assert sum(result.name.startswith("structure:") for result in report.results) == 3
     assert sum(result.name.startswith("capture:") for result in report.results) == 1
     assert sum(result.name.startswith("cost:") for result in report.results) == 2
     assert sum(result.name.startswith("graph-view:") for result in report.results) == 2
+    assert sum(result.name.startswith("operator-decomposition:") for result in report.results) == 2
+    assert len(report.results) == 27
     assert torch_modules_after == torch_modules_before
 
 

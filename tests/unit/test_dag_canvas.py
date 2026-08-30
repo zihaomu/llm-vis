@@ -67,6 +67,7 @@ def test_render_dag_canvas_embeds_payload_and_read_only_controls() -> None:
     assert 'data-initial-view-id="l0"' in fragment
     assert 'data-readonly="true"' in fragment
     assert 'data-dag-action="back"' in fragment
+    assert "← Collapse" in fragment
     assert 'data-dag-action="fit"' in fragment
     assert 'data-dag-action="zoom-in"' in fragment
     assert 'class="llm-dag-nav-controls"' in fragment
@@ -117,12 +118,29 @@ def test_assets_expose_offline_interaction_api_and_distinct_edge_patterns() -> N
     assert "dblclick" in DAG_CANVAS_JS
     assert "has-drilldown" in DAG_CANVAS_JS
     assert "llm-dag-drill-badge" in DAG_CANVAS_JS
-    assert "L1 ›" in DAG_CANVAS_JS
+    assert "ops ›" in DAG_CANVAS_JS
+    assert "operatorCount" in DAG_CANVAS_JS
     assert "viewsById.has(drilldownId)" in DAG_CANVAS_JS
     assert "'aria-keyshortcuts': 'Enter'" in DAG_CANVAS_JS
     assert "source: 'node-affordance'" in DAG_CANVAS_JS
     assert "event.key === 'Enter' && canDrill" in DAG_CANVAS_JS
     assert "event.key === 'Enter' || event.key === ' '" in DAG_CANVAS_JS
+    assert "selectionByView" in DAG_CANVAS_JS
+    assert "viewportByView" in DAG_CANVAS_JS
+    assert "syncViewSelector" in DAG_CANVAS_JS
+    assert "data-current-only" in DAG_CANVAS_JS
+    assert "option[data-current-only]" in DAG_CANVAS_JS
+    assert "option.textContent = `↳ " in DAG_CANVAS_JS
+    assert "const restoredSelection = selected ? { ...selected } : null" in DAG_CANVAS_JS
+    assert "const restoredViewId = viewId(next)" in DAG_CANVAS_JS
+    assert "viewId(currentView) === restoredViewId" in DAG_CANVAS_JS
+    assert "type: 'port'" in DAG_CANVAS_JS
+    assert "root.querySelectorAll('.llm-dag-port-group')" in DAG_CANVAS_JS
+    assert (
+        "root.querySelectorAll('.llm-dag-node, .llm-dag-port-group, "
+        ".llm-dag-edge-group')" in DAG_CANVAS_JS
+    )
+    assert "selector_visible" in DAG_CANVAS_JS
     assert "heatKnown" in DAG_CANVAS_JS
     assert 'data-heat-known="false"' in DAG_CANVAS_CSS
     assert "llm-dag-heat-legend" in DAG_CANVAS_CSS

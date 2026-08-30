@@ -1,4 +1,4 @@
-"""Config-first analysis orchestration for M0-M3.5.
+"""Config-first analysis orchestration for M0-M3.6.
 
 The inspection path is deliberately incapable of loading weights or invoking a
 model forward pass. Optional representative-block capture is a separate M2 API.
@@ -91,7 +91,7 @@ class AnalysisBundle:
 
     @property
     def graph_view(self) -> GraphViewDocument:
-        """Return the config-evidenced L0/L1 DAG without constructing the target model."""
+        """Return the config-evidenced recursive DAG without constructing the target model."""
 
         from llm_vis.graph_view import build_graph_view_document
 
@@ -136,6 +136,9 @@ class AnalysisBundle:
         graph_view = self.graph_view
         graph_nodes = sum(len(view.nodes) for view in graph_view.views)
         graph_edges = sum(len(view.edges) for view in graph_view.views)
+        has_recursive_operator_decomposition = any(
+            view.decomposes_node_id is not None for view in graph_view.views
+        )
         return {
             "schema_version": "0.1",
             "analysis_id": self.analysis_id,
@@ -148,6 +151,7 @@ class AnalysisBundle:
                 "cost_analyzed": self.cost_analysis is not None,
                 "interactive_semantic_dag": True,
                 "semantic_zoom_levels": ["L0", "L1"],
+                "recursive_operator_decomposition": has_recursive_operator_decomposition,
                 "roofline_lower_bounds": bool(self.roofline_summaries),
                 "runtime_trace_mapped": False,
             },
@@ -285,7 +289,7 @@ def _with_provenance(
         diagnostics.append(
             _diagnostic(
                 "REMOTE_CODE_EXECUTION_DISABLED",
-                "The configuration declares remote code; execution is disabled for M0-M3.",
+                "The configuration declares remote code; execution is disabled for M0-M3.6.",
                 subject_id=model_map.model.id,
                 severity=DiagnosticSeverity.WARNING,
                 evidence=declarations,

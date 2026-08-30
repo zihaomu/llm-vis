@@ -89,7 +89,7 @@ def test_m3_artifact_contains_hotspots_roofline_diff_and_offline_controls(
     assert '<option value="pressure">Pressure</option>' in html
     assert '<option value="compute">Compute</option>' in html
     assert '<option value="memory">Memory</option>' in html
-    assert "Nodes marked L1 › open by badge, double-click or Enter" in html
+    assert "Nodes marked “N ops ›” expand in this canvas" in html
     assert "data-initial-view-id=" in html
     assert 'data-dag-action="fit"' in html
     assert 'class="llm-dag-minimap"' in html
@@ -111,7 +111,7 @@ def test_m3_artifact_contains_hotspots_roofline_diff_and_offline_controls(
     assert "is_latency_estimate:false" in html
     assert "metric_unknown_reason" in html
     assert "lastGraphDetail" in html
-    assert "bounded capture belongs to L2 only" in html
+    assert "bounded capture remains separate evidence" in html
     assert "capture_scope:'not-applicable'" in html
     assert "locateGraphSubject" in html
     assert "focusNode('model-dag',target.node.id)" in html
@@ -138,6 +138,21 @@ def test_m3_artifact_contains_hotspots_roofline_diff_and_offline_controls(
     ):
         assert f'data-inspector-tab="{inspector_tab}"' in html
     assert "symbols:map.symbols" in html
+    assert "current visible cost frontier only" in html
+    assert "no parent/child double count" in html
+    assert "filter(node=>frontierIds.has(node.id))" in html
+    assert "!frontierIds.size||frontierIds.has(node.id)" not in html
+    assert "decompositionCostSummary" in html
+    assert "decomposition_cost_reconciliation" in html
+    assert "filter(item=>childIds.has(item.id))" in html
+    assert "!childIds.size||childIds.has(item.id)" not in html
+    assert "signed_remainder:signedRemainder" in html
+    assert "unexpected_known_child_ids" in html
+    assert "inconsistent:inconsistencyReasons.length>0" in html
+    assert "Math.max(0,Number(parent.value)-knownSubtotal)" not in html
+    assert "Math.min(1,knownSubtotal/Number(parent.value))" not in html
+    assert "graphDetailByView" in html
+    assert "graphDetailByView.get(view.id)" in html
     assert "selection_coverage" in html
     assert "scope.included_instance_count+scope.excluded_instance_count" in html
     assert "cost ${known}/${metrics.length} known" in html

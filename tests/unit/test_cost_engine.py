@@ -98,6 +98,58 @@ def test_tiny_dense_per_layer_reference_formulas() -> None:
             assert evaluate_expression(metric.formula, subject.bindings) == metric.value
 
 
+@pytest.mark.parametrize(
+    ("fixture_name", "phase", "new_tokens", "past_tokens"),
+    [
+        ("tiny_dense", "prefill", 16, 0),
+        ("qwen3_8_27b", "decode", 1, 1024),
+    ],
+)
+def test_op04_parent_cost_reconciles_with_known_primitive_children(
+    fixture_name: str, phase: str, new_tokens: int, past_tokens: int
+) -> None:
+    scenario = _scenario(phase, batch=1, new_tokens=new_tokens, past_tokens=past_tokens)
+    subjects = _analyze(fixture_name, scenario).for_scenario(scenario.id).subjects
+    subject = next(
+        item
+        for item in subjects
+        if any(metric.name == "flops.attention.q_proj" for metric in item.metrics)
+    )
+    attention_children = (
+        "q_proj",
+        "k_proj",
+        "v_proj",
+        "qk_matmul",
+        "pv_matmul",
+        "o_proj",
+    )
+    attention_values = [
+        subject.metric(f"flops.attention.{name}").value for name in attention_children
+    ]
+    assert all(value is not None for value in attention_values)
+    assert subject.metric("flops.attention").value == sum(
+        int(value) for value in attention_values if value is not None
+    )
+    ffn_children = ("gate_proj", "up_proj", "down_proj")
+    ffn_flops = [subject.metric(f"flops.ffn.{name}").value for name in ffn_children]
+    ffn_logical = [subject.metric(f"logical_bytes.ffn.{name}").value for name in ffn_children]
+    assert all(value is not None for value in (*ffn_flops, *ffn_logical))
+    assert subject.metric("flops.ffn").value == sum(
+        int(value) for value in ffn_flops if value is not None
+    )
+    assert subject.metric("logical_bytes.ffn").value == sum(
+        int(value) for value in ffn_logical if value is not None
+    )
+    projection_values = [
+        subject.metric(f"logical_bytes.attention.{name}").value
+        for name in ("q_proj", "k_proj", "v_proj", "o_proj")
+    ]
+    assert all(value is not None for value in projection_values)
+    projection_traffic = sum(int(value) for value in projection_values if value is not None)
+    assert subject.metric("logical_bytes.attention").value is not None
+    assert projection_traffic < int(subject.metric("logical_bytes.attention").value)
+
+
 def test_tiny_int4_storage_includes_scales_not_just_half_a_byte() -> None:
     scenario = _scenario("decode", batch=1, new_tokens=1, past_tokens=128, weight_format="int4")
     subject = _analyze("tiny_dense", scenario).for_scenario(scenario.id).subjects[0]

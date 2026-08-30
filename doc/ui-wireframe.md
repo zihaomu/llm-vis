@@ -3,7 +3,7 @@
 - 状态：M0 可核验交互规格
 - 日期：2026-08-29
 - 最后验收：2026-08-30
-- 实现状态：M0–M3.5 自包含离线 UI 已实现并验收；2026-08-30 完成 graph-first 信息架构收敛，Netron/ComfyUI 风格 L0→L1 DAG 主画布默认占据中心，Browse/Inspector/Layers/Supporting analysis 按需展开；官方 Model Explorer consumer 仍为 Partial，M4 timeline 未实现
+- 实现状态：M0–M3.6 自包含离线 UI 已实现并验收；同一中央 DAG 支持递归算子分解。graph-first 信息架构、按需 Browse/Inspector/Layers/Supporting analysis 保持不变；官方 Model Explorer consumer 仍为 Partial，M4 timeline 未实现
 
 ## 1. 目标
 
@@ -115,6 +115,33 @@ Panels:  [Browse] [Inspector] [Analysis]                         Minimap
 
 Qwen 的最小可验收路径是 `Input → Token Embedding → Decoder Pattern → Final Norm → LM Head → Logits`，Vision/MTP 以 config 可追溯分支显示。Decoder Pattern 可下钻到 Linear Attention 和 Full Attention 代表视图，两者分别使用 recurrent-state 和 KV state rail。GLM L0 保留 Dense×3 与 Sparse×75 的折叠阶段；Sparse L1 显示 `Router → Expert Pool (top-8/256) + Shared Expert → Reduce`，不展开 256 个专家，DSA 内部未知部分保持 opaque。
 
+### 4.2 M3.6 递归算子披露契约
+
+M3.6 不增加 Beginner/Expert 开关。新手和熟练用户看到同一份 DAG 与同一组稳定节点身份；区别只在于用户是否继续展开复合节点、是否打开 Inspector。复合节点右上角显示 `N ops ›`，其中 `N` 来自目标 view 的当前成本前沿/语义算子数，不再硬编码 `L1 ›`。
+
+```text
+Block DAG
+  Full Attention [19 ops ›]
+        │ double-click / Enter / badge
+        ▼
+Full Attention operators
+  Q/K/V GEMM → Q/K Norm → RoPE → KV append
+       → QKᵀ MatMul → Scale → Mask → Softmax → P×V MatMul
+       → Merge → Gate SiLU × Context → O GEMM
+        │
+        └── [← Collapse] 回到同一个父节点与父 view viewport/selection
+```
+
+交互约束：
+
+- 任意深度都复用当前中央画布、pan/zoom/Fit/minimap、搜索与六页 Inspector；operator child views 不作为顶部 View 下拉框的常驻选项，避免控制区重新变杂。进入 child 后只增加一个带 `↳` 的当前临时项，用户仍可辨认当前位置；其他 child 只能从复合节点、breadcrumb 或搜索进入。
+- 每个 view 保存自己的 viewport 与 selection；展开/折叠恢复相应状态。Scenario 只刷新 Metric/heat，不重建 GraphView，不改变 view/node/port/edge ID。
+- 基础算子显示 `primitive_kind` 与核心 shape；不显示下钻角标。Opaque 显示明确原因与 coverage，也不显示假入口。
+- child boundary 是可见的输入/输出/state rail；其端口与父 compound port 由正式 binding 对应。父 input 对应 child boundary output，父 output 对应 child boundary input，shape/dtype/role/TensorSpec 必须相同。
+- 热图统计集合是当前 view 的 `cost_frontier_node_ids`。边界/container 不进入分母；父节点在 child view 中不可见且不参与合计；Unknown/Excluded 仍显示灰色原因，但不作为 0 参与排序。
+- Full Attention/FFN 的 Cost Inspector 显示 parent total、known child subtotal、unattributed remainder、coverage 与公式范围。`unattributed=0` 只有在已知子项确实与父公式相等时显示；未知项永不通过减法或默认值伪造成 0。
+- GLM Router/TopK/Expert 只显示静态结构。`runtime_route_known=false`、`selected_expert_ids=null` 与 `experts_materialized=0` 必须可从卡片/Inspector 读取；不得绘制某个 token 实际去了哪个专家。
+
 ## 5. L2：两种必须区分的状态
 
 ### 5.1 M1 config 语义投影
@@ -150,7 +177,7 @@ MLP         D  D  D  D  D  D  D  D ...  D
 Coverage    ●  ●  ●  ●  ●  ●  ●  ● ...  ●
 ```
 
-Legend：`L` Linear Attention，`A` Full Attention，`S` recurrent state，`K` KV cache，`D` Dense，`M` MoE。Coverage 使用独立符号：complete、partial、opaque、unknown。Layer Strip 默认折叠，展开后只占一行并横向滚动，不再把 64/78 层换行铺满首屏；每个短标签都有完整的 `aria-label`。M0–M3.5 自包含 HTML 点击 layer 会更新 Inspector，并保留原始 layer index、Instance、captured/config/opaque 与异常状态；同一点击同步到对应 L1 GraphView，更新 breadcrumb 并保持六页 Inspector 的实例上下文。该联动已在 Qwen/GLM 浏览器验收中通过。
+Legend：`L` Linear Attention，`A` Full Attention，`S` recurrent state，`K` KV cache，`D` Dense，`M` MoE。Coverage 使用独立符号：complete、partial、opaque、unknown。Layer Strip 默认折叠，展开后只占一行并横向滚动，不再把 64/78 层换行铺满首屏；每个短标签都有完整的 `aria-label`。M0–M3.6 自包含 HTML 点击 layer 会更新 Inspector，并保留原始 layer index、Instance、captured/config/opaque 与异常状态；同一点击同步到对应 L1 GraphView，更新 breadcrumb 并保持六页 Inspector 的实例上下文。该联动已在 Qwen/GLM 浏览器验收中通过。
 
 ## 7. Inspector
 
@@ -250,10 +277,27 @@ M3.5 的独立退出任务如下，Qwen/GLM 已在 2026-08-30 完成实际浏览
 | DAG-12 | 查找并打开可下钻节点 | Qwen L0 恰有 1 个、GLM L0 恰有 2 个 `L1 ›`；角标点击、双击、Enter 可下钻，Space 只选择，叶节点无角标 | PASS |
 | DAG-13 | 切换 Pressure/Compute/Memory 与 Scenario | Qwen 仅可归因节点着色并保留选择/路径；legend 显示 synthetic provenance 与非实测声明；GLM 全部 Unknown 且不补 0；console 为空 | PASS |
 
+M3.6 直接采用以下退出编号：
+
+| ID | 操作 | 通过条件 | M3.6 状态 |
+|---|---|---|---|
+| OP-01 | 展开 Qwen Full Attention | 同一画布出现 Q/K/V/O GEMM、QKᵀ/P×V MatMul、Softmax 及完整可达路径 | **PASS** |
+| OP-02 | 展开 Qwen FFN | 显示恰好三个 GEMM、SiLU 与 Multiply，Gate/Up→Multiply→Down 连接正确 | **PASS** |
+| OP-03 | 检查展开边界 | 父子 port 一一绑定，role/dtype/shape/TensorSpec 与输入输出可达性不变 | **PASS** |
+| OP-04 | 打开 Cost reconciliation | parent、known child subtotal、unattributed、coverage 可核对；Unknown/partial 不补 0 | **PASS** |
+| OP-05 | 展开/折叠并观察热图 legend | 只统计当前 visible frontier，父子不同时进入 known/total、排名或合计 | **PASS** |
+| OP-06 | 查看 Qwen Full/Linear state | KV read/write 接 K/V append，conv/delta recurrent state 接各自计算核心，二者不混用 | **PASS** |
+| OP-07 | 查看 GLM Sparse MoE | Router GEMM→TopK→Expert Pool/Shared Expert→Combine；不出现实际 expert route | **PASS** |
+| OP-08 | 尝试展开 GLM DSA | 节点保持 opaque/coverage 0 且无下钻入口、无虚构内部 op | **PASS** |
+| OP-09 | 展开、折叠、搜索、选择、切 Scenario | 当前稳定结构 ID 不变；各 view viewport/selection 可恢复 | **PASS** |
+| OP-10 | 检查 Report status/Provenance | weights/model construction/full forward/remote code 仍全为 false | **PASS** |
+
 ## 12. 当前实现证据与缺口
 
 当前离线 HTML 已收敛为 graph-first 结构：顶栏只保留模型/revision、Scenario、唯一全局搜索与 Report status；中央 DAG 默认占满可用宽度；Definition/Diagnostic 位于 Browse 抽屉，六页 Inspector 位于右抽屉，64/78 层 Layer Strip 和所有 Supporting analysis 默认折叠。Definition、Semantic/LogicalOp、capture、逐层 captured/config/opaque、异常层、成本、热点、roofline、workload diff 与 Runtime Unknown 证据均仍保留，但不再同时铺满首屏。2026-08-30 的最终 M0–M3 浏览器验收确认：Qwen layer.0 整层可同时看到 Dense 与 Linear State 两种代表体，但具体 Dense FFN 节点只显示 Dense capture SourceArtifact，Linear Attention 节点只显示 Linear State source；layer.1 config-only 只显示 config source，不串入任何 Tiny capture。捕获 Tensor 逐项显示 `origin=capture`、`materialized=false` 和唯一 source。layer.3 仍显示 `full_attention · captured · anomaly=false`；Cost 可读取离线 Symbol 绑定，Provenance 固定显示零权重/零完整 forward。Report status 把结构范围与成本指标可用性分开，例如 GLM 显示 `structure 78/82 · 95.1% | cost 3/8 known`，不再用平均 metric coverage 冒充 decoder layer 覆盖率。GLM 的 executed FLOPs/bytes、roofline 与 Runtime 均显示 Unknown/null/0% coverage，不参与热点排名，也不以 0 代替。对应自动化见 [离线 artifact 集成测试](../tests/integration/test_inspect_artifact.py)、[M3 报告测试](../tests/integration/test_m3_report.py)、[capture 报告测试](../tests/integration/test_capture_cli_report.py)和 [Model Explorer adapter 集成测试](../tests/integration/test_model_explorer_adapter.py)。
 
 M3.5 浏览器验收进一步确认：Qwen L0 为 11 node/19 port/10 edge，Linear/Full L1 各为 10/24/13；GLM L0 为 9/15/8，Dense L1 为 10/20/11，Sparse DSA+MoE L1 为 13/30/17。默认 70% 可读视图、27% Fit 总览、真实拖拽平移及 minimap 同步、缩放/Back、节点/port/edge 选择、Linear/KV state rail、route/control 样式、三行 Tensor 名/shape/dtype、Layer Strip、跨 view 搜索、热点定位、上下游高亮和 Scenario 指标刷新均通过。graph-first 复测进一步确认 1280×720 首屏主图全宽、两个抽屉默认关闭、搜索命中 Sparse L1 时 Inspector 不自动遮挡、Browse/Inspector 可开关且 view/selection 不丢失。DAG-12/13 复测确认 Qwen/GLM 的 `L1 ›` 数量分别为 1/2，角标、双击与键盘契约可用；Qwen L1 只有 Attention/FFN 获得公式热度，Scenario 切换保持 view/selection，GLM 全图为 Unknown 而不是冷色 0，synthetic HardwareProfile 与非 latency 声明在 legend/Inspector 可见。GLM DSA 保持 opaque，未知 KV shape 显示 `Unknown` 与明确原因；L0/L1 不串入 Tiny L2 capture。Qwen/GLM 两页 console 均无 warning/error，24/24 机器退出项及 Python 3.9/3.12 各 150 项测试通过。
 
-仍未完成的只有本里程碑外的官方 Model Explorer consumer 真实加载/交互验收、面向 10k 原始 op 图的性能测试，以及 M4 trace timeline。官方 consumer 与超大 raw-op 图继续按 [DR-0003](decisions/DR-0003-model-explorer-bounded-spike.md) 标为 Partial；它们不应与已经通过的 M0–M3.5 自包含离线 DAG 混为一谈。
+M3.6 浏览器验收确认：Qwen Full Attention 展开为 32 node/36 edge，包含 Q/K/V/O GEMM、Q/K/V reshape+transpose、4→24 GQA KV-head Broadcast、QKᵀ/P×V MatMul、Softmax、RMSNorm、RoPE、cache append、context transpose 与 output gate；FFN 展开为三个 GEMM、SiLU、Multiply；Linear Attention 的 4 条 recurrent-state 边接入 Conv/opaque delta core。Softmax 搜索与 prefill→decode 切换保持相同 node ID；端口选择在 `Collapse`→重新展开后恢复，随后选择 node 会清除 port 描边；operator views 不作为 View 下拉框常驻项，当前 child 只显示一个 `↳` 临时项。Cost Inspector 显示 FLOPs `complete/signed_remainder=0/inconsistent=false` 与 logical bytes `partial/signed_remainder>0/unknown_is_zero=false`；热图只显示当前 frontier（Pressure `4/28 known`，Compute `6/28 known`）。GLM Sparse view 为 14 node/19 edge，显示 Router GEMM、TopK indices、`[B,T,8] float32` routing weights→Combine、route/control、virtual Expert/Shared Expert；Expert child view 显示 Gather/Scatter 与三个 GEMM，且不产生 runtime route/weight value；DSA 没有下钻入口，GLM frontier 保持 `0/10 known`。跨 view Inspector 残留已修复；两页 console 均无 warning/error。27/27 checked-in 资产检查和 Python 3.9/3.12 各 192 项通过。
+
+仍未完成的只有本里程碑外的官方 Model Explorer consumer 真实加载/交互验收、面向 10k 原始 op 图的性能测试，以及 M4 trace timeline。官方 consumer 与超大 raw-op 图继续按 [DR-0003](decisions/DR-0003-model-explorer-bounded-spike.md) 标为 Partial；它们不应与已经通过的 M0–M3.6 自包含离线 DAG 混为一谈。

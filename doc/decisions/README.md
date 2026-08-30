@@ -14,6 +14,7 @@
 | [DR-0008](DR-0008-m3-cost-int4-and-roofline-boundary.md) | Accepted | M3 成本口径、首种 INT4 存储格式与理论 roofline 边界 |
 | [DR-0009](DR-0009-model-map-ir-v0x-internal.md) | Accepted | Model Map IR v0.x 可导出但仍为实验性内部规范，暂不承诺稳定第三方 ABI |
 | [DR-0010](DR-0010-renderer-neutral-dag-canvas.md) | Accepted | M3.5 使用 renderer-neutral GraphView 与自包含 L0→L1 DAG 主画布；不运行目标模型、不伪造完整算子图 |
+| [DR-0011](DR-0011-recursive-semantic-operator-decomposition.md) | Accepted | M3.6 使用同一 DAG 递归分解到语义基础算子；冻结 boundary、成本守恒、visible frontier、opaque 与零执行边界 |
 
 ## M0 书面退出物
 

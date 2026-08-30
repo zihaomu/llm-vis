@@ -1,6 +1,6 @@
 # LLM-Vis Adapter 指南
 
-状态：M0–M3 已实现接入契约；M5 扩展项显式标注  
+状态：M0–M3.6 已实现事实层与递归投影接入契约；M5 扩展项显式标注
 日期：2026-08-29
 
 Adapter 将外部模型事实转换成 [Model Map IR v0.1](model-map-ir.md)。它负责声明自己知道什么、证据来自哪里和哪些区域仍未知；它不负责替用户执行不可信代码，也不能把 config 推导伪装成真实 forward 图。
@@ -12,9 +12,9 @@ Adapter 将外部模型事实转换成 [Model Map IR v0.1](model-map-ir.md)。�
 | Tiny Dense | 通用 Dense baseline、Definition/Instance、参数与 state 契约 | 复杂动态控制流 |
 | Qwen3.8-27B | 已知 config adapter、64 层周期、Vision/Text/Projector、KV/recurrent state、MTP | 完整多模态 forward、真实 Logical Ops |
 | GLM-5.3-BF16 | 78 层 Dense→MoE 宏观图、虚拟 Expert Pool、total/active 参数口径 | 动态 DSA/MoE 路径、executed-cost |
-| Local Torch（M5 候选） | 尚未实现；未来只允许显式、可审计的本地入口 | M0–M3 不读取或执行用户 Python 模型代码 |
+| Local Torch（M5 候选） | 尚未实现；未来只允许显式、可审计的本地入口 | M0–M3.6 不读取或执行用户 Python 模型代码 |
 
-M1 的共同出口是离线可验证的静态 artifact。M0–M3 全程默认零权重、零完整模型 forward，完整 meta tree 默认禁用。受限的 `torch.export`、Logical Ops 和 opaque capture fallback 属于 M2；成本公式属于 M3；M4a/M4b 只导入外部 runtime trace。
+M1 的共同出口是离线可验证的静态 artifact。M0–M3.6 全程默认零权重、零完整模型 forward，完整 meta tree 默认禁用。受限的 `torch.export`、Logical Ops 和 opaque capture fallback 属于 M2；成本公式属于 M3；M3.5/M3.6 GraphView 仍是 config 语义投影；M4a/M4b 只导入外部 runtime trace。
 
 ## 2. 输入与信任分类
 
@@ -25,8 +25,8 @@ M1 的共同出口是离线可验证的静态 artifact。M0–M3 全程默认零
 | Hugging Face `auto_map` 目标 | 是 | **否** | 记录目标并产生 remote-code Diagnostic |
 | 标准 Transformers 已安装实现 | 否 | 否 | 当前 adapter 不导入 Transformers 模型实现 |
 | 用户显式指定的本地 import path | 否 | 否 | Local Torch adapter 延后 M5 |
-| safetensors/权重文件 | M0–M3 默认不读 | 否 | 参数 inventory 优先由 config/允许的 meta shape 推导 |
-| 模型权重 | **不下载、不加载** | 否 | 不属于 M0–M3 或 M4 trace importer 输入 |
+| safetensors/权重文件 | M0–M3.6 默认不读 | 否 | 参数 inventory 优先由 config/允许的 meta shape 推导 |
+| 模型权重 | **不下载、不加载** | 否 | 不属于 M0–M3.6 或 M4 trace importer 输入 |
 
 详细策略见 [DR-0002](decisions/DR-0002-remote-code-disabled-in-mvp.md)。MVP 接口中不得提供能绕过该策略的 `trust_remote_code=True` 路径。普通子进程不是安全边界。
 
@@ -43,7 +43,7 @@ Adapter runner 按以下顺序工作：
 7. 折叠重复层、保留例外实例和 provenance；
 8. 校验 IR，写入 manifest、SourceArtifact、diagnostics 和离线报告。
 
-当前 registry 直接按 `model_type` 选择已知 config adapter，并把 `architectures`/`auto_map` 保留为 metadata/安全证据；不会导入或实例化入口 class。以下优先级仅是 M5 通用 adapter 的候选设计，不是 M0–M3 已实现行为：
+当前 registry 直接按 `model_type` 选择已知 config adapter，并把 `architectures`/`auto_map` 保留为 metadata/安全证据；不会导入或实例化入口 class。以下优先级仅是 M5 通用 adapter 的候选设计，不是 M0–M3.6 已实现行为：
 
 1. 用户显式指定的 class/task；
 2. config `architectures` 指向的精确实现类；
@@ -77,7 +77,7 @@ Adapter runner 按以下顺序工作：
 
 ## 5. M1 输出契约
 
-M0–M3 当前 config adapter 输出：
+M0–M3.6 当前 config adapter 输出：
 
 - Model 与完整 source revision；
 - Definition/Instance 层级、module/semantic path 和层索引；
@@ -88,7 +88,7 @@ M0–M3 当前 config adapter 输出：
 - unsupported/opaque/unknown 区域及结构化 Diagnostic；
 - adapter 名称/metadata、零执行 safety、fallback Diagnostic 和 metric coverage。
 
-真实 parameter/buffer 名称清单、共享权重对象关系和完整 data/state edge 需要模型 module 证据，M0–M3 不通过读取权重或执行完整模型来补齐。M2 只为项目自有代表块写入 Tensor/LogicalOp/Lowering。
+真实 parameter/buffer 名称清单、共享权重对象关系和完整 data/state edge 需要模型 module 证据，M0–M3.6 不通过读取权重或执行完整模型来补齐。M2 只为项目自有代表块写入 Tensor/LogicalOp/Lowering。
 
 ### 5.1 M1 的 L2 限制
 
@@ -104,7 +104,7 @@ M2 捕获成功后才由 capture backend 写入 Logical Ops，并通过 Lowering
 
 ## 6. Config-first 与 meta 预算
 
-已知模型优先直接从 config 生成 Definition/Instance，不创建完整模型的数万 Python module 或 parameter 对象。完整 meta tree 在 M0–M3 默认禁用，也没有诊断性 CLI 开关。只允许项目自有 Tiny 语义代表 Block 使用 FakeTensor/meta 验证：
+已知模型优先直接从 config 生成 Definition/Instance，不创建完整模型的数万 Python module 或 parameter 对象。完整 meta tree 在 M0–M3.6 默认禁用，也没有诊断性 CLI 开关。只允许项目自有 Tiny 语义代表 Block 使用 FakeTensor/meta 验证：
 
 - module class 与端口；
 - 参数和 buffer shape；
@@ -149,7 +149,7 @@ M1 golden 必须识别：
 - 1 个 MTP hidden layer，作为 conditional path；
 - 代表性 Linear 和 Full Attention Definition 及 64 个实例映射。
 
-Qwen config adapter 在 M1 不承诺 Linear Attention 内部真实 op、custom op 或 fusion。
+Qwen config adapter 在 M1 不承诺 Linear Attention 内部真实 op、custom op 或 fusion。M3.6 可按冻结 config/公式规则递归投影 Full Attention 与 Dense Gated FFN 的 semantic primitives，并把 KV/recurrent state 接到对应 child 算子；Full Attention 显式保留 Q/K/V 的 reshape/transpose、GQA KV-head broadcast 和 context transpose，`attn_output_gate` 必须是布尔值，关闭时不得保留门控分支或双倍 Q projection 成本。这仍不是一次目标模型 forward。Linear Attention 的 Gated Delta rule core 在没有更强证据时保持 opaque，不能为追求“展开到底”而编造其内部顺序。
 
 ### 8.2 GLM-5.3-BF16
 
@@ -167,7 +167,7 @@ M1 golden 必须识别：
 - 一个虚拟 Expert Pool Definition，而不是默认展开 256 份完整子图；
 - resident/active 参数口径分离，缺少公式输入的成本保持 unknown。
 
-动态 DSA/MoE Block、tokens/expert、grouped-GEMM padding 和 executed-cost 延后到 M5，不属于 M1/MVP 深捕获承诺。
+M3.6 可显示静态 `Router GEMM → TopK → virtual Expert Pool/Shared Expert → Combine`，以及 symbolic selected-expert FFN template；Router scores 与 TopK routing weights 保留 config 声明的 `moe_router_dtype=float32`，weights 显式连接到 Combine。必须保留 `runtime_route_known=false`、`routing_weight_values_known=false`、`experts_materialized=0`，不产生实际 expert IDs、权重值、tokens/expert 或 route histogram。DSA 内部、动态 MoE route、grouped-GEMM padding 和 executed-cost 仍保持 opaque/Unknown 并延后到 M5。
 
 ### 8.3 Tiny Dense
 
@@ -228,7 +228,7 @@ M4 adapter 只读取用户在外部受控环境生成的 PyTorch Profiler、rocp
 每个 adapter 需要：
 
 - 固定 revision 的 config fixture；
-- 人工可审查的 L0/L1 golden；
+- 人工可审查的 L0/L1/operator recursive GraphView golden；
 - Definition/Instance 数量、周期和异常层测试；
 - config 可证明的参数/state 与 GLM resident/active 测试；
 - deterministic ID 测试；

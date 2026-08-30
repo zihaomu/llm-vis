@@ -1,11 +1,19 @@
 """Public renderer-neutral GraphView projection API."""
 
 from .models import (
+    GraphBoundaryBinding,
+    GraphBoundaryKind,
+    GraphCostReconciliation,
+    GraphCostReconciliationStatus,
+    GraphDecompositionStatus,
     GraphEdge,
     GraphEdgeKind,
     GraphGroup,
+    GraphMetricBinding,
+    GraphMetricBindingStatus,
     GraphNode,
     GraphPort,
+    GraphPrimitiveKind,
     GraphView,
     GraphViewDocument,
     GraphViewLevel,
@@ -15,11 +23,19 @@ from .models import (
 from .projection import build_graph_view_document, project_graph_view
 
 __all__ = [
+    "GraphBoundaryBinding",
+    "GraphBoundaryKind",
+    "GraphCostReconciliation",
+    "GraphCostReconciliationStatus",
+    "GraphDecompositionStatus",
     "GraphEdge",
     "GraphEdgeKind",
     "GraphGroup",
+    "GraphMetricBinding",
+    "GraphMetricBindingStatus",
     "GraphNode",
     "GraphPort",
+    "GraphPrimitiveKind",
     "GraphView",
     "GraphViewDocument",
     "GraphViewLevel",

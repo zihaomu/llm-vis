@@ -20,6 +20,150 @@
       "title": "DType",
       "type": "string"
     },
+    "GraphBoundaryBinding": {
+      "additionalProperties": false,
+      "description": "One lossless parent-port to child-boundary-port mapping.",
+      "properties": {
+        "child_port_id": {
+          "minLength": 1,
+          "title": "Child Port Id",
+          "type": "string"
+        },
+        "evidence": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Evidence",
+          "type": "array"
+        },
+        "id": {
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "key": {
+          "minLength": 1,
+          "title": "Key",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/GraphBoundaryKind"
+        },
+        "parent_port_id": {
+          "minLength": 1,
+          "title": "Parent Port Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "key",
+        "parent_port_id",
+        "child_port_id",
+        "kind",
+        "evidence"
+      ],
+      "title": "GraphBoundaryBinding",
+      "type": "object"
+    },
+    "GraphBoundaryKind": {
+      "description": "How one compound-node port maps onto its decomposition boundary.",
+      "enum": [
+        "input",
+        "output",
+        "state_read",
+        "state_write"
+      ],
+      "title": "GraphBoundaryKind",
+      "type": "string"
+    },
+    "GraphCostReconciliation": {
+      "additionalProperties": false,
+      "description": "Static formula-scope accounting for one decomposed parent metric.",
+      "properties": {
+        "dimension": {
+          "enum": [
+            "flops",
+            "logical_bytes"
+          ],
+          "title": "Dimension",
+          "type": "string"
+        },
+        "evidence": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Evidence",
+          "type": "array"
+        },
+        "excluded_node_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Excluded Node Ids",
+          "type": "array"
+        },
+        "known_child_metric_names": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Known Child Metric Names",
+          "type": "array"
+        },
+        "parent_metric_name": {
+          "minLength": 1,
+          "title": "Parent Metric Name",
+          "type": "string"
+        },
+        "reason": {
+          "minLength": 1,
+          "title": "Reason",
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/$defs/GraphCostReconciliationStatus"
+        },
+        "unattributed_node_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Unattributed Node Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "dimension",
+        "parent_metric_name",
+        "status",
+        "reason",
+        "evidence"
+      ],
+      "title": "GraphCostReconciliation",
+      "type": "object"
+    },
+    "GraphCostReconciliationStatus": {
+      "description": "Static reconciliation status for one parent metric decomposition.",
+      "enum": [
+        "complete",
+        "partial",
+        "unknown"
+      ],
+      "title": "GraphCostReconciliationStatus",
+      "type": "string"
+    },
+    "GraphDecompositionStatus": {
+      "description": "Whether a semantic node can be recursively disclosed.",
+      "enum": [
+        "none",
+        "available",
+        "primitive",
+        "opaque"
+      ],
+      "title": "GraphDecompositionStatus",
+      "type": "string"
+    },
     "GraphEdge": {
       "additionalProperties": false,
       "description": "A directed connection between two GraphPort handles.",
@@ -167,6 +311,71 @@
       "title": "GraphGroup",
       "type": "object"
     },
+    "GraphMetricBinding": {
+      "additionalProperties": false,
+      "description": "Exact node-to-Metric name binding used by cost Inspector and heat overlays.",
+      "properties": {
+        "dimension": {
+          "enum": [
+            "flops",
+            "logical_bytes"
+          ],
+          "title": "Dimension",
+          "type": "string"
+        },
+        "metric_name": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Metric Name"
+        },
+        "parent_metric_name": {
+          "minLength": 1,
+          "title": "Parent Metric Name",
+          "type": "string"
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reason"
+        },
+        "status": {
+          "$ref": "#/$defs/GraphMetricBindingStatus"
+        }
+      },
+      "required": [
+        "dimension",
+        "parent_metric_name",
+        "status"
+      ],
+      "title": "GraphMetricBinding",
+      "type": "object"
+    },
+    "GraphMetricBindingStatus": {
+      "description": "Whether a primitive owns a metric, is excluded, or remains unknown.",
+      "enum": [
+        "known",
+        "unknown",
+        "excluded"
+      ],
+      "title": "GraphMetricBindingStatus",
+      "type": "string"
+    },
     "GraphNode": {
       "additionalProperties": false,
       "description": "A semantic node with renderer-ready Inspector and navigation evidence.",
@@ -182,6 +391,10 @@
           "minimum": 0.0,
           "title": "Coverage",
           "type": "number"
+        },
+        "decomposition_status": {
+          "$ref": "#/$defs/GraphDecompositionStatus",
+          "default": "none"
         },
         "drilldown_view_id": {
           "anyOf": [
@@ -243,6 +456,13 @@
           "title": "Label",
           "type": "string"
         },
+        "metric_bindings": {
+          "items": {
+            "$ref": "#/$defs/GraphMetricBinding"
+          },
+          "title": "Metric Bindings",
+          "type": "array"
+        },
         "opaque": {
           "default": false,
           "title": "Opaque",
@@ -254,6 +474,17 @@
           },
           "title": "Output Port Ids",
           "type": "array"
+        },
+        "primitive_kind": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/GraphPrimitiveKind"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
         },
         "subject_ids": {
           "items": {
@@ -365,16 +596,82 @@
       "title": "GraphPort",
       "type": "object"
     },
+    "GraphPrimitiveKind": {
+      "description": "Frozen v1 semantic primitive ontology (not a GPU/kernel ontology).",
+      "enum": [
+        "gemm",
+        "matmul",
+        "rms_norm",
+        "layer_norm",
+        "softmax",
+        "top_k",
+        "silu",
+        "gelu",
+        "add",
+        "multiply",
+        "scale",
+        "mask",
+        "reshape",
+        "transpose",
+        "broadcast",
+        "split",
+        "concat",
+        "rope",
+        "gather",
+        "scatter",
+        "reduce",
+        "convolution",
+        "state_read",
+        "state_write",
+        "opaque"
+      ],
+      "title": "GraphPrimitiveKind",
+      "type": "string"
+    },
     "GraphView": {
       "additionalProperties": false,
       "description": "One independently laid-out semantic zoom view.",
       "properties": {
+        "boundary_bindings": {
+          "items": {
+            "$ref": "#/$defs/GraphBoundaryBinding"
+          },
+          "title": "Boundary Bindings",
+          "type": "array"
+        },
         "breadcrumb": {
           "items": {
             "type": "string"
           },
           "title": "Breadcrumb",
           "type": "array"
+        },
+        "cost_frontier_node_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Cost Frontier Node Ids",
+          "type": "array"
+        },
+        "cost_reconciliations": {
+          "items": {
+            "$ref": "#/$defs/GraphCostReconciliation"
+          },
+          "title": "Cost Reconciliations",
+          "type": "array"
+        },
+        "decomposes_node_id": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Decomposes Node Id"
         },
         "edges": {
           "items": {
@@ -470,10 +767,11 @@
       "type": "object"
     },
     "GraphViewLevel": {
-      "description": "Supported semantic zoom levels in the first DAG canvas release.",
+      "description": "Evidence views; operator decomposition is depth-based, not an audience mode.",
       "enum": [
         "L0",
-        "L1"
+        "L1",
+        "operator"
       ],
       "title": "GraphViewLevel",
       "type": "string"
@@ -581,7 +879,7 @@
   "$id": "https://llm-vis.dev/schemas/v0.1/graph-view.schema.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": false,
-  "description": "Top-level renderer-neutral artifact containing related L0/L1 views.",
+  "description": "Top-level renderer-neutral artifact containing L0/L1 and operator views.",
   "properties": {
     "adapter_name": {
       "minLength": 1,

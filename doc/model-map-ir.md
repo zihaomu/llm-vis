@@ -2,7 +2,7 @@
 
 状态：M0 语义与 wire-format 基线  
 日期：2026-08-29  
-适用范围：M0–M3 事实层；M3.5 的 `graph-view.json` 是其渲染中立投影；M4a/M4b 只导入外部 trace
+适用范围：M0–M3 事实层；M3.5/M3.6 的 `graph-view.json` 是其渲染中立递归投影；M4a/M4b 只导入外部 trace
 
 Model Map IR 是 LLM-Vis 的框架中立事实层。它将模型定义、实例、Tensor 契约、语义节点、捕获到的逻辑算子、成本和导入的运行时证据放在同一个可版本化 artifact 中，同时保留未知与覆盖缺口。
 
@@ -20,7 +20,7 @@ Model Map IR 是 LLM-Vis 的框架中立事实层。它将模型定义、实例�
 8. 无法解析的区域保留 opaque 对象和 Diagnostic；已有可靠信息不能因局部失败被丢弃。
 9. v0.1 通过 `SourceArtifact`、`SemanticNode.evidence`、Metric 和 Diagnostic 回溯事实；完整运行上下文保存在 manifest。
 10. Model Explorer 等前端只是消费者，不能把其内部 ID/schema 写成核心 IR 身份。
-11. M0–M3.5 不读取权重、不运行完整模型 forward，完整 meta tree 默认禁用。
+11. M0–M3.6 不读取权重、不运行完整模型 forward，完整 meta tree 默认禁用。
 12. M4 只导入外部 trace；没有 trace 时所有 Runtime Metric 必须为 Unknown/null。
 13. `graph-view.json` 是 `model-map.json` 的只读显示投影，不能成为新的事实来源，也不能把前端布局、搜索状态或选中状态写回 Model Map IR。
 14. M3.5 L0/L1 只是 config-first 语义 DAG；生成或浏览该 DAG 不读取权重、不构造目标模型、不执行目标模型 forward。
@@ -73,7 +73,7 @@ diagnostics[]
 
 除 `schema_version` 和 `model` 外的集合可以为空。Schema 禁止未知字段；跨阶段的补充信息放入 manifest，而不是利用未声明字段绕过校验。
 
-M0–M3.5 当前 manifest 记录 analysis ID、LLM-Vis 版本、adapter 名称/metadata、模型 revision/config hash、输入 URI 与 cache/remote 状态、C0–C5 能力等级、`safety.*`、成本模型版本、显式 HardwareProfile、capture 摘要和产物清单。未来 M4 importer 再加入 trace source/run 上下文；当前不伪造尚不存在的 trace 或依赖清单字段。
+M0–M3.6 当前 manifest 记录 analysis ID、LLM-Vis 版本、adapter 名称/metadata、模型 revision/config hash、输入 URI 与 cache/remote 状态、C0–C5 能力等级、`recursive_operator_decomposition`、`safety.*`、成本模型版本、显式 HardwareProfile、capture 摘要和产物清单。该递归能力按 artifact 中是否实际存在 decomposition view 计算，Tiny baseline 为 false，Qwen/GLM 为 true。未来 M4 importer 再加入 trace source/run 上下文；当前不伪造尚不存在的 trace 或依赖清单字段。
 
 | 能力 | 已获得证据 |
 |---|---|
@@ -86,9 +86,9 @@ M0–M3.5 当前 manifest 记录 analysis ID、LLM-Vis 版本、adapter 名称/m
 
 能力描述实际证据，不随目标里程碑自动提升。
 
-### 3.1 M3.5 GraphView 产物边界
+### 3.1 M3.5/M3.6 GraphView 产物边界
 
-`graph-view.json` 与 `model-map.json` 同目录产生，并通过 `source_model_map_id` 关联唯一事实层。该 ID 不是 `Model.id`：producer 必须对完整 canonical Model Map 内容确定性计算 `mmap_*`，并在 evidence 中分别记录 `model:art_*` 与 `model_map:mmap_*`。它的机器契约由独立的 `schemas/graph-view.schema.json` 定义，不扩大或污染 Model Map v0.1 schema。它保存跨渲染器一致的语义视图和导航关系，不保存 SVG/canvas 坐标、缩放倍率、搜索词或选中态。自包含 HTML 嵌入与独立产物同源的 GraphView，不另造一套节点身份。该 schema、Qwen/GLM golden 与浏览器退出项已在 M3.5 验收通过。
+`graph-view.json` 与 `model-map.json` 同目录产生，并通过 `source_model_map_id` 关联唯一事实层。该 ID 不是 `Model.id`：producer 必须对完整 canonical Model Map 内容确定性计算 `mmap_*`，并在 evidence 中分别记录 `model:art_*` 与 `model_map:mmap_*`。它的机器契约由独立的 `schemas/graph-view.schema.json` 定义，不扩大或污染 Model Map v0.1 schema。它保存跨渲染器一致的语义视图和导航关系，不保存 SVG/canvas 坐标、缩放倍率、搜索词或选中态。自包含 HTML 嵌入与独立产物同源的 GraphView，不另造一套节点身份。M3.5 已验收 L0/L1 基线；M3.6 进一步验收 operator views、boundary、cost frontier、reconciliation 与 Qwen/GLM recursive goldens。
 
 ```text
 GraphViewDocument
@@ -96,13 +96,27 @@ GraphViewDocument
   source_model_map_id, provenance, views[]
 
 GraphView
-  id, key, level=L0|L1, label, parent_view_id, breadcrumb[]
-  layer_index, root_group_id, nodes[], ports[], edges[], groups[], metadata
+  id, key, level=L0|L1|operator, label, parent_view_id, decomposes_node_id
+  breadcrumb[], layer_index, root_group_id, nodes[], ports[], edges[], groups[]
+  boundary_bindings[], cost_frontier_node_ids[], cost_reconciliations[], metadata
 
 GraphNode
   id, key, label, kind, group_id
   input_port_ids[], output_port_ids[], subject_ids[], evidence[]
-  coverage, opaque, drilldown_view_id, attributes
+  coverage, opaque, drilldown_view_id, decomposition_status, primitive_kind
+  metric_bindings[], attributes
+
+GraphBoundaryBinding
+  id, key, parent_port_id, child_port_id
+  kind=input|output|state_read|state_write, evidence[]
+
+GraphMetricBinding
+  dimension=flops|logical_bytes, parent_metric_name
+  status=known|unknown|excluded, metric_name, reason
+
+GraphCostReconciliation
+  dimension, parent_metric_name, known_child_metric_names[]
+  unattributed_node_ids[], excluded_node_ids[], status, reason, evidence[]
 
 GraphPort
   id, key, node_id, name, direction=input|output, role
@@ -127,6 +141,10 @@ GraphGroup
 - L0 的每个模型 output 必须能沿非 control 数据路径从输入到达。MTP 不得只由伪造 bool 条件产生 logits；当前合同是 `decoder hidden → MTP → MTP Draft Logits`，主 LM Head Logits 与 Draft Logits 使用不同 input port/output boundary。
 - L0 的折叠 Decoder/Dense/Sparse pattern 可用 `drilldown_view_id` 指向 L1；L1 用 `parent_view_id` 和 `breadcrumb` 返回上层，`layer_index` 支持 Layer Strip 定位。`GraphGroup.collapsed` 描述应折叠的 pattern/Expert Pool，不要在 L0 物化 64/78 层或 256 专家。
 - 搜索、上下游高亮和 Inspector 联动使用上述稳定 `id/key`、`subject_ids`、`tensor_spec_id` 和 `evidence`；交互临时状态不进入 artifact，Scenario 切换也不改变这些结构 ID。
+- M3.6 operator view 的递归深度与 M1/M2 的证据层级分离；`level=operator` 不是新的“L2”事实层。`decomposes_node_id` 必须属于 parent view，且该父节点的 `drilldown_view_id` 必须反向指向 child view。
+- decomposition 必须绑定父 compound 的全部 port 且每个只绑定一次。父 input/state-read 对应 child boundary output，父 output/state-write 对应 child boundary input；role、dtype、shape_known、shape、TensorSpec 与 data input→output 可达性保持不变。
+- `primitive_kind` 只使用 DR-0011 冻结的 semantic primitive ontology；它不等于 LogicalOp、ATen op 或 Kernel。证据不足区域使用 `decomposition_status=opaque`，无 drilldown target。
+- `metric_bindings` 必须精确到 child Metric 名，或显式说明 Unknown/Excluded；`cost_reconciliations` 记录父总量、已知子项与未归因/排除范围，禁止用 0 填缺失。热图只统计 `cost_frontier_node_ids`，当前 view 之外的父/子不进入同一分母。
 
 `GraphViewDocument.provenance` 必须声明 `projection=config-first-graph-view`、投影版本、源 artifact/evidence，并将 `weights_loaded`、`target_model_constructed`、`target_model_forward`、`remote_code_executed` 全部固定为 `false`。这一层不能通过“只是渲染”绕过 manifest 的零执行安全声明。
 
@@ -278,7 +296,7 @@ coverage_status = complete | partial | opaque | unmapped | failed | unknown
 - useful/executed MoE FLOPs、occupied/allocated KV、logical/measured HBM bytes 分开保存；
 - 没有导入 trace 时，三个占位 Runtime Metric 均为 `origin=unknown, value=null, coverage=0, coverage_status=unmapped`。
 
-M0–M3 的占位名是 `runtime.measured_latency`、`runtime.kernel_dispatch_count`、`runtime.measured_hbm_traffic`。静态 FLOPs、logical bytes 或 roofline 不能填入这些 Runtime 字段，也不能产生 Kernel/counter 实测结论。
+M0–M3.6 的占位名是 `runtime.measured_latency`、`runtime.kernel_dispatch_count`、`runtime.measured_hbm_traffic`。静态 FLOPs、logical bytes 或 roofline 不能填入这些 Runtime 字段，也不能产生 Kernel/counter 实测结论。
 
 ### 4.9 TraceEvent 与 Diagnostic
 
@@ -304,7 +322,7 @@ IR 使用两类稳定身份：
 
 v0.1 wire 使用对象 `id` 作为 artifact-local 身份，并把 `canonical_semantic_key` 保存在 Instance `overrides`。生成器采用版本化 canonical JSON 与确定性哈希，禁止随机 UUID 作为唯一长期标识。相同输入、adapter 和 schema/cost 版本必须生成相同 ID。
 
-M0–M3 的 `diff` 只比较同一 Model Map artifact 内的两个 Scenario。跨 revision diff 延后 M5；届时才能评估是否先按 canonical key 精确匹配、再用结构相似度处理 rename/move，不能把这套候选算法描述为当前已交付行为。
+M0–M3.6 的 `diff` 只比较同一 Model Map artifact 内的两个 Scenario。跨 revision diff 延后 M5；届时才能评估是否先按 canonical key 精确匹配、再用结构相似度处理 rename/move，不能把这套候选算法描述为当前已交付行为。
 
 ## 6. Provenance
 
@@ -410,7 +428,7 @@ Metric 的 `origin` 和事实来源不是同一概念。例如固定 config 的�
 
 ## 8. 执行与 Runtime 边界
 
-- M0–M3.5 Model Map/GraphView 不引用或读取模型权重 artifact。
+- M0–M3.6 Model Map/GraphView 不引用或读取模型权重 artifact。
 - 完整 meta tree 默认禁用；其缺失不是 C0/M1 失败。
 - M2 export 的持久化 `SourceArtifact.kind=generated`，URI 指向项目自有 Tiny representative；manifest/captures 标明 `capture_backend=torch.export.strict`、meta/FakeTensor tensor mode、PyTorch 版本、`architecture_equivalence=semantic-kind-only` 与 `valid_for_full_model_performance=false`。内存中的 `ExportedProgram` 不写入 artifact。
 - M4 importer 是 trace_events/measured Metric 的唯一生产路径；LLM-Vis 不启动完整模型、compile、profiler 或 counter replay。
@@ -431,7 +449,7 @@ Schema 与 producer-policy 检查至少覆盖：
 - lowering source/target 合法且支持多对多；
 - 稳定 ID 可确定性重算；
 - 无 trace 时 Runtime Metric 为 Unknown/null；
-- M0–M3.5 manifest 记录零权重、零完整 forward、完整 meta tree disabled；
+- M0–M3.6 manifest 记录零权重、零完整 forward、完整 meta tree disabled；
 - export artifact 记录项目自有 Tiny 代表块、`torch.export.strict`、PyTorch 版本与 FakeTensor/meta mode。
 - GraphView 的内容寻址 `source_model_map_id=mmap_*`、Model Map subject/TensorSpec 引用、view parent/drilldown/group/port 引用全部有效；相同输入生成稳定的 document/view/node/port/edge/group ID。
 - GraphView 中所有边从 output port 指向 input port，每个 input 至多一个 producer，`data|route|control` 主子图无环，L0 outputs 沿数据边可达，state rail 只用 `state_read|state_write`。

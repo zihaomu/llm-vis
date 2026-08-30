@@ -63,6 +63,7 @@ def test_inspect_writes_reproducible_offline_artifact(tmp_path: Path) -> None:
     assert manifest["capability"]["level"] == "C1"
     assert manifest["capability"]["interactive_semantic_dag"] is True
     assert manifest["capability"]["semantic_zoom_levels"] == ["L0", "L1"]
+    assert manifest["capability"]["recursive_operator_decomposition"] is False
     assert manifest["counts"]["graph_views"] == len(graph_view.views)
     assert manifest["model_map"]["artifact_id"] == graph_view.source_model_map_id
     assert manifest["counts"]["graph_nodes"] == sum(len(view.nodes) for view in graph_view.views)
@@ -78,6 +79,9 @@ def test_inspect_writes_reproducible_offline_artifact(tmp_path: Path) -> None:
     html_without_svg_namespace = html.replace("http://www.w3.org/2000/svg", "")
     assert "http://" not in html_without_svg_namespace
     assert "https://" not in html_without_svg_namespace
+
+    qwen = inspect_model(str(FIXTURE_DIR / "qwen3_8_27b.json"))
+    assert qwen.manifest()["capability"]["recursive_operator_decomposition"] is True
 
 
 def test_writer_requires_explicit_force_but_preserves_unknown_files(tmp_path: Path) -> None:

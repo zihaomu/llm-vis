@@ -1,4 +1,4 @@
-"""Generate or verify deterministic M3.5 GraphView golden artifacts."""
+"""Generate or verify deterministic M3.5/M3.6 recursive GraphView goldens."""
 
 from __future__ import annotations
 

@@ -1,4 +1,4 @@
-"""Offline, machine-runnable static exit checks for LLM-Vis M0-M3.5.
+"""Offline, machine-runnable static exit checks for LLM-Vis M0-M3.6.
 
 This verifier only reads checked-in files.  It never resolves a remote model,
 imports torch, loads weights, constructs a model, or invokes a forward pass.
@@ -18,7 +18,13 @@ SOURCE_ROOT = DEFAULT_ROOT / "src"
 if str(SOURCE_ROOT) not in sys.path:
     sys.path.insert(0, str(SOURCE_ROOT))
 
-from llm_vis.graph_view import GraphEdgeKind, GraphViewDocument  # noqa: E402
+from llm_vis.graph_view import (  # noqa: E402
+    GraphCostReconciliationStatus,
+    GraphDecompositionStatus,
+    GraphEdgeKind,
+    GraphPrimitiveKind,
+    GraphViewDocument,
+)
 from llm_vis.ir import ModelMap, Scenario, deterministic_id  # noqa: E402
 
 try:
@@ -29,7 +35,7 @@ except ImportError:  # pragma: no cover - exercised only outside the dev environ
     SchemaError = ValueError  # type: ignore[assignment,misc]
 
 
-MILESTONES: Tuple[str, ...] = ("M0", "M1", "M2", "M3", "M3.5")
+MILESTONES: Tuple[str, ...] = ("M0", "M1", "M2", "M3", "M3.5", "M3.6")
 SCHEMA_DIALECT = "https://json-schema.org/draft/2020-12/schema"
 STRUCTURE_GOLDENS = ("tiny_dense", "qwen3_8_27b", "glm_5_3_bf16")
 COST_GOLDENS = ("tiny_prefill_bf16.json", "qwen_decode_int4.json")
@@ -330,8 +336,10 @@ def _graph_view_validator(relative_path: str, fixture: str) -> Callable[[Path], 
             required_views = {"l0", "l1_linear_attention", "l1_full_attention"}
         else:
             required_views = {"l0", "l1_dense_dsa", "l1_sparse_dsa_moe"}
-        if set(views) != required_views:
-            raise VerificationError(f"unexpected {fixture} GraphView set: {sorted(views)!r}")
+        if not required_views <= set(views):
+            raise VerificationError(
+                f"missing {fixture} GraphViews: {sorted(required_views - set(views))!r}"
+            )
 
         if fixture == "glm_5_3_bf16":
             sparse = views["l1_sparse_dsa_moe"]
@@ -344,6 +352,180 @@ def _graph_view_validator(relative_path: str, fixture: str) -> Callable[[Path], 
         return (
             f"GraphView valid ({fixture}, {len(document.views)} views, "
             f"{sum(len(view.nodes) for view in document.views)} nodes)"
+        )
+
+    return validate
+
+
+def _operator_decomposition_validator(relative_path: str, fixture: str) -> Callable[[Path], str]:
+    """Validate the checked-in structural subset of the M3.6 acceptance contract."""
+
+    def validate(root: Path) -> str:
+        _graph_view_validator(relative_path, fixture)(root)
+        document = GraphViewDocument.model_validate(
+            _json_object(_require_file(root, relative_path))
+        )
+        views = {view.key: view for view in document.views}
+        if fixture == "qwen3_8_27b":
+            required = {
+                "op_linear_attention",
+                "op_linear_ffn",
+                "op_full_attention",
+                "op_full_ffn",
+            }
+            if not required <= set(views):
+                raise VerificationError(
+                    f"Qwen operator views missing: {sorted(required - set(views))!r}"
+                )
+            full = views["op_full_attention"]
+            primitives = {node.key: node.primitive_kind for node in full.nodes}
+            required_primitives = {
+                "q_proj": GraphPrimitiveKind.GEMM,
+                "k_proj": GraphPrimitiveKind.GEMM,
+                "v_proj": GraphPrimitiveKind.GEMM,
+                "q_reshape": GraphPrimitiveKind.RESHAPE,
+                "q_transpose": GraphPrimitiveKind.TRANSPOSE,
+                "k_reshape": GraphPrimitiveKind.RESHAPE,
+                "k_transpose": GraphPrimitiveKind.TRANSPOSE,
+                "v_reshape": GraphPrimitiveKind.RESHAPE,
+                "v_transpose": GraphPrimitiveKind.TRANSPOSE,
+                "k_gqa_expand": GraphPrimitiveKind.BROADCAST,
+                "v_gqa_expand": GraphPrimitiveKind.BROADCAST,
+                "qk_matmul": GraphPrimitiveKind.MATMUL,
+                "softmax": GraphPrimitiveKind.SOFTMAX,
+                "pv_matmul": GraphPrimitiveKind.MATMUL,
+                "context_transpose": GraphPrimitiveKind.TRANSPOSE,
+                "o_proj": GraphPrimitiveKind.GEMM,
+            }
+            if any(primitives.get(key) != kind for key, kind in required_primitives.items()):
+                raise VerificationError("OP-01 Full Attention primitive contract is incomplete")
+            for view_key in ("op_linear_ffn", "op_full_ffn"):
+                ffn = views[view_key]
+                gemms = {
+                    node.key for node in ffn.nodes if node.primitive_kind == GraphPrimitiveKind.GEMM
+                }
+                kinds = {node.primitive_kind for node in ffn.nodes}
+                if (
+                    gemms != {"gate_proj", "up_proj", "down_proj"}
+                    or not {
+                        GraphPrimitiveKind.SILU,
+                        GraphPrimitiveKind.MULTIPLY,
+                    }
+                    <= kinds
+                ):
+                    raise VerificationError(f"OP-02 FFN contract invalid in {view_key}")
+            reconciliations = {item.dimension: item for item in full.cost_reconciliations}
+            if reconciliations["flops"].status != GraphCostReconciliationStatus.COMPLETE:
+                raise VerificationError("OP-04 Full Attention FLOPs must reconcile completely")
+            if reconciliations["logical_bytes"].status != GraphCostReconciliationStatus.PARTIAL:
+                raise VerificationError(
+                    "OP-04 Full Attention traffic must preserve partial remainder"
+                )
+
+            def edge_pairs(view_key: str) -> set[tuple[str, str, GraphEdgeKind]]:
+                view = views[view_key]
+                ports = {port.id: port for port in view.ports}
+                nodes = {node.id: node.key for node in view.nodes}
+                return {
+                    (
+                        nodes[ports[edge.source_port_id].node_id],
+                        nodes[ports[edge.target_port_id].node_id],
+                        edge.kind,
+                    )
+                    for edge in view.edges
+                }
+
+            required_full_state = {
+                ("state_in", "k_append", GraphEdgeKind.STATE_READ),
+                ("state_in", "v_append", GraphEdgeKind.STATE_READ),
+                ("k_append", "state_out", GraphEdgeKind.STATE_WRITE),
+                ("v_append", "state_out", GraphEdgeKind.STATE_WRITE),
+                ("k_append", "k_gqa_expand", GraphEdgeKind.STATE_READ),
+                ("v_append", "v_gqa_expand", GraphEdgeKind.STATE_READ),
+                ("k_gqa_expand", "qk_matmul", GraphEdgeKind.DATA),
+                ("v_gqa_expand", "pv_matmul", GraphEdgeKind.DATA),
+            }
+            if not required_full_state <= edge_pairs("op_full_attention"):
+                raise VerificationError("OP-06 Qwen KV state/operator chain is incomplete")
+            required_linear_state = {
+                ("state_in", "depthwise_conv", GraphEdgeKind.STATE_READ),
+                ("depthwise_conv", "state_out", GraphEdgeKind.STATE_WRITE),
+                ("state_in", "delta_core", GraphEdgeKind.STATE_READ),
+                ("delta_core", "state_out", GraphEdgeKind.STATE_WRITE),
+            }
+            if not required_linear_state <= edge_pairs("op_linear_attention"):
+                raise VerificationError("OP-06 Qwen recurrent state/operator chain is incomplete")
+        else:
+            required = {
+                "op_glm_dense_ffn",
+                "op_glm_routed_expert_ffn",
+                "op_glm_shared_expert_ffn",
+            }
+            if not required <= set(views):
+                raise VerificationError(
+                    f"GLM operator views missing: {sorted(required - set(views))!r}"
+                )
+            sparse = views["l1_sparse_dsa_moe"]
+            nodes = {node.key: node for node in sparse.nodes}
+            if (
+                nodes.get("router") is None
+                or nodes["router"].primitive_kind != GraphPrimitiveKind.GEMM
+            ):
+                raise VerificationError("OP-07 GLM requires a static Router GEMM")
+            if (
+                nodes.get("topk") is None
+                or nodes["topk"].primitive_kind != GraphPrimitiveKind.TOP_K
+            ):
+                raise VerificationError("OP-07 GLM requires an explicit TopK")
+            if nodes["topk"].attributes.get("runtime_route_known") is not False:
+                raise VerificationError("OP-07 must not claim a runtime expert route")
+            if nodes["expert_pool"].attributes.get("experts_materialized") != 0:
+                raise VerificationError("OP-07 must keep the 256-expert pool virtual")
+            ports = {port.key: port for port in sparse.ports}
+            if any(
+                ports[key].dtype.value != "float32"
+                for key in ("router.scores", "topk.scores", "topk.weights")
+            ):
+                raise VerificationError("OP-07 router scores/weights must preserve float32")
+            sparse_port_by_id = {port.id: port for port in sparse.ports}
+            topk_id = nodes["topk"].id
+            combine_id = nodes["combine"].id
+            if not any(
+                edge.kind == GraphEdgeKind.ROUTE
+                and sparse_port_by_id[edge.source_port_id].node_id == topk_id
+                and sparse_port_by_id[edge.source_port_id].key == "topk.weights"
+                and sparse_port_by_id[edge.target_port_id].node_id == combine_id
+                and sparse_port_by_id[edge.target_port_id].key == "combine.routing_weights"
+                for edge in sparse.edges
+            ):
+                raise VerificationError("OP-07 routing weights must feed MoE Combine")
+            for view_key in ("l1_dense_dsa", "l1_sparse_dsa_moe"):
+                dsa = next(node for node in views[view_key].nodes if node.kind == "dsa")
+                if (
+                    dsa.decomposition_status != GraphDecompositionStatus.OPAQUE
+                    or dsa.drilldown_view_id is not None
+                    or not dsa.opaque
+                ):
+                    raise VerificationError("OP-08 GLM DSA must remain opaque and non-expandable")
+        operator_views = [view for view in document.views if view.level.value == "operator"]
+        if any(
+            not view.boundary_bindings or not view.cost_frontier_node_ids for view in operator_views
+        ):
+            raise VerificationError(
+                "OP-03/05 operator views require boundary and frontier contracts"
+            )
+        if any(
+            (
+                document.provenance.weights_loaded,
+                document.provenance.target_model_constructed,
+                document.provenance.target_model_forward,
+                document.provenance.remote_code_executed,
+            )
+        ):
+            raise VerificationError("OP-10 zero-execution provenance failed")
+        return (
+            f"M3.6 operator decomposition valid ({fixture}, "
+            f"{len(operator_views)} operator views; checked-in structural subset)"
         )
 
     return validate
@@ -489,6 +671,24 @@ def _asset_checks() -> Tuple[AssetCheck, ...]:
                 _graph_view_validator(relative_path, fixture),
             )
         )
+    checks.append(
+        AssetCheck(
+            "M3.6",
+            "decision:DR-0011",
+            "doc/decisions/DR-0011-*.md",
+            _decision_validator(11),
+        )
+    )
+    for fixture in GRAPH_VIEW_GOLDENS:
+        relative_path = f"tests/golden/graph-view/{fixture}/graph-view.json"
+        checks.append(
+            AssetCheck(
+                "M3.6",
+                f"operator-decomposition:{fixture}",
+                relative_path,
+                _operator_decomposition_validator(relative_path, fixture),
+            )
+        )
     return tuple(checks)
 
 
@@ -540,13 +740,13 @@ def print_report(report: VerificationReport) -> None:
 
 def main(argv: Optional[Sequence[str]] = None) -> int:
     parser = argparse.ArgumentParser(
-        description="Verify checked-in, offline M0-M3.5 milestone exit assets."
+        description="Verify checked-in, offline M0-M3.6 milestone exit assets."
     )
     parser.add_argument(
         "--milestone",
         choices=[*MILESTONES, "all"],
         default="all",
-        help="Milestone to verify; M1-M3.5 include all earlier prerequisites.",
+        help="Milestone to verify; M1-M3.6 include all earlier prerequisites.",
     )
     parser.add_argument(
         "--root",

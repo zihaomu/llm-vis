@@ -1,11 +1,11 @@
-"""Offline, dependency-free SVG DAG canvas used by the M3.5 report UI.
+"""Offline, dependency-free recursive SVG DAG canvas used by the M3.6 report UI.
 
 The renderer deliberately emits a read-only shell plus an embedded GraphView document.  Add
 ``render_dag_canvas_assets()`` once to the page and ``render_dag_canvas(document)`` wherever
 the canvas belongs.  The JavaScript auto-mounts every rendered shell.
 
 The GraphView document is expected to contain ``views``.  Each view contains ``nodes`` and
-``edges``; nodes may contain ``ports`` and an optional ``drilldown_view_id``.  Views may link
+``edges``; nodes may contain ``ports`` and an optional ``drilldown_view_id``. Views may link
 back with ``parent_view_id``.  Selecting an item calls ``window.llmVisInspect(detail)`` when
 that hook exists and always dispatches ``llm-vis:dag-select``.  View changes dispatch
 ``llm-vis:dag-view-change``.  Both events bubble from the canvas root.
@@ -183,6 +183,7 @@ DAG_CANVAS_CSS = r"""
   stroke-width: 4;
 }
 .llm-dag-node.is-selected .llm-dag-node-card { stroke: #fff; stroke-width: 3; }
+.llm-dag-port-group.is-selected .llm-dag-port { stroke: #fff; stroke-width: 4; }
 .llm-dag-node.is-upstream .llm-dag-node-card { stroke: var(--dag-upstream); }
 .llm-dag-node.is-downstream .llm-dag-node-card { stroke: var(--dag-downstream); }
 .llm-dag-node.is-match .llm-dag-node-card { filter: brightness(1.35); stroke: #fff0a6; }
@@ -480,7 +481,8 @@ DAG_CANVAS_JS = r"""
           ? `${item.label || item.name}: ${display(item.value)}` : item);
       }
     } else if (source && typeof source === 'object') {
-      const priority = ['shape', 'dtype', 'layer_count', 'linear_attention_layers',
+      const priority = ['operator_family', 'shape', 'dtype', 'layer_count',
+        'linear_attention_layers',
         'full_attention_layers', 'repeat_count', 'routed_experts', 'top_k',
         'shared_experts', 'intermediate_size', 'state_kind', 'internals',
         'parameters', 'parameter_count', 'flops', 'logical_bytes', 'state', 'cache'];
@@ -531,6 +533,8 @@ DAG_CANVAS_JS = r"""
     let ty = 0;
     let drag = null;
     let selected = null;
+    const selectionByView = new Map();
+    const viewportByView = new Map();
     let searchQuery = '';
     let heatmap = { mode: 'off', nodes: {} };
 
@@ -543,7 +547,7 @@ DAG_CANVAS_JS = r"""
       status.textContent = currentView
         ? `${currentView.nodes?.length || 0} nodes · ${currentView.edges?.length || 0} edges`
           + ` · ${Math.round(scale * 100)}%`
-          + (drillable ? ` · ${drillable} × L1 › details` : '')
+          + (drillable ? ` · ${drillable} expandable` : '')
         : 'No graph view';
     }
 
@@ -655,7 +659,10 @@ DAG_CANVAS_JS = r"""
     function selectNode(node) {
       const id = nodeId(node);
       selected = { type: 'node', id };
+      selectionByView.set(viewId(currentView), selected);
       const relations = relationSets(id);
+      root.querySelectorAll('.llm-dag-port-group')
+        .forEach(el => el.classList.remove('is-selected'));
       root.querySelectorAll('.llm-dag-node').forEach(el => {
         const itemId = el.dataset.nodeId;
         el.classList.toggle('is-selected', itemId === id);
@@ -681,12 +688,26 @@ DAG_CANVAS_JS = r"""
 
     function selectEdge(edge, id) {
       selected = { type: 'edge', id };
-      root.querySelectorAll('.llm-dag-node, .llm-dag-edge-group')
+      selectionByView.set(viewId(currentView), selected);
+      root.querySelectorAll('.llm-dag-node, .llm-dag-port-group, .llm-dag-edge-group')
         .forEach(el => el.classList.remove('is-selected', 'is-upstream', 'is-downstream',
           'is-dimmed'));
       const target = root.querySelector(`.llm-dag-edge-group[data-edge-id="${CSS.escape(id)}"]`);
       if (target) target.classList.add('is-selected');
       dispatchSelection('edge', edge);
+    }
+
+    function selectPort(port, node, direction) {
+      selected = { type: 'port', id: portId(port), nodeId: nodeId(node), direction };
+      selectionByView.set(viewId(currentView), selected);
+      root.querySelectorAll('.llm-dag-node, .llm-dag-port-group, .llm-dag-edge-group')
+        .forEach(el => el.classList.remove('is-selected', 'is-upstream', 'is-downstream',
+          'is-dimmed'));
+      const target = root.querySelector(
+        `.llm-dag-port-group[data-port-id="${CSS.escape(portId(port))}"]`
+      );
+      if (target) target.classList.add('is-selected');
+      dispatchSelection('port', port, { node, direction });
     }
 
     function portPoint(node, port, direction, index, count) {
@@ -702,13 +723,19 @@ DAG_CANVAS_JS = r"""
       const pos = layout.positions.get(nodeId(node));
       const drilldownId = node.drilldown_view_id && String(node.drilldown_view_id);
       const canDrill = Boolean(drilldownId && viewsById.has(drilldownId));
+      const targetView = canDrill ? viewsById.get(drilldownId) : null;
+      const operatorCount = targetView
+        ? ((targetView.cost_frontier_node_ids || []).length
+          || (targetView.nodes || []).filter(item => item.kind !== 'boundary').length) : 0;
+      const expandLabel = `${operatorCount || 'More'} ops ›`;
       const label = node.label || nodeId(node);
       const baseAria = canDrill
-        ? `${label} has L1 details. Click the L1 badge, double-click, or press Enter to open;`
+        ? `${label} expands to ${operatorCount || 'more'} operators. `
+          + 'Click the operator badge, double-click, or press Enter to open;'
           + ' Space inspects.'
         : `Inspect ${label}. Enter or Space selects.`;
       const baseTooltip = canDrill
-        ? `Open L1 details for ${label} — click L1 ›, double-click, or press Enter`
+        ? `Expand ${label} to ${operatorCount || 'more'} operators — double-click or press Enter`
         : `Inspect ${label}`;
       const group = svg('g', {
         class: `llm-dag-node${canDrill ? ' has-drilldown' : ''}`,
@@ -745,21 +772,21 @@ DAG_CANVAS_JS = r"""
       if (canDrill) {
         const badge = svg('g', {
           class: 'llm-dag-drill-badge',
-          transform: `translate(${pos.width - 34} -10)`,
+          transform: `translate(${pos.width - 70} -10)`,
           'aria-hidden': 'true'
         });
         badge.append(svg('rect', {
-          class: 'llm-dag-drill-hit', x: -2, y: -4, width: 44, height: 28, rx: 12
+          class: 'llm-dag-drill-hit', x: -2, y: -4, width: 78, height: 28, rx: 12
         }));
         badge.append(svg('rect', {
-          class: 'llm-dag-drill-pill', width: 40, height: 20, rx: 10
+          class: 'llm-dag-drill-pill', width: 74, height: 20, rx: 10
         }));
-        badge.append(text('text', 'L1 ›', {
-          class: 'llm-dag-drill-label', x: 20, y: 13, 'text-anchor': 'middle'
+        badge.append(text('text', expandLabel, {
+          class: 'llm-dag-drill-label', x: 37, y: 13, 'text-anchor': 'middle'
         }));
         badge.addEventListener('click', event => {
           event.stopPropagation();
-          openView(drilldownId, { source: 'node-affordance' });
+          openView(drilldownId, { source: 'node-affordance', parentNodeId: nodeId(node) });
         });
         group.append(badge);
       }
@@ -780,14 +807,14 @@ DAG_CANVAS_JS = r"""
           portGroup.append(svg('circle', {
             class: 'llm-dag-port', cx, cy, r: 5, 'data-port-direction': direction
           }));
-          const selectPort = event => {
+          const inspectPort = event => {
             event.stopPropagation();
             if (event.type === 'keydown') event.preventDefault();
-            dispatchSelection('port', port, { node, direction });
+            selectPort(port, node, direction);
           };
-          portGroup.addEventListener('click', selectPort);
+          portGroup.addEventListener('click', inspectPort);
           portGroup.addEventListener('keydown', event => {
-            if (event.key === 'Enter' || event.key === ' ') selectPort(event);
+            if (event.key === 'Enter' || event.key === ' ') inspectPort(event);
           });
           group.append(portGroup);
           const name = clip(port.label || port.name || portId(port), 15);
@@ -804,7 +831,7 @@ DAG_CANVAS_JS = r"""
       group.addEventListener('keydown', event => {
         if (event.key === 'Enter' && canDrill) {
           event.preventDefault();
-          openView(drilldownId, { source: 'keyboard' });
+          openView(drilldownId, { source: 'keyboard', parentNodeId: nodeId(node) });
         } else if (event.key === 'Enter' || event.key === ' ') {
           event.preventDefault();
           selectNode(node);
@@ -812,7 +839,7 @@ DAG_CANVAS_JS = r"""
       });
       group.addEventListener('dblclick', event => {
         event.stopPropagation();
-        if (canDrill) openView(drilldownId, { source: 'double-click' });
+        if (canDrill) openView(drilldownId, { source: 'double-click', parentNodeId: nodeId(node) });
       });
       nodeLayer.append(group);
     }
@@ -1024,12 +1051,32 @@ DAG_CANVAS_JS = r"""
       return true;
     }
 
+    function syncViewSelector(view) {
+      selector.querySelectorAll('option[data-current-only]').forEach(option => option.remove());
+      const id = viewId(view);
+      if (![...selector.options].some(option => option.value === id)) {
+        const option = document.createElement('option');
+        option.value = id;
+        option.textContent = `↳ ${view.label || view.name || id}`;
+        option.dataset.currentOnly = 'true';
+        selector.append(option);
+      }
+      selector.value = id;
+    }
+
     function openView(id, detail = {}) {
       const next = viewsById.get(String(id));
       if (!next) return false;
+      const previous = currentView;
+      if (previous) {
+        viewportByView.set(viewId(previous), { scale, tx, ty });
+        if (selected) selectionByView.set(viewId(previous), selected);
+      }
       currentView = next;
-      selected = null;
-      selector.value = viewId(next);
+      selected = selectionByView.get(viewId(next)) || null;
+      const restoredSelection = selected ? { ...selected } : null;
+      const restoredViewId = viewId(next);
+      syncViewSelector(next);
       edgeLayer.replaceChildren();
       nodeLayer.replaceChildren();
       layout = stableLayout(next);
@@ -1038,10 +1085,45 @@ DAG_CANVAS_JS = r"""
       empty.hidden = layout.nodes.length > 0;
       renderBreadcrumb();
       drawMinimap();
+      heatmap = { mode: 'off', nodes: {}, title: '', basis: '', coverageLabel: '' };
       applyHeatmap();
       applySearch(searchQuery);
-      requestAnimationFrame(frameReadable);
-      const eventDetail = { view: next, viewId: viewId(next), ...detail };
+      const savedViewport = viewportByView.get(viewId(next));
+      if (savedViewport) {
+        ({ scale, tx, ty } = savedViewport);
+        applyTransform();
+      } else requestAnimationFrame(frameReadable);
+      if (restoredSelection?.type === 'node') {
+        const node = next.nodes.find(item => nodeId(item) === restoredSelection.id);
+        if (node) requestAnimationFrame(() => {
+          if (viewId(currentView) === restoredViewId) selectNode(node);
+        });
+      } else if (restoredSelection?.type === 'edge') {
+        const edgeIndex = next.edges.findIndex(
+          (item, index) => edgeId(item, index) === restoredSelection.id
+        );
+        if (edgeIndex >= 0) {
+          requestAnimationFrame(() => {
+            if (viewId(currentView) === restoredViewId) {
+              selectEdge(next.edges[edgeIndex], restoredSelection.id);
+            }
+          });
+        }
+      } else if (restoredSelection?.type === 'port') {
+        const port = next.ports.find(item => portId(item) === restoredSelection.id);
+        const node = next.nodes.find(item => nodeId(item) === port?.node_id);
+        if (port && node) {
+          requestAnimationFrame(() => {
+            if (viewId(currentView) === restoredViewId) {
+              selectPort(port, node, restoredSelection.direction || port.direction);
+            }
+          });
+        }
+      }
+      const eventDetail = {
+        view: next, viewId: viewId(next), fromViewId: previous ? viewId(previous) : null,
+        ...detail
+      };
       root.dispatchEvent(new CustomEvent('llm-vis:dag-view-change', {
         bubbles: true, detail: eventDetail
       }));
@@ -1049,7 +1131,7 @@ DAG_CANVAS_JS = r"""
     }
 
     selector.replaceChildren();
-    views.forEach(view => {
+    views.filter(view => view.metadata?.selector_visible !== false).forEach(view => {
       const option = document.createElement('option');
       option.value = viewId(view);
       option.textContent = view.label || view.name || viewId(view);
@@ -1079,6 +1161,7 @@ DAG_CANVAS_JS = r"""
       stage.classList.add('is-panning');
       drag = { x: event.clientX, y: event.clientY, tx, ty };
       selected = null;
+      selectionByView.delete(viewId(currentView));
       root.querySelectorAll('.is-selected, .is-upstream, .is-downstream, .is-dimmed')
         .forEach(el => el.classList.remove('is-selected', 'is-upstream',
           'is-downstream', 'is-dimmed'));
@@ -1195,7 +1278,8 @@ def render_dag_canvas(
   data-dag-payload-id="{safe_payload_id}" data-readonly="true"{initial_attr}>
   <div class="llm-dag-toolbar" role="toolbar" aria-label="DAG canvas controls">
     <div class="llm-dag-nav-controls" aria-label="Graph navigation controls">
-      <button type="button" data-dag-action="back" aria-label="Back to parent view">← Back</button>
+      <button type="button" data-dag-action="back"
+        aria-label="Collapse to parent graph">← Collapse</button>
       <label>View <select class="llm-dag-view-select" aria-label="Graph view"></select></label>
     </div>
     <nav class="llm-dag-breadcrumb" aria-label="Graph breadcrumb"></nav>

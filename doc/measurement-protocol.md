@@ -6,7 +6,7 @@
 
 ## 1. 核心声明
 
-M0–M3.5 不产生、预测或承诺完整模型 latency：
+M0–M3.6 不产生、预测或承诺完整模型 latency：
 
 - M0/M1 只有 config-first 结构、确定性 inventory 和 Coverage；
 - M2 只有 Tiny/同构缩小代表块的 FakeTensor/meta capture，用于结构与 LogicalOp 验证；
@@ -14,7 +14,7 @@ M0–M3.5 不产生、预测或承诺完整模型 latency：
 - M4 只导入用户在外部环境生成的 trace，不启动完整模型、backend compile、profiler 或 counter replay；
 - 没有外部 trace 时，所有 Runtime Metric 都是 `origin=unknown, value=null`。
 
-M4 的 trace-import-only 边界见 [DR-0007](decisions/DR-0007-zero-weight-bounded-capture-and-trace-only-runtime.md)。首个 AMD reference stack 尚未冻结，因此只阻塞 M4a/M4b，不阻塞 M0–M3.5；见 [DR-0006](decisions/DR-0006-amd-reference-stack-blocks-m4a.md)。
+M4 的 trace-import-only 边界见 [DR-0007](decisions/DR-0007-zero-weight-bounded-capture-and-trace-only-runtime.md)。首个 AMD reference stack 尚未冻结，因此只阻塞 M4a/M4b，不阻塞 M0–M3.6；见 [DR-0006](decisions/DR-0006-amd-reference-stack-blocks-m4a.md)。
 
 ## 2. Metric 真实性
 
@@ -71,6 +71,17 @@ Theoretical lower bounds — not a latency estimate.
 这些下界不包含 launch、cache、fusion、layout、occupancy、同步、调度或物理 HBM traffic。缺少 FLOPs、logical bytes、匹配 dtype 的峰值或带宽时，对应项和 max/bottleneck 保持 Unknown。项目不提供或猜测默认硬件；[`synthetic-bf16.json`](../examples/hardware/synthetic-bf16.json) 仅用于虚构自含测试。
 
 M3.5 的主图热力层只是上述既有 Metric 和公式下界的 Scenario/view 投影，不产生新测量：`Compute=可归因 FLOPs`、`Memory=可归因 logical bytes`、`Pressure=max(compute lower bound, bandwidth lower bound)`。颜色强度在当前 view 内按 `raw / max(raw_known)` 归一化，只表示相对理论压力，不能解释为节点 latency、实际 GPU 利用率或跨 view/Scenario 可比的绝对尺度。节点归属必须按明确组件指标选择：L0 decoder pattern 使用成员 Instance 汇总，L1 Attention/FFN 分别使用 `*.attention`/`*.ffn`；不能因共享 `subject_ids` 就把整层成本复制到 Norm、Residual 或边界节点。
+
+M3.6 将相同口径延伸到递归算子图。每个 primitive 只能绑定自己的精确 Metric 名；未拆出的成本必须是 `Unknown` 或 parent-minus-known-child 的 `unattributed`，不能让多个 child 复用完整 parent Metric。热图统计集合定义为当前 GraphView 明示的 `cost_frontier_node_ids`：只包含当前画布真正可见的成本叶，不包含 boundary/container，也不包含另一个 view 的父 compound。`known/total`、hottest、rank、contribution、颜色归一化和 Inspector rollup 全部使用这一集合。
+
+每个成本维度使用以下核对式：
+
+```text
+parent total = known child subtotal + unattributed remainder
+coverage = known child subtotal / parent total       # parent 已知且非零时
+```
+
+`unattributed remainder` 只在 parent 与 known child subtotal 都已知时计算。某个 child Unknown 不等于 0；若它属于 parent 公式范围，reconciliation 为 Partial/Unknown；若父公式书面排除了它，则标为 Excluded，并保留原因。Qwen Full Attention 当前 FLOPs 可完整核对、logical bytes 仅 projection 可归因；Qwen FFN 的三个 GEMM 可与父 FLOPs/logical bytes 完整核对。GLM executed cost 继续 Unknown。
 
 Unknown、opaque、not attributable 和 partial 必须以文字/纹理/coverage 与颜色共同编码。Unknown 不进入归一化分母，也不能当作冷色 0；partial 只能显示已知 subtotal 并保留 Coverage。GLM DSA/MoE 在 config-only 能力下缺少 executed FLOPs/logical bytes 时，整张计算热力图保持 Unknown，禁止用 active parameters、weight storage 或 top-k 参数上界代替。legend 与 Inspector 必须显示 HardwareProfile 名称/ID/dtype/provenance、公式、origin、coverage 和 `not measured latency`；synthetic profile 必须显著标记为虚构测试值。
 
@@ -245,18 +256,25 @@ Qwen/GLM 使用固定本地 config fixture 和 [DR-0005](decisions/DR-0005-froze
 统一机器入口：
 
 ```bash
-.venv/bin/python scripts/verify_milestones.py --milestone all
-.venv/bin/pytest -q
+uv sync --frozen --group dev --extra capture
+uv run --frozen --group dev --extra capture \
+  python scripts/verify_milestones.py --milestone all
+uv run --frozen --group dev --extra capture pytest -q
 ```
+
+完整退出套件必须安装 `capture` extra；否则 PyTorch 是可选依赖，capture 测试只能
+报告 unavailable/skip，不能复现本文记录的 192 项全通过结果。
 
 2026-08-30 的历史 M0–M3 退出结果为静态资产 20/20 PASS（包含 M2 Qwen 三类代表块与 opaque/no-full-model fallback contract）。加入 M3.5 后的当前累计结果为 24/24 PASS，Python 3.9 与 3.12 各 150 项测试通过。
 
 ### 8.5 M3.5：GraphView 与离线 DAG
 
 ```bash
-.venv/bin/python scripts/update_graph_view_goldens.py --check
-.venv/bin/python scripts/verify_milestones.py --milestone all
-.venv/bin/pytest -q \
+uv run --frozen --group dev --extra capture \
+  python scripts/update_graph_view_goldens.py --check
+uv run --frozen --group dev --extra capture \
+  python scripts/verify_milestones.py --milestone all
+uv run --frozen --group dev --extra capture pytest -q \
   tests/unit/test_graph_view.py \
   tests/unit/test_dag_canvas.py \
   tests/integration/test_inspect_artifact.py \
@@ -287,7 +305,32 @@ L0/Linear L1/Full L1 为 `11/19/10`、`10/24/13`、`10/24/13`
 占满首屏可用宽度，GLM 搜索 `Expert Pool` 后进入 Sparse L1 但不自动打开 Inspector，
 Browse/Inspector 显式开关与 Layers/Analysis 折叠状态均符合 UI wireframe。
 
-### 8.6 M4：计划模板，当前禁止作为退出证据
+### 8.6 M3.6：递归算子分解
+
+```bash
+uv run --frozen --group dev --extra capture \
+  python scripts/update_graph_view_goldens.py --check
+uv run --frozen --group dev --extra capture \
+  python scripts/verify_milestones.py --milestone M3.6
+uv run --frozen --group dev --extra capture pytest -q \
+  tests/unit/test_graph_view.py \
+  tests/unit/test_cost_engine.py \
+  tests/unit/test_dag_canvas.py \
+  tests/integration/test_inspect_artifact.py \
+  tests/integration/test_m3_report.py
+```
+
+`verify_milestones` 负责 schema、golden、Decision Record 与递归 GraphView 的静态
+结构子集；上列 pytest 与浏览器任务共同覆盖完整 OP-01～OP-10，包括父子 boundary
+port 与 shape/TensorSpec/可达性、成本守恒、Unknown/partial、visible frontier、稳定
+ID、GraphView provenance 与 manifest safety。27/27 是 checked-in milestone asset
+计数，不单独等同于全部交互验收项数量。
+
+浏览器使用真实 Qwen/GLM 自包含报告执行同名 OP-01～OP-10。必须实际操作 `N ops ›`/双击/Enter、`Collapse`/breadcrumb、搜索 Softmax/TopK、Scenario 与 heat mode；确认 operator views 不作为 View 下拉框常驻项（当前 child 只显示一个 `↳` 临时项）、selection/viewport 可恢复、legend 只统计当前 frontier、Cost Inspector 显示 reconciliation、console 无 warning/error、页面无外部请求。
+
+2026-08-30 结果：**PASS**。`verify_milestones --milestone M3.6` 为 27/27；Python 3.9 与 3.12 各 192 passed；Qwen/GLM 自包含报告完成 OP-01～OP-10 真实交互且 console 均为空。Qwen Full operator view 为 `32 node/36 edge`，Pressure frontier 为 `4/28 known`、Compute frontier 为 `6/28 known`；GLM Sparse frontier 为 `0/10 known`，Router/TopK routing weights 为 `[B,T,8] float32` 且没有 runtime 值。Unknown 没有补 0。报告 provenance 继续显示 weights/model construction/full forward/remote code 全为 false。
+
+### 8.7 M4：计划模板，当前禁止作为退出证据
 
 以下命令是 reference stack 冻结后的接口模板，当前 CLI 未实现 `import-trace`，不得执行或据此宣称 M4 完成：
 
@@ -315,7 +358,7 @@ test/golden summary
 Metric origins and coverage summary
 safety flags
 known failures/deferred diagnostics
-hardware/reference stack = Unknown（M0–M3.5）或 fixed DR id（M4）
+hardware/reference stack = Unknown（M0–M3.6）或 fixed DR id（M4）
 ```
 
 退出报告不因测试数量多而隐去未覆盖项。任何 Unknown、Partial、Opaque、Deferred 或 Blocked 都必须显式列出。
