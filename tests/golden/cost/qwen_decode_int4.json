@@ -1,0 +1,67 @@
+{
+  "fixture": "qwen3_8_27b",
+  "scenario": {
+    "id": "scn_b369f74332e0584ef9cdfb13",
+    "phase": "decode",
+    "batch": 1,
+    "new_tokens": 1,
+    "past_tokens": 1024,
+    "total_visible_length": 1025,
+    "output_length": 0,
+    "activation_dtype": "bfloat16",
+    "weight_format": "int4",
+    "kv_dtype": "bfloat16",
+    "backend": "formula",
+    "hardware": "generic"
+  },
+  "expected": {
+    "scenario_id": "scn_b369f74332e0584ef9cdfb13",
+    "layer_count": 64,
+    "first_layer_index": 0,
+    "first_layer_path": "model.text.layers.0",
+    "first_layer_metrics": {
+      "parameters.resident": 383273184,
+      "parameters.active": 383273184,
+      "weights.storage_bytes": 197640768,
+      "flops": 769671168,
+      "logical_bytes": 204511552,
+      "kv_cache.bytes": 0,
+      "state.bytes": 3309568,
+      "arithmetic_intensity": 3.7634605990374568
+    },
+    "aggregate_metrics": {
+      "parameters.resident": 24353196544,
+      "parameters.active": 24353196544,
+      "weights.storage_bytes": 12558117888,
+      "flops": 49259085824,
+      "logical_bytes": 12958678016,
+      "kv_cache.bytes": 67174400,
+      "state.bytes": 158859264,
+      "arithmetic_intensity": 3.801243133225481
+    },
+    "aggregate_coverage": {
+      "parameters.resident": 0.9142857142857143,
+      "parameters.active": 0.9142857142857143,
+      "weights.storage_bytes": 0.9142857142857143,
+      "flops": 0.9142857142857143,
+      "logical_bytes": 0.9142857142857143,
+      "kv_cache.bytes": 0.9142857142857143,
+      "state.bytes": 0.9142857142857143,
+      "arithmetic_intensity": 0.9142857142857143
+    },
+    "aggregate_scope": {
+      "name": "decoder_layers",
+      "included_instance_count": 64,
+      "excluded_instance_paths": [
+        "lm_head",
+        "model.mtp.0",
+        "model.projector",
+        "model.text.embed_tokens",
+        "model.text.norm",
+        "model.vision"
+      ],
+      "structural_coverage": 0.9142857142857143
+    },
+    "top_flops_layer": 3
+  }
+}

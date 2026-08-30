@@ -1,0 +1,1518 @@
+{
+  "$defs": {
+    "CoverageStatus": {
+      "enum": [
+        "complete",
+        "partial",
+        "opaque",
+        "unmapped",
+        "failed",
+        "unknown"
+      ],
+      "title": "CoverageStatus",
+      "type": "string"
+    },
+    "DType": {
+      "enum": [
+        "bool",
+        "uint8",
+        "int8",
+        "int16",
+        "int32",
+        "int64",
+        "float8",
+        "float16",
+        "bfloat16",
+        "float32",
+        "float64",
+        "complex64",
+        "complex128",
+        "unknown"
+      ],
+      "title": "DType",
+      "type": "string"
+    },
+    "Definition": {
+      "additionalProperties": false,
+      "properties": {
+        "children": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Children",
+          "type": "array"
+        },
+        "class_name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Class Name"
+        },
+        "id": {
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/DefinitionKind"
+        },
+        "label": {
+          "minLength": 1,
+          "title": "Label",
+          "type": "string"
+        },
+        "ports": {
+          "items": {
+            "$ref": "#/$defs/Port"
+          },
+          "title": "Ports",
+          "type": "array"
+        },
+        "semantic_pattern": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Semantic Pattern"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "label"
+      ],
+      "title": "Definition",
+      "type": "object"
+    },
+    "DefinitionKind": {
+      "enum": [
+        "model",
+        "tower",
+        "stage",
+        "block",
+        "module",
+        "expert_pool",
+        "expert",
+        "operator",
+        "conditional",
+        "opaque"
+      ],
+      "title": "DefinitionKind",
+      "type": "string"
+    },
+    "Diagnostic": {
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "minLength": 1,
+          "title": "Code",
+          "type": "string"
+        },
+        "evidence": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Evidence",
+          "type": "array"
+        },
+        "id": {
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "message": {
+          "minLength": 1,
+          "title": "Message",
+          "type": "string"
+        },
+        "severity": {
+          "$ref": "#/$defs/DiagnosticSeverity"
+        },
+        "subject_id": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Subject Id"
+        }
+      },
+      "required": [
+        "id",
+        "severity",
+        "code",
+        "message"
+      ],
+      "title": "Diagnostic",
+      "type": "object"
+    },
+    "DiagnosticSeverity": {
+      "enum": [
+        "info",
+        "warning",
+        "error"
+      ],
+      "title": "DiagnosticSeverity",
+      "type": "string"
+    },
+    "Edge": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/EdgeKind"
+        },
+        "source_id": {
+          "minLength": 1,
+          "title": "Source Id",
+          "type": "string"
+        },
+        "target_id": {
+          "minLength": 1,
+          "title": "Target Id",
+          "type": "string"
+        },
+        "tensor_id": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Tensor Id"
+        }
+      },
+      "required": [
+        "id",
+        "source_id",
+        "target_id",
+        "kind"
+      ],
+      "title": "Edge",
+      "type": "object"
+    },
+    "EdgeKind": {
+      "enum": [
+        "data",
+        "weight",
+        "state_read",
+        "state_write",
+        "control",
+        "route"
+      ],
+      "title": "EdgeKind",
+      "type": "string"
+    },
+    "ExpressionOp": {
+      "enum": [
+        "literal",
+        "symbol",
+        "add",
+        "subtract",
+        "multiply",
+        "divide",
+        "floor_divide",
+        "ceil_divide",
+        "minimum",
+        "maximum",
+        "negate"
+      ],
+      "title": "ExpressionOp",
+      "type": "string"
+    },
+    "Framework": {
+      "enum": [
+        "pytorch",
+        "transformers",
+        "torch_export",
+        "generic",
+        "unknown"
+      ],
+      "title": "Framework",
+      "type": "string"
+    },
+    "Instance": {
+      "additionalProperties": false,
+      "properties": {
+        "definition_id": {
+          "minLength": 1,
+          "title": "Definition Id",
+          "type": "string"
+        },
+        "id": {
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "layer_index": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Layer Index"
+        },
+        "module_path": {
+          "minLength": 1,
+          "title": "Module Path",
+          "type": "string"
+        },
+        "overrides": {
+          "additionalProperties": true,
+          "title": "Overrides",
+          "type": "object"
+        },
+        "parent_id": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Parent Id"
+        }
+      },
+      "required": [
+        "id",
+        "definition_id",
+        "module_path"
+      ],
+      "title": "Instance",
+      "type": "object"
+    },
+    "LogicalOp": {
+      "additionalProperties": false,
+      "properties": {
+        "attrs": {
+          "additionalProperties": true,
+          "title": "Attrs",
+          "type": "object"
+        },
+        "domain": {
+          "$ref": "#/$defs/LogicalOpDomain"
+        },
+        "id": {
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "inputs": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Inputs",
+          "type": "array"
+        },
+        "op_type": {
+          "minLength": 1,
+          "title": "Op Type",
+          "type": "string"
+        },
+        "outputs": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Outputs",
+          "type": "array"
+        },
+        "scope_instance_id": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Scope Instance Id"
+        }
+      },
+      "required": [
+        "id",
+        "domain",
+        "op_type"
+      ],
+      "title": "LogicalOp",
+      "type": "object"
+    },
+    "LogicalOpDomain": {
+      "enum": [
+        "aten",
+        "prims",
+        "torch",
+        "custom",
+        "python",
+        "backend",
+        "opaque"
+      ],
+      "title": "LogicalOpDomain",
+      "type": "string"
+    },
+    "Lowering": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/LoweringKind"
+        },
+        "source_ids": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Source Ids",
+          "type": "array"
+        },
+        "target_ids": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Target Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "source_ids",
+        "target_ids",
+        "kind"
+      ],
+      "title": "Lowering",
+      "type": "object"
+    },
+    "LoweringKind": {
+      "enum": [
+        "expand",
+        "decompose",
+        "fuse",
+        "split",
+        "copy",
+        "fallback"
+      ],
+      "title": "LoweringKind",
+      "type": "string"
+    },
+    "Metric": {
+      "additionalProperties": false,
+      "properties": {
+        "assumptions": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Assumptions",
+          "type": "array"
+        },
+        "confidence": {
+          "anyOf": [
+            {
+              "maximum": 1.0,
+              "minimum": 0.0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Confidence"
+        },
+        "coverage": {
+          "default": 1.0,
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Coverage",
+          "type": "number"
+        },
+        "coverage_status": {
+          "$ref": "#/$defs/CoverageStatus",
+          "default": "complete"
+        },
+        "formula": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SymbolicExpression"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "id": {
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "origin": {
+          "$ref": "#/$defs/MetricOrigin"
+        },
+        "scenario_id": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Scenario Id"
+        },
+        "subject_id": {
+          "minLength": 1,
+          "title": "Subject Id",
+          "type": "string"
+        },
+        "unit": {
+          "minLength": 1,
+          "title": "Unit",
+          "type": "string"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Value"
+        }
+      },
+      "required": [
+        "id",
+        "subject_id",
+        "name",
+        "unit",
+        "origin"
+      ],
+      "title": "Metric",
+      "type": "object"
+    },
+    "MetricOrigin": {
+      "enum": [
+        "exact",
+        "formula",
+        "estimated",
+        "measured",
+        "inferred",
+        "unknown"
+      ],
+      "title": "MetricOrigin",
+      "type": "string"
+    },
+    "Model": {
+      "additionalProperties": false,
+      "properties": {
+        "family": {
+          "minLength": 1,
+          "title": "Family",
+          "type": "string"
+        },
+        "framework": {
+          "$ref": "#/$defs/Framework"
+        },
+        "id": {
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "revision": {
+          "minLength": 1,
+          "title": "Revision",
+          "type": "string"
+        },
+        "source_artifact_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Source Artifact Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "family",
+        "revision",
+        "framework"
+      ],
+      "title": "Model",
+      "type": "object"
+    },
+    "Port": {
+      "additionalProperties": false,
+      "properties": {
+        "direction": {
+          "$ref": "#/$defs/PortDirection"
+        },
+        "name": {
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "tensor_role": {
+          "$ref": "#/$defs/TensorRole",
+          "default": "unknown"
+        }
+      },
+      "required": [
+        "name",
+        "direction"
+      ],
+      "title": "Port",
+      "type": "object"
+    },
+    "PortDirection": {
+      "enum": [
+        "input",
+        "output",
+        "inout"
+      ],
+      "title": "PortDirection",
+      "type": "string"
+    },
+    "Scenario": {
+      "additionalProperties": false,
+      "properties": {
+        "activation_dtype": {
+          "$ref": "#/$defs/DType"
+        },
+        "backend": {
+          "default": "unknown",
+          "minLength": 1,
+          "title": "Backend",
+          "type": "string"
+        },
+        "batch": {
+          "minimum": 1,
+          "title": "Batch",
+          "type": "integer"
+        },
+        "hardware": {
+          "default": "unknown",
+          "minLength": 1,
+          "title": "Hardware",
+          "type": "string"
+        },
+        "id": {
+          "default": "",
+          "title": "Id",
+          "type": "string"
+        },
+        "kv_dtype": {
+          "$ref": "#/$defs/DType"
+        },
+        "new_tokens": {
+          "minimum": 1,
+          "title": "New Tokens",
+          "type": "integer"
+        },
+        "output_length": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Output Length",
+          "type": "integer"
+        },
+        "past_tokens": {
+          "minimum": 0,
+          "title": "Past Tokens",
+          "type": "integer"
+        },
+        "phase": {
+          "$ref": "#/$defs/ScenarioPhase"
+        },
+        "total_visible_length": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Total Visible Length",
+          "type": "integer"
+        },
+        "weight_format": {
+          "$ref": "#/$defs/WeightFormat"
+        }
+      },
+      "required": [
+        "phase",
+        "batch",
+        "new_tokens",
+        "past_tokens",
+        "activation_dtype",
+        "weight_format",
+        "kv_dtype"
+      ],
+      "title": "Scenario",
+      "type": "object"
+    },
+    "ScenarioPhase": {
+      "enum": [
+        "prefill",
+        "chunked_prefill",
+        "decode",
+        "train"
+      ],
+      "title": "ScenarioPhase",
+      "type": "string"
+    },
+    "SemanticKind": {
+      "enum": [
+        "embedding",
+        "lm_head",
+        "norm",
+        "attention",
+        "full_attention",
+        "sliding_window_attention",
+        "linear_attention",
+        "mla",
+        "dsa",
+        "rope",
+        "ffn",
+        "moe_router",
+        "expert_pool",
+        "shared_expert",
+        "ssm",
+        "recurrent_state",
+        "kv_cache",
+        "vision_tower",
+        "projector",
+        "mtp",
+        "residual",
+        "generic",
+        "opaque"
+      ],
+      "title": "SemanticKind",
+      "type": "string"
+    },
+    "SemanticNode": {
+      "additionalProperties": false,
+      "properties": {
+        "child_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Child Ids",
+          "type": "array"
+        },
+        "confidence": {
+          "default": 1.0,
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Confidence",
+          "type": "number"
+        },
+        "definition_id": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Definition Id"
+        },
+        "evidence": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Evidence",
+          "type": "array"
+        },
+        "id": {
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "input_tensor_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Input Tensor Ids",
+          "type": "array"
+        },
+        "instance_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Instance Ids",
+          "type": "array"
+        },
+        "kind": {
+          "$ref": "#/$defs/SemanticKind"
+        },
+        "label": {
+          "minLength": 1,
+          "title": "Label",
+          "type": "string"
+        },
+        "opaque": {
+          "default": false,
+          "title": "Opaque",
+          "type": "boolean"
+        },
+        "output_tensor_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Output Tensor Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "label"
+      ],
+      "title": "SemanticNode",
+      "type": "object"
+    },
+    "SourceArtifact": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/SourceArtifactKind"
+        },
+        "license": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "License"
+        },
+        "path": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Path"
+        },
+        "revision": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Revision"
+        },
+        "sha256": {
+          "anyOf": [
+            {
+              "pattern": "^[0-9a-f]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Sha256"
+        },
+        "trusted": {
+          "default": false,
+          "title": "Trusted",
+          "type": "boolean"
+        },
+        "uri": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Uri"
+        }
+      },
+      "required": [
+        "id",
+        "kind"
+      ],
+      "title": "SourceArtifact",
+      "type": "object"
+    },
+    "SourceArtifactKind": {
+      "enum": [
+        "huggingface_config",
+        "python_source",
+        "local_config",
+        "parameter_inventory",
+        "exported_program",
+        "pytorch_profiler",
+        "rocprofv3",
+        "rocm_compute_profiler",
+        "backend_ir",
+        "generated",
+        "other"
+      ],
+      "title": "SourceArtifactKind",
+      "type": "string"
+    },
+    "Symbol": {
+      "additionalProperties": false,
+      "properties": {
+        "default_value": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Default Value"
+        },
+        "description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Description"
+        },
+        "id": {
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "lower_bound": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Lower Bound"
+        },
+        "name": {
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "unit": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Unit"
+        },
+        "upper_bound": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Upper Bound"
+        }
+      },
+      "required": [
+        "id",
+        "name"
+      ],
+      "title": "Symbol",
+      "type": "object"
+    },
+    "SymbolicExpression": {
+      "additionalProperties": false,
+      "description": "A validated AST node used for symbolic shapes and formulas.",
+      "properties": {
+        "args": {
+          "items": {
+            "$ref": "#/$defs/SymbolicExpression"
+          },
+          "title": "Args",
+          "type": "array"
+        },
+        "op": {
+          "$ref": "#/$defs/ExpressionOp"
+        },
+        "symbol": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Symbol"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Value"
+        }
+      },
+      "required": [
+        "op"
+      ],
+      "title": "SymbolicExpression",
+      "type": "object"
+    },
+    "TensorLayout": {
+      "enum": [
+        "contiguous",
+        "strided",
+        "channels_last",
+        "packed",
+        "paged",
+        "custom",
+        "unknown"
+      ],
+      "title": "TensorLayout",
+      "type": "string"
+    },
+    "TensorOrigin": {
+      "description": "Evidence boundary for tensor metadata.\n\n``CONFIG`` tensors are virtual inventory contracts derived without allocating\nmodel storage.  ``CAPTURE``/``TRACE`` are reserved for later evidence sources;\nleaving the field unset keeps older IR producers backwards compatible.",
+      "enum": [
+        "config",
+        "capture",
+        "trace",
+        "inferred",
+        "unknown"
+      ],
+      "title": "TensorOrigin",
+      "type": "string"
+    },
+    "TensorRole": {
+      "enum": [
+        "input",
+        "output",
+        "parameter",
+        "buffer",
+        "activation",
+        "cache",
+        "state",
+        "route",
+        "control",
+        "unknown"
+      ],
+      "title": "TensorRole",
+      "type": "string"
+    },
+    "TensorSpec": {
+      "additionalProperties": false,
+      "properties": {
+        "alias_group": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Alias Group"
+        },
+        "concrete_shape": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "integer"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Concrete Shape"
+        },
+        "device": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Device"
+        },
+        "dtype": {
+          "$ref": "#/$defs/DType"
+        },
+        "evidence": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Evidence",
+          "type": "array"
+        },
+        "id": {
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "layout": {
+          "$ref": "#/$defs/TensorLayout",
+          "default": "unknown"
+        },
+        "materialized": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Materialized"
+        },
+        "origin": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TensorOrigin"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "owner_id": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Owner Id"
+        },
+        "role": {
+          "$ref": "#/$defs/TensorRole",
+          "default": "unknown"
+        },
+        "semantic_name": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Semantic Name"
+        },
+        "shape_known": {
+          "default": true,
+          "title": "Shape Known",
+          "type": "boolean"
+        },
+        "source_artifact_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Source Artifact Ids",
+          "type": "array"
+        },
+        "storage_dtype": {
+          "$ref": "#/$defs/DType"
+        },
+        "stride": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "integer"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Stride"
+        },
+        "symbolic_shape": {
+          "items": {
+            "$ref": "#/$defs/SymbolicExpression"
+          },
+          "title": "Symbolic Shape",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "symbolic_shape",
+        "dtype",
+        "storage_dtype"
+      ],
+      "title": "TensorSpec",
+      "type": "object"
+    },
+    "TraceCategory": {
+      "enum": [
+        "module_range",
+        "operator",
+        "fusion_group",
+        "kernel",
+        "memcpy",
+        "synchronization",
+        "allocator",
+        "other"
+      ],
+      "title": "TraceCategory",
+      "type": "string"
+    },
+    "TraceEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "category": {
+          "$ref": "#/$defs/TraceCategory"
+        },
+        "correlation_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Correlation Id"
+        },
+        "counters": {
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ]
+          },
+          "title": "Counters",
+          "type": "object"
+        },
+        "device": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Device"
+        },
+        "duration": {
+          "minimum": 0.0,
+          "title": "Duration",
+          "type": "number"
+        },
+        "id": {
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "kernel_name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Kernel Name"
+        },
+        "parent_id": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Parent Id"
+        },
+        "start": {
+          "minimum": 0.0,
+          "title": "Start",
+          "type": "number"
+        },
+        "stream": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Stream"
+        }
+      },
+      "required": [
+        "id",
+        "category",
+        "start",
+        "duration"
+      ],
+      "title": "TraceEvent",
+      "type": "object"
+    },
+    "WeightFormat": {
+      "enum": [
+        "float32",
+        "float16",
+        "bfloat16",
+        "float8",
+        "int8",
+        "int4",
+        "nf4",
+        "unknown"
+      ],
+      "title": "WeightFormat",
+      "type": "string"
+    }
+  },
+  "$id": "https://llm-vis.dev/schemas/v0.1/model-map.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "definitions": {
+      "items": {
+        "$ref": "#/$defs/Definition"
+      },
+      "title": "Definitions",
+      "type": "array"
+    },
+    "diagnostics": {
+      "items": {
+        "$ref": "#/$defs/Diagnostic"
+      },
+      "title": "Diagnostics",
+      "type": "array"
+    },
+    "edges": {
+      "items": {
+        "$ref": "#/$defs/Edge"
+      },
+      "title": "Edges",
+      "type": "array"
+    },
+    "instances": {
+      "items": {
+        "$ref": "#/$defs/Instance"
+      },
+      "title": "Instances",
+      "type": "array"
+    },
+    "logical_ops": {
+      "items": {
+        "$ref": "#/$defs/LogicalOp"
+      },
+      "title": "Logical Ops",
+      "type": "array"
+    },
+    "lowerings": {
+      "items": {
+        "$ref": "#/$defs/Lowering"
+      },
+      "title": "Lowerings",
+      "type": "array"
+    },
+    "metrics": {
+      "items": {
+        "$ref": "#/$defs/Metric"
+      },
+      "title": "Metrics",
+      "type": "array"
+    },
+    "model": {
+      "$ref": "#/$defs/Model"
+    },
+    "scenarios": {
+      "items": {
+        "$ref": "#/$defs/Scenario"
+      },
+      "title": "Scenarios",
+      "type": "array"
+    },
+    "schema_version": {
+      "const": "0.1",
+      "default": "0.1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "semantic_nodes": {
+      "items": {
+        "$ref": "#/$defs/SemanticNode"
+      },
+      "title": "Semantic Nodes",
+      "type": "array"
+    },
+    "source_artifacts": {
+      "items": {
+        "$ref": "#/$defs/SourceArtifact"
+      },
+      "title": "Source Artifacts",
+      "type": "array"
+    },
+    "symbols": {
+      "items": {
+        "$ref": "#/$defs/Symbol"
+      },
+      "title": "Symbols",
+      "type": "array"
+    },
+    "tensors": {
+      "items": {
+        "$ref": "#/$defs/TensorSpec"
+      },
+      "title": "Tensors",
+      "type": "array"
+    },
+    "trace_events": {
+      "items": {
+        "$ref": "#/$defs/TraceEvent"
+      },
+      "title": "Trace Events",
+      "type": "array"
+    }
+  },
+  "required": [
+    "model"
+  ],
+  "title": "ModelMap",
+  "type": "object"
+}

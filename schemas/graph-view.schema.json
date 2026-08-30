@@ -1,0 +1,640 @@
+{
+  "$defs": {
+    "DType": {
+      "enum": [
+        "bool",
+        "uint8",
+        "int8",
+        "int16",
+        "int32",
+        "int64",
+        "float8",
+        "float16",
+        "bfloat16",
+        "float32",
+        "float64",
+        "complex64",
+        "complex128",
+        "unknown"
+      ],
+      "title": "DType",
+      "type": "string"
+    },
+    "GraphEdge": {
+      "additionalProperties": false,
+      "description": "A directed connection between two GraphPort handles.",
+      "properties": {
+        "coverage": {
+          "default": 1.0,
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Coverage",
+          "type": "number"
+        },
+        "evidence": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Evidence",
+          "type": "array"
+        },
+        "id": {
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "key": {
+          "minLength": 1,
+          "title": "Key",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/GraphEdgeKind"
+        },
+        "origin": {
+          "$ref": "#/$defs/TensorOrigin"
+        },
+        "source_port_id": {
+          "minLength": 1,
+          "title": "Source Port Id",
+          "type": "string"
+        },
+        "target_port_id": {
+          "minLength": 1,
+          "title": "Target Port Id",
+          "type": "string"
+        },
+        "tensor_spec_id": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Tensor Spec Id"
+        }
+      },
+      "required": [
+        "id",
+        "key",
+        "source_port_id",
+        "target_port_id",
+        "kind",
+        "origin",
+        "evidence"
+      ],
+      "title": "GraphEdge",
+      "type": "object"
+    },
+    "GraphEdgeKind": {
+      "description": "Renderer-visible edge semantics.",
+      "enum": [
+        "data",
+        "state_read",
+        "state_write",
+        "route",
+        "control"
+      ],
+      "title": "GraphEdgeKind",
+      "type": "string"
+    },
+    "GraphGroup": {
+      "additionalProperties": false,
+      "description": "A renderer-neutral compound-node or layout group.",
+      "properties": {
+        "attributes": {
+          "additionalProperties": true,
+          "title": "Attributes",
+          "type": "object"
+        },
+        "collapsed": {
+          "default": false,
+          "title": "Collapsed",
+          "type": "boolean"
+        },
+        "id": {
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "key": {
+          "minLength": 1,
+          "title": "Key",
+          "type": "string"
+        },
+        "kind": {
+          "minLength": 1,
+          "title": "Kind",
+          "type": "string"
+        },
+        "label": {
+          "minLength": 1,
+          "title": "Label",
+          "type": "string"
+        },
+        "member_node_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Member Node Ids",
+          "type": "array"
+        },
+        "parent_group_id": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Parent Group Id"
+        }
+      },
+      "required": [
+        "id",
+        "key",
+        "label",
+        "kind"
+      ],
+      "title": "GraphGroup",
+      "type": "object"
+    },
+    "GraphNode": {
+      "additionalProperties": false,
+      "description": "A semantic node with renderer-ready Inspector and navigation evidence.",
+      "properties": {
+        "attributes": {
+          "additionalProperties": true,
+          "title": "Attributes",
+          "type": "object"
+        },
+        "coverage": {
+          "default": 1.0,
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Coverage",
+          "type": "number"
+        },
+        "drilldown_view_id": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Drilldown View Id"
+        },
+        "evidence": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Evidence",
+          "type": "array"
+        },
+        "group_id": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Group Id"
+        },
+        "id": {
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "input_port_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Input Port Ids",
+          "type": "array"
+        },
+        "key": {
+          "minLength": 1,
+          "title": "Key",
+          "type": "string"
+        },
+        "kind": {
+          "minLength": 1,
+          "title": "Kind",
+          "type": "string"
+        },
+        "label": {
+          "minLength": 1,
+          "title": "Label",
+          "type": "string"
+        },
+        "opaque": {
+          "default": false,
+          "title": "Opaque",
+          "type": "boolean"
+        },
+        "output_port_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Output Port Ids",
+          "type": "array"
+        },
+        "subject_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Subject Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "key",
+        "label",
+        "kind"
+      ],
+      "title": "GraphNode",
+      "type": "object"
+    },
+    "GraphPort": {
+      "additionalProperties": false,
+      "description": "One stable input or output handle displayed inside a graph node.",
+      "properties": {
+        "direction": {
+          "$ref": "#/$defs/PortDirection"
+        },
+        "dtype": {
+          "$ref": "#/$defs/DType",
+          "default": "unknown"
+        },
+        "evidence": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Evidence",
+          "type": "array"
+        },
+        "id": {
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "key": {
+          "minLength": 1,
+          "title": "Key",
+          "type": "string"
+        },
+        "name": {
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        },
+        "node_id": {
+          "minLength": 1,
+          "title": "Node Id",
+          "type": "string"
+        },
+        "role": {
+          "$ref": "#/$defs/TensorRole"
+        },
+        "shape": {
+          "anyOf": [
+            {
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "string"
+                  }
+                ]
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Shape"
+        },
+        "shape_known": {
+          "default": true,
+          "title": "Shape Known",
+          "type": "boolean"
+        },
+        "tensor_spec_id": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Tensor Spec Id"
+        }
+      },
+      "required": [
+        "id",
+        "key",
+        "node_id",
+        "name",
+        "direction",
+        "role"
+      ],
+      "title": "GraphPort",
+      "type": "object"
+    },
+    "GraphView": {
+      "additionalProperties": false,
+      "description": "One independently laid-out semantic zoom view.",
+      "properties": {
+        "breadcrumb": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Breadcrumb",
+          "type": "array"
+        },
+        "edges": {
+          "items": {
+            "$ref": "#/$defs/GraphEdge"
+          },
+          "title": "Edges",
+          "type": "array"
+        },
+        "groups": {
+          "items": {
+            "$ref": "#/$defs/GraphGroup"
+          },
+          "title": "Groups",
+          "type": "array"
+        },
+        "id": {
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "key": {
+          "minLength": 1,
+          "title": "Key",
+          "type": "string"
+        },
+        "label": {
+          "minLength": 1,
+          "title": "Label",
+          "type": "string"
+        },
+        "layer_index": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Layer Index"
+        },
+        "level": {
+          "$ref": "#/$defs/GraphViewLevel"
+        },
+        "metadata": {
+          "additionalProperties": true,
+          "title": "Metadata",
+          "type": "object"
+        },
+        "nodes": {
+          "items": {
+            "$ref": "#/$defs/GraphNode"
+          },
+          "title": "Nodes",
+          "type": "array"
+        },
+        "parent_view_id": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Parent View Id"
+        },
+        "ports": {
+          "items": {
+            "$ref": "#/$defs/GraphPort"
+          },
+          "title": "Ports",
+          "type": "array"
+        },
+        "root_group_id": {
+          "minLength": 1,
+          "title": "Root Group Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "key",
+        "level",
+        "label",
+        "root_group_id"
+      ],
+      "title": "GraphView",
+      "type": "object"
+    },
+    "GraphViewLevel": {
+      "description": "Supported semantic zoom levels in the first DAG canvas release.",
+      "enum": [
+        "L0",
+        "L1"
+      ],
+      "title": "GraphViewLevel",
+      "type": "string"
+    },
+    "GraphViewProvenance": {
+      "additionalProperties": false,
+      "description": "Explicit zero-execution boundary carried with every GraphView document.",
+      "properties": {
+        "evidence": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Evidence",
+          "type": "array"
+        },
+        "projection": {
+          "const": "config-first-graph-view",
+          "default": "config-first-graph-view",
+          "title": "Projection",
+          "type": "string"
+        },
+        "projection_version": {
+          "const": "0.1",
+          "default": "0.1",
+          "title": "Projection Version",
+          "type": "string"
+        },
+        "remote_code_executed": {
+          "const": false,
+          "default": false,
+          "title": "Remote Code Executed",
+          "type": "boolean"
+        },
+        "source_artifact_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Source Artifact Ids",
+          "type": "array"
+        },
+        "target_model_constructed": {
+          "const": false,
+          "default": false,
+          "title": "Target Model Constructed",
+          "type": "boolean"
+        },
+        "target_model_forward": {
+          "const": false,
+          "default": false,
+          "title": "Target Model Forward",
+          "type": "boolean"
+        },
+        "weights_loaded": {
+          "const": false,
+          "default": false,
+          "title": "Weights Loaded",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "evidence"
+      ],
+      "title": "GraphViewProvenance",
+      "type": "object"
+    },
+    "PortDirection": {
+      "enum": [
+        "input",
+        "output",
+        "inout"
+      ],
+      "title": "PortDirection",
+      "type": "string"
+    },
+    "TensorOrigin": {
+      "description": "Evidence boundary for tensor metadata.\n\n``CONFIG`` tensors are virtual inventory contracts derived without allocating\nmodel storage.  ``CAPTURE``/``TRACE`` are reserved for later evidence sources;\nleaving the field unset keeps older IR producers backwards compatible.",
+      "enum": [
+        "config",
+        "capture",
+        "trace",
+        "inferred",
+        "unknown"
+      ],
+      "title": "TensorOrigin",
+      "type": "string"
+    },
+    "TensorRole": {
+      "enum": [
+        "input",
+        "output",
+        "parameter",
+        "buffer",
+        "activation",
+        "cache",
+        "state",
+        "route",
+        "control",
+        "unknown"
+      ],
+      "title": "TensorRole",
+      "type": "string"
+    }
+  },
+  "$id": "https://llm-vis.dev/schemas/v0.1/graph-view.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Top-level renderer-neutral artifact containing related L0/L1 views.",
+  "properties": {
+    "adapter_name": {
+      "minLength": 1,
+      "title": "Adapter Name",
+      "type": "string"
+    },
+    "id": {
+      "minLength": 1,
+      "title": "Id",
+      "type": "string"
+    },
+    "model_id": {
+      "minLength": 1,
+      "title": "Model Id",
+      "type": "string"
+    },
+    "provenance": {
+      "$ref": "#/$defs/GraphViewProvenance"
+    },
+    "revision": {
+      "minLength": 1,
+      "title": "Revision",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "0.1",
+      "default": "0.1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "source_model_map_id": {
+      "minLength": 1,
+      "title": "Source Model Map Id",
+      "type": "string"
+    },
+    "views": {
+      "items": {
+        "$ref": "#/$defs/GraphView"
+      },
+      "minItems": 1,
+      "title": "Views",
+      "type": "array"
+    }
+  },
+  "required": [
+    "id",
+    "model_id",
+    "revision",
+    "adapter_name",
+    "source_model_map_id",
+    "provenance",
+    "views"
+  ],
+  "title": "GraphViewDocument",
+  "type": "object"
+}

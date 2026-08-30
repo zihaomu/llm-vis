@@ -1,0 +1,9 @@
+{
+  "fixture_version": 1,
+  "fixture_canonical_sha256": "c66f60bbfab94875593208f31c63225e92bb2148cb096cacafcebb6e27fd5062",
+  "kind": "synthetic_config",
+  "model_id": "llm-vis/tiny-dense-qwen2",
+  "revision": "fixture-v1",
+  "source": "Project-owned deterministic CI fixture",
+  "weights_included": false
+}

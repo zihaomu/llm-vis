@@ -1,0 +1,64 @@
+{
+  "fixture": "tiny_dense",
+  "scenario": {
+    "id": "scn_4cda3707610e1bade396ea52",
+    "phase": "prefill",
+    "batch": 2,
+    "new_tokens": 8,
+    "past_tokens": 0,
+    "total_visible_length": 8,
+    "output_length": 0,
+    "activation_dtype": "bfloat16",
+    "weight_format": "bfloat16",
+    "kv_dtype": "bfloat16",
+    "backend": "formula",
+    "hardware": "generic"
+  },
+  "expected": {
+    "scenario_id": "scn_4cda3707610e1bade396ea52",
+    "layer_count": 4,
+    "first_layer_index": 0,
+    "first_layer_path": "model.layers.0",
+    "first_layer_metrics": {
+      "parameters.resident": 2769920,
+      "parameters.active": 2769920,
+      "weights.storage_bytes": 5539840,
+      "flops": 88752128,
+      "logical_bytes": 5874688,
+      "kv_cache.bytes": 8192,
+      "state.bytes": 0,
+      "arithmetic_intensity": 15.107547498692696
+    },
+    "aggregate_metrics": {
+      "parameters.resident": 11079680,
+      "parameters.active": 11079680,
+      "weights.storage_bytes": 22159360,
+      "flops": 355008512,
+      "logical_bytes": 23498752,
+      "kv_cache.bytes": 32768,
+      "state.bytes": 0,
+      "arithmetic_intensity": 15.107547498692696
+    },
+    "aggregate_coverage": {
+      "parameters.resident": 0.5714285714285714,
+      "parameters.active": 0.5714285714285714,
+      "weights.storage_bytes": 0.5714285714285714,
+      "flops": 0.5714285714285714,
+      "logical_bytes": 0.5714285714285714,
+      "kv_cache.bytes": 0.5714285714285714,
+      "state.bytes": 0.5714285714285714,
+      "arithmetic_intensity": 0.5714285714285714
+    },
+    "aggregate_scope": {
+      "name": "decoder_layers",
+      "included_instance_count": 4,
+      "excluded_instance_paths": [
+        "lm_head",
+        "model.embed_tokens",
+        "model.norm"
+      ],
+      "structural_coverage": 0.5714285714285714
+    },
+    "top_flops_layer": 0
+  }
+}

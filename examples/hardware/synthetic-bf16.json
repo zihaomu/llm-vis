@@ -1,0 +1,17 @@
+{
+  "schema_version": "0.1",
+  "id": "synthetic-bf16-test-only",
+  "name": "Synthetic BF16 profile (test only)",
+  "peak_flops_per_second": 1000000000000000.0,
+  "memory_bandwidth_bytes_per_second": 1000000000000.0,
+  "dtype": "bfloat16",
+  "provenance": {
+    "kind": "synthetic",
+    "source": "Fictional LLM-Vis self-contained test values; not a real device specification",
+    "notes": [
+      "Use only for deterministic tests and examples.",
+      "Do not cite these values as hardware capability."
+    ]
+  }
+}
+

@@ -1,0 +1,50 @@
+[
+  {
+    "anomaly": false,
+    "attention_kind": "full_attention",
+    "definition_key": "dense_decoder_block",
+    "expected_pattern": "dense",
+    "instance_path": "model.layers.0",
+    "label": "D",
+    "layer_index": 0,
+    "mlp_kind": "dense",
+    "reason": null,
+    "state_kind": "kv_cache"
+  },
+  {
+    "anomaly": false,
+    "attention_kind": "full_attention",
+    "definition_key": "dense_decoder_block",
+    "expected_pattern": "dense",
+    "instance_path": "model.layers.1",
+    "label": "D",
+    "layer_index": 1,
+    "mlp_kind": "dense",
+    "reason": null,
+    "state_kind": "kv_cache"
+  },
+  {
+    "anomaly": false,
+    "attention_kind": "full_attention",
+    "definition_key": "dense_decoder_block",
+    "expected_pattern": "dense",
+    "instance_path": "model.layers.2",
+    "label": "D",
+    "layer_index": 2,
+    "mlp_kind": "dense",
+    "reason": null,
+    "state_kind": "kv_cache"
+  },
+  {
+    "anomaly": false,
+    "attention_kind": "full_attention",
+    "definition_key": "dense_decoder_block",
+    "expected_pattern": "dense",
+    "instance_path": "model.layers.3",
+    "label": "D",
+    "layer_index": 3,
+    "mlp_kind": "dense",
+    "reason": null,
+    "state_kind": "kv_cache"
+  }
+]

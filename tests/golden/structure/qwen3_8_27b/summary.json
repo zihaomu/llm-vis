@@ -1,0 +1,58 @@
+{
+  "adapter": "qwen3-5",
+  "definition_kinds": {
+    "block": 2,
+    "conditional": 1,
+    "model": 1,
+    "module": 8,
+    "stage": 1,
+    "tower": 1
+  },
+  "layer_count": 64,
+  "layer_labels": "LLLALLLALLLALLLALLLALLLALLLALLLALLLALLLALLLALLLALLLALLLALLLALLLA",
+  "metadata": {
+    "config_first": true,
+    "config_sha256": "c5cbaecc699af08d6ed087f45068974cba1bfb457c4dc45964fdc453db0ca457",
+    "full_attention_layers": 16,
+    "hidden_size": 5120,
+    "inventory_config": {
+      "attention_bias": false,
+      "attn_output_gate": true,
+      "dtype": "bfloat16",
+      "head_dim": 256,
+      "hidden_size": 5120,
+      "intermediate_size": 17408,
+      "linear_conv_kernel_dim": 4,
+      "linear_key_head_dim": 128,
+      "linear_num_key_heads": 16,
+      "linear_num_value_heads": 48,
+      "linear_value_head_dim": 128,
+      "mamba_ssm_dtype": "float32",
+      "mtp_num_hidden_layers": 1,
+      "mtp_use_dedicated_embeddings": false,
+      "num_attention_heads": 24,
+      "num_key_value_heads": 4,
+      "tie_word_embeddings": false,
+      "use_cache": true,
+      "vocab_size": 248320
+    },
+    "is_multimodal": true,
+    "layer_pattern": "linear_attention \u00d7 3 + full_attention \u00d7 1",
+    "linear_attention_layers": 48,
+    "mtp_num_hidden_layers": 1,
+    "num_hidden_layers": 64,
+    "remote_code_executed": false,
+    "vocab_size": 248320,
+    "weights_loaded": false
+  },
+  "model_id": "Qwen/Qwen3.8-27B",
+  "revision": "1d4bf0f2ff6012fd82039f2fa52739d0dd7c60c0",
+  "semantic_kinds": {
+    "full_attention": 16,
+    "kv_cache": 16,
+    "linear_attention": 48,
+    "mtp": 1,
+    "recurrent_state": 48,
+    "vision_tower": 1
+  }
+}

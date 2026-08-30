@@ -1,0 +1,4006 @@
+{
+  "adapter_name": "glm-moe-dsa",
+  "id": "gdoc_5e46047d771541b144ea3c54",
+  "model_id": "zai-org/GLM-5.3-BF16",
+  "provenance": {
+    "evidence": [
+      "adapter:glm-moe-dsa",
+      "source:config",
+      "model:art_4060605075c9fea0f067f1c1",
+      "model_map:mmap_2489a5faebf206ff73430116",
+      "weights_loaded:false",
+      "target_model_constructed:false",
+      "target_model_forward:false"
+    ],
+    "projection": "config-first-graph-view",
+    "projection_version": "0.1",
+    "remote_code_executed": false,
+    "source_artifact_ids": [
+      "art_9cd5ddcec9b036e090d68dd0"
+    ],
+    "target_model_constructed": false,
+    "target_model_forward": false,
+    "weights_loaded": false
+  },
+  "revision": "304b8051cfb2b260b61ce0cbe330e02a98e73639",
+  "schema_version": "0.1",
+  "source_model_map_id": "mmap_2489a5faebf206ff73430116",
+  "views": [
+    {
+      "breadcrumb": [
+        "zai-org/GLM-5.3-BF16"
+      ],
+      "edges": [
+        {
+          "coverage": 1.0,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "edge:data"
+          ],
+          "id": "gedge_4ed5f27cd92339b154efa4d1",
+          "key": "tokens_to_embedding",
+          "kind": "data",
+          "origin": "config",
+          "source_port_id": "gport_c89a85ca2c5150bf15b3f9ac",
+          "target_port_id": "gport_3174ddeab9248e451e576a5e",
+          "tensor_spec_id": null
+        },
+        {
+          "coverage": 1.0,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "edge:data"
+          ],
+          "id": "gedge_386a8f9fd9b5f787421c6335",
+          "key": "embedding_to_dense_stage",
+          "kind": "data",
+          "origin": "config",
+          "source_port_id": "gport_56e313cfcc11f7a904a9bdb8",
+          "target_port_id": "gport_1ad08863d2a27169c23d8d81",
+          "tensor_spec_id": null
+        },
+        {
+          "coverage": 1.0,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "edge:data"
+          ],
+          "id": "gedge_1448ca713b1f3fb5433681d6",
+          "key": "dense_to_sparse_stage",
+          "kind": "data",
+          "origin": "config",
+          "source_port_id": "gport_0585a99cd0091ec5f3577482",
+          "target_port_id": "gport_8bfdb8cf0e2c2c6aef692414",
+          "tensor_spec_id": null
+        },
+        {
+          "coverage": 1.0,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "edge:data"
+          ],
+          "id": "gedge_2cae93a7e7226a9780dd0ff3",
+          "key": "decoder_to_norm",
+          "kind": "data",
+          "origin": "config",
+          "source_port_id": "gport_4733817f9583ee8fc0c61111",
+          "target_port_id": "gport_c53252fafe37ce078f154af1",
+          "tensor_spec_id": null
+        },
+        {
+          "coverage": 1.0,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "edge:data"
+          ],
+          "id": "gedge_1f70530cdbc374c8e58dbf2f",
+          "key": "norm_to_head",
+          "kind": "data",
+          "origin": "config",
+          "source_port_id": "gport_35f900a0ce87b87dd93a8d9a",
+          "target_port_id": "gport_d3c01a07e26577a8a9818c56",
+          "tensor_spec_id": null
+        },
+        {
+          "coverage": 1.0,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "edge:data"
+          ],
+          "id": "gedge_ca18d16c19a739ceb591a5b4",
+          "key": "head_to_logits",
+          "kind": "data",
+          "origin": "config",
+          "source_port_id": "gport_3811953ab167c83ec498a53a",
+          "target_port_id": "gport_615a4f39f39e0535b8a178b4",
+          "tensor_spec_id": null
+        },
+        {
+          "coverage": 1.0,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "edge:data"
+          ],
+          "id": "gedge_e1196d13c49ed5159cecc001",
+          "key": "decoder_to_mtp",
+          "kind": "data",
+          "origin": "config",
+          "source_port_id": "gport_4733817f9583ee8fc0c61111",
+          "target_port_id": "gport_b635bb30d37fbb9fb8a6c2e0",
+          "tensor_spec_id": null
+        },
+        {
+          "coverage": 1.0,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "edge:data"
+          ],
+          "id": "gedge_d5bc59986aed0d5d1736ff31",
+          "key": "mtp_to_logits",
+          "kind": "data",
+          "origin": "config",
+          "source_port_id": "gport_ee4e022fb416e7945bc494ff",
+          "target_port_id": "gport_5d44fd52bae5b143d8215c34",
+          "tensor_spec_id": null
+        }
+      ],
+      "groups": [
+        {
+          "attributes": {
+            "layout": "layered"
+          },
+          "collapsed": false,
+          "id": "ggrp_b375601e328ac942decfc6e2",
+          "key": "root",
+          "kind": "model",
+          "label": "GLM L0",
+          "member_node_ids": [
+            "gnode_7adecef403ac7e0a3212c4cc",
+            "gnode_40391f84c4f457ef17dc62eb",
+            "gnode_742ae1a0251bc19d0213ecdf",
+            "gnode_87aa94ae1c9ac617d396366e",
+            "gnode_a1a6040d8183cd8ba7f33027",
+            "gnode_7afff757c8b70dbd01a3bc78",
+            "gnode_1e3e64abd97ed727fda6829a",
+            "gnode_9e1512e74134aa3a43cd1ed0",
+            "gnode_11dd018ced52cfb2053831e8"
+          ],
+          "parent_group_id": null
+        }
+      ],
+      "id": "gvw_f769ee529d93c5af12ac4313",
+      "key": "l0",
+      "label": "GLM model DAG",
+      "layer_index": null,
+      "level": "L0",
+      "metadata": {
+        "layout_direction": "RIGHT",
+        "primary_flow": "acyclic",
+        "semantic_zoom": "model"
+      },
+      "nodes": [
+        {
+          "attributes": {
+            "boundary": "input"
+          },
+          "coverage": 1.0,
+          "drilldown_view_id": null,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "boundary:model_input"
+          ],
+          "group_id": "ggrp_b375601e328ac942decfc6e2",
+          "id": "gnode_7adecef403ac7e0a3212c4cc",
+          "input_port_ids": [],
+          "key": "tokens",
+          "kind": "input",
+          "label": "Token IDs",
+          "opaque": false,
+          "output_port_ids": [
+            "gport_c89a85ca2c5150bf15b3f9ac"
+          ],
+          "subject_ids": [
+            "art_4060605075c9fea0f067f1c1"
+          ]
+        },
+        {
+          "attributes": {
+            "vocab_size": 154880
+          },
+          "coverage": 1.0,
+          "drilldown_view_id": null,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "source:config_tensor_inventory"
+          ],
+          "group_id": "ggrp_b375601e328ac942decfc6e2",
+          "id": "gnode_40391f84c4f457ef17dc62eb",
+          "input_port_ids": [
+            "gport_3174ddeab9248e451e576a5e"
+          ],
+          "key": "embedding",
+          "kind": "embedding",
+          "label": "Token Embedding",
+          "opaque": false,
+          "output_port_ids": [
+            "gport_56e313cfcc11f7a904a9bdb8"
+          ],
+          "subject_ids": [
+            "art_b7f500b34a74aa3a700e18f1",
+            "art_2755a95ca0b34f6a01dea15a"
+          ]
+        },
+        {
+          "attributes": {
+            "attention_kind": "dsa",
+            "layer_count": 3,
+            "layer_indices": [
+              0,
+              1,
+              2
+            ],
+            "mlp_kind": "dense"
+          },
+          "coverage": 1.0,
+          "drilldown_view_id": "gvw_30b4ee729d67b8acd56b7317",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "layer_strip:mlp_kind=dense"
+          ],
+          "group_id": "ggrp_b375601e328ac942decfc6e2",
+          "id": "gnode_742ae1a0251bc19d0213ecdf",
+          "input_port_ids": [
+            "gport_1ad08863d2a27169c23d8d81"
+          ],
+          "key": "dense_decoder_stage",
+          "kind": "decoder_pattern",
+          "label": "Dense DSA × 3",
+          "opaque": false,
+          "output_port_ids": [
+            "gport_0585a99cd0091ec5f3577482"
+          ],
+          "subject_ids": [
+            "art_e0416c9fe2d88c57ccbde805",
+            "art_37eb263fb7f682b7fb741358",
+            "art_3039ef4de4b06194f5211dbe",
+            "art_b1123b2f633fea6814c76f68",
+            "art_c7aca61dd60f1ab08cc7432a",
+            "art_0a7e08ce6f59f383abc93900",
+            "art_7acb464f435ed89507ac444b",
+            "art_c6c57d83167c2c62d3323da2",
+            "art_044584f589389f99f4c2eb68",
+            "art_dd134abd492ce7ccebd3aba7",
+            "art_e5ecceae2c142f3e4ad0e94b"
+          ]
+        },
+        {
+          "attributes": {
+            "attention_kind": "dsa",
+            "experts_materialized": 0,
+            "layer_count": 75,
+            "layer_indices": [
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15,
+              16,
+              17,
+              18,
+              19,
+              20,
+              21,
+              22,
+              23,
+              24,
+              25,
+              26,
+              27,
+              28,
+              29,
+              30,
+              31,
+              32,
+              33,
+              34,
+              35,
+              36,
+              37,
+              38,
+              39,
+              40,
+              41,
+              42,
+              43,
+              44,
+              45,
+              46,
+              47,
+              48,
+              49,
+              50,
+              51,
+              52,
+              53,
+              54,
+              55,
+              56,
+              57,
+              58,
+              59,
+              60,
+              61,
+              62,
+              63,
+              64,
+              65,
+              66,
+              67,
+              68,
+              69,
+              70,
+              71,
+              72,
+              73,
+              74,
+              75,
+              76,
+              77
+            ],
+            "mlp_kind": "sparse_moe",
+            "routed_experts": 256,
+            "top_k": 8
+          },
+          "coverage": 1.0,
+          "drilldown_view_id": "gvw_3544ea8386077077e968f3ac",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "layer_strip:mlp_kind=sparse"
+          ],
+          "group_id": "ggrp_b375601e328ac942decfc6e2",
+          "id": "gnode_87aa94ae1c9ac617d396366e",
+          "input_port_ids": [
+            "gport_8bfdb8cf0e2c2c6aef692414"
+          ],
+          "key": "sparse_decoder_stage",
+          "kind": "decoder_pattern",
+          "label": "Sparse DSA + MoE × 75",
+          "opaque": false,
+          "output_port_ids": [
+            "gport_4733817f9583ee8fc0c61111"
+          ],
+          "subject_ids": [
+            "art_e0416c9fe2d88c57ccbde805",
+            "art_69481e2af7523914125295a0",
+            "art_b2bc3931c084e939d328ea5e",
+            "art_dcf60fab1f468b4a7f083475",
+            "art_48173add38881bee7778a20d",
+            "art_60e18e5ca776aa4b9bee04de",
+            "art_023a60206d52e8167f3b929d",
+            "art_5fcc6a3202e303bedb464e80",
+            "art_99d51fabbc35624256f46284",
+            "art_42b27d2d9c6eb3818ee61efd",
+            "art_2b62b552316bfb4af1f6f14d",
+            "art_a7ddd9637bc1c00739fa18b6",
+            "art_08848c597c8dca9262b9131a",
+            "art_52a29721db7d87522f857db5",
+            "art_58eb8a1a43f5010489fcb008",
+            "art_2f245cfd571834a38bae0d79",
+            "art_44081bc24647fce362461c52",
+            "art_b8cf8d2b21172858d03acba3",
+            "art_e8ba20541a747645ac4c6ca2",
+            "art_3adbef02e14181a9c05e0dfb",
+            "art_70b63cf2f4f61c1aa7b97f12",
+            "art_cbdee2c150703c5dffd66717",
+            "art_5056e8fa302887ea3c6f1f39",
+            "art_a0ce0bdc2378729ec9532a0d",
+            "art_c5d4ea0230cea5db7baad32a",
+            "art_3bcb9c9dc52861c1df60ea77",
+            "art_a37f38f056ba5e8d7f881515",
+            "art_ea1aac353ed6bcc9a6a1669a",
+            "art_ca0bdb18c723cbc08a12de86",
+            "art_f4c800613f087160bf12abdf",
+            "art_6da38185b2e4c94c4b1e194c",
+            "art_368303fbefa6dc6ffc0c915d",
+            "art_7eb747a0b104b95ac93fbba0",
+            "art_9ffe252b2625f351c414ca9f",
+            "art_948c30e72e7c83e5e2232c58",
+            "art_f9b11cf6d73d95d9b83e5c5d",
+            "art_81c69399aac79766c42292aa",
+            "art_1c6c958cbbc504484e4dd68a",
+            "art_5b57be557c694d324e6d57f3",
+            "art_63daa1b1e0e5a9ff08241940",
+            "art_4e65b4b74dde3a603e96c4ce",
+            "art_d9376a4e40f7c0e02f23ef64",
+            "art_4d81943d65858bca40bc98dd",
+            "art_4de4ab9a9e99b060f4eab855",
+            "art_e69176b070e9734fe89de31c",
+            "art_68dd6a16c32587bf54d10ae5",
+            "art_450aa16bb6befa59d3d2753c",
+            "art_759c5f759fa1474c56f1eb0c",
+            "art_bc52e6771f99cb026905037e",
+            "art_4384996e0171dc95de54aa5d",
+            "art_4b7ed255f8f871683643e14d",
+            "art_3e81861a293304d71018c03c",
+            "art_9e46e8eb0bb3b10b3bcc37fd",
+            "art_c1a5447f74cf6a515883e93e",
+            "art_22736a8c656fb7009667a5c4",
+            "art_d41d93cc01e19b6f2c412511",
+            "art_dceaa7729364825973f85b37",
+            "art_e0aa89c004c9e251fcccec0f",
+            "art_2a16b3b4ec572db8eb180908",
+            "art_c23c01842bc5ca041afc00f3",
+            "art_935f8f29c49efd584125b176",
+            "art_0f9f82e4c72dc1fd2637ae5e",
+            "art_9f97763796dcf82b5d09204c",
+            "art_21145bc7f3d3762af23a8871",
+            "art_fd4b09d8b602d6aa61933004",
+            "art_ff21eb2376e776acba9f0f00",
+            "art_7c7dd79f71f081671ae22949",
+            "art_918369ad4e23b126972bb3ca",
+            "art_f1668158e2da3473a8589b61",
+            "art_a38a5f92d9521cbb941ee7dd",
+            "art_45d89c946463488f36cc8bee",
+            "art_4b5f4ccff7da25d204627ce0",
+            "art_67f5b1880111e54753755077",
+            "art_9ed5cdcd6106001d08e5c80d",
+            "art_f61e6b4c74ae5e4e5c550a74",
+            "art_f4ac1305b3d553d53e57a4a6",
+            "art_185c98713a0e9049bd37778b",
+            "art_8be855fc3ff1a426fbb474d3",
+            "art_e6bb77f1dc5578136e616c80",
+            "art_9c29b70ff9e7473cd2172d2f",
+            "art_ae439bef3ca3cd586e1ee2ec",
+            "art_8ddba64a425c5eeca220b050",
+            "art_7419059ae94f8598d5f725ee",
+            "art_cc524f88ca399aa479544b19",
+            "art_3ca1538a4cc54ea6e3dd5148",
+            "art_e0421106e8d2cea771bab50d",
+            "art_e2484a5de5e1c1547b177b32",
+            "art_89285df63aedb6b8fa3b8a99",
+            "art_05b758a57d6c4538971d5eca",
+            "art_2dc4578ea7678a1824c4f9f4",
+            "art_423499d1e925af88c28ba8f9",
+            "art_7165ac387ab9c4482717dc94",
+            "art_d583ee812c2abe7415ad7290",
+            "art_9a4b52959afff01787f7e510",
+            "art_4fafeba4bd3d911588bcc529",
+            "art_841e4f674169b32d32d95225",
+            "art_7e0c17fc6f2c06851f8aa1e9",
+            "art_70da04e865aad582d4f48f5f",
+            "art_f94721da0751f9b31be815c1",
+            "art_a1468e0d620e10e9246ca1f0",
+            "art_287f57a9815266ccd000c1e0",
+            "art_57a0a0e5725ee8b056835e94",
+            "art_7ac6c05252ed61c558696845",
+            "art_64fee986f04858f5da87c9ad",
+            "art_e5ee16c123f5c2666ea43011",
+            "art_f0a75ee1841bff2ccb846ec0",
+            "art_1da02854bdb2c8ae67a17d7f",
+            "art_2b93ac753e2f8b4573506bc3",
+            "art_7c7550ad6389ff4d23c13342",
+            "art_1714f61f3a02fdccd3a33aed",
+            "art_6d09d32049914f884e06cc4b",
+            "art_cbfdb1c8b9f074b33536fbad",
+            "art_4f563b3f3fade81b4890156e",
+            "art_fd9d05c0f3f6371eaa35dfe6",
+            "art_3b33b291b456f12a3951af15",
+            "art_299e02301aafc5549fdc3c68",
+            "art_b491de82afba5757ae3bace2",
+            "art_839f3067e47e8cc932f313ae",
+            "art_99f5684f90ec65952c793faf",
+            "art_c6297a09ebcd3f993c037f12",
+            "art_76e00b6086df37b4e7529bc8",
+            "art_2aba0fe4677397fcb8591db1",
+            "art_2ca5fc77c0694a92e99107a9",
+            "art_843616e207949cae29956040",
+            "art_3a8c1e9372bdd24cad19af2b",
+            "art_d189eca43e57427ea23d65e6",
+            "art_c4ea1db8c285dead52c75c19",
+            "art_9426ef001727803eff09e882",
+            "art_94f80f7551d8453274981c8b",
+            "art_0908a78c6b706a8f3e866ff0",
+            "art_0437ca8df7edf0f6c24bb73d",
+            "art_cf9f902faafb070db549c2f7",
+            "art_395f77ec59c7ee00d0120ce1",
+            "art_5b70632f43964c68ee10584a",
+            "art_b447c822f93ced0bc7152379",
+            "art_a0e231302787d3b6b4e9afd5",
+            "art_2f644114ffd6216f73bb6bb6",
+            "art_67f7f6fd121aee1e08e9c07c",
+            "art_fcc0079c389776faeaefcb65",
+            "art_5f85a57a4f7c92739cb82be4",
+            "art_acab75de8178a14323d3a0f3",
+            "art_f98e6b59b788fb59636f64b4",
+            "art_257c7be006d9d7bb3af0aece",
+            "art_b4f29c314844311c3e763cd7",
+            "art_c41db479d1a8e1895db137a5",
+            "art_2f4bcfe2408042ff61712726",
+            "art_f069ee796993a3040a7f0013",
+            "art_9a85dd2a4efdfa58128ac042",
+            "art_04f6155bb040a3d59e5ec19b",
+            "art_8ca121ab32186748e18f16a7",
+            "art_d050c860087b90aa148ade92",
+            "art_793eca982a3436671a4ec9ad",
+            "art_f6476a863606e3d9eea47966",
+            "art_f0ffc6a35aebfaa408e8ea4a",
+            "art_db3226f247d215d9dff83425",
+            "art_e80a4c3116730009da222209",
+            "art_ffed3d831f7e7f11d68b36e6",
+            "art_4b3a924d48f53240afb2a53f",
+            "art_8f5a55fc471a284ba4ed66a9",
+            "art_86f77cda2040def9e349aed2",
+            "art_5941c336569d8ee15e58a4ad",
+            "art_d7ca8b7907127fdd66da43a3",
+            "art_f6c82b601407c7badfd4b2b8",
+            "art_34bb7a33e25e787ff882ca96",
+            "art_64d24525896fd6edb5a94bd7",
+            "art_fea86960661d6fad0b4dbd07",
+            "art_ccf4158fa1304a9cdd27cc4b",
+            "art_d73c7755debf87b074f27d3d",
+            "art_e3abd22d0a50251b148caf9f",
+            "art_66dcb3cbcd4e0d6e0dce58ef",
+            "art_7c4522323baf41e27e9fddc9",
+            "art_7bf72e4aa1aa946da5758255",
+            "art_af0ae7e277d82aed70872360",
+            "art_d5746d5ddfe86ee9a046f2fc",
+            "art_a1152d7fdc0326591b9b131e",
+            "art_2c89e5be58a61ba866e3ec1e",
+            "art_eb63e93cd2fe9d9e0662a885",
+            "art_7ff92d8b4b6c3fb6dcecd37d",
+            "art_1abe220e8b50fffc4182da2b",
+            "art_481104754e96761f04bb014e",
+            "art_a08d074bac90f8bbf352f3ba",
+            "art_33b314a86a6df430882e5b76",
+            "art_8757cb6a28abcbe75e0583e3",
+            "art_e3a3122e0a0f1209b7b69697",
+            "art_65ff466da0babdf02361cce5",
+            "art_74124bc606f1c8b765ee72c3",
+            "art_19eb87086b6b037022a8ea25",
+            "art_608ef9e946cc574fb5faf8df",
+            "art_88e0ca31c8991a6c839e737a",
+            "art_3a76361263b3ff2f15a8a7fa",
+            "art_3a7972e878a1ad360501730b",
+            "art_fbf6db8b342f92957280558b",
+            "art_5df999ff3131c704b14e1834",
+            "art_8e226bcf18fd50455dd743e6",
+            "art_ea8d9815b47c63ff68642f90",
+            "art_462e39808d8ad833db16b0b4",
+            "art_2a6e07d13338fffa7e73c0e8",
+            "art_6a7e13d2ee256265a2ccaec0",
+            "art_10026a31d2bb13ad6f65c8e9",
+            "art_6b00faa3313d8fa1d2fdd97b",
+            "art_d929beb5556bce92bafb38d1",
+            "art_1ac905be933686f3283ba865",
+            "art_7f5672a324f9bbad4e6dcfa5",
+            "art_95fd30edc93fc1fb59723d6b",
+            "art_d906067263a0e3f9d419a80d",
+            "art_4c4345e56faa469674335697",
+            "art_ade6a195318b51b549b51217",
+            "art_6083e7e42c0fdc43250209a8",
+            "art_5202e96c09e51fcd1f4853d6",
+            "art_a057dffccada2a6b8c4cfad6",
+            "art_66a125d39945ddae206e1d56",
+            "art_20335035688162ed4620620a",
+            "art_287fed0a6f038b7995e54a0c",
+            "art_ef212fc6ad43ae1dbc64f104",
+            "art_94908af4ebb24fe7365a32f6",
+            "art_94b87cb02cc9fb0b32df3f60",
+            "art_8b0192c1414857c378a5a36d",
+            "art_4de279087e072b37997e271f",
+            "art_ff87b9d574c55ea2a607c8c9",
+            "art_160e1d88b2fae12642153af5",
+            "art_17be32261ea16b876eccde29",
+            "art_599a26c203317a2120369949",
+            "art_3ddea8a24cdfd3f6f7e4331d",
+            "art_f3c4714e95178950d14983e6",
+            "art_fd4aa8965b197d89353691ad",
+            "art_1b49f62eb190810822368bce",
+            "art_3b3092dd286b5c0fc8024fcf",
+            "art_d80266c4fcf00b9b4cfd8e96"
+          ]
+        },
+        {
+          "attributes": {},
+          "coverage": 1.0,
+          "drilldown_view_id": null,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false"
+          ],
+          "group_id": "ggrp_b375601e328ac942decfc6e2",
+          "id": "gnode_a1a6040d8183cd8ba7f33027",
+          "input_port_ids": [
+            "gport_c53252fafe37ce078f154af1"
+          ],
+          "key": "final_norm",
+          "kind": "norm",
+          "label": "Final Norm",
+          "opaque": false,
+          "output_port_ids": [
+            "gport_35f900a0ce87b87dd93a8d9a"
+          ],
+          "subject_ids": [
+            "art_fea6d1e795acb38e70320a87",
+            "art_52a6f3f1d0e2560d7ab97b6f"
+          ]
+        },
+        {
+          "attributes": {
+            "vocab_size": 154880
+          },
+          "coverage": 1.0,
+          "drilldown_view_id": null,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "source:config_tensor_inventory"
+          ],
+          "group_id": "ggrp_b375601e328ac942decfc6e2",
+          "id": "gnode_7afff757c8b70dbd01a3bc78",
+          "input_port_ids": [
+            "gport_d3c01a07e26577a8a9818c56"
+          ],
+          "key": "lm_head",
+          "kind": "lm_head",
+          "label": "LM Head",
+          "opaque": false,
+          "output_port_ids": [
+            "gport_3811953ab167c83ec498a53a"
+          ],
+          "subject_ids": [
+            "art_340cf27bb7a6d8b561f5ffcc",
+            "art_d65624f1004317a59df956f0"
+          ]
+        },
+        {
+          "attributes": {
+            "boundary": "output"
+          },
+          "coverage": 1.0,
+          "drilldown_view_id": null,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "boundary:model_output"
+          ],
+          "group_id": "ggrp_b375601e328ac942decfc6e2",
+          "id": "gnode_1e3e64abd97ed727fda6829a",
+          "input_port_ids": [
+            "gport_615a4f39f39e0535b8a178b4"
+          ],
+          "key": "logits",
+          "kind": "output",
+          "label": "Logits",
+          "opaque": false,
+          "output_port_ids": [],
+          "subject_ids": [
+            "art_4060605075c9fea0f067f1c1"
+          ]
+        },
+        {
+          "attributes": {
+            "conditional": true,
+            "instance_count": 1
+          },
+          "coverage": 1.0,
+          "drilldown_view_id": null,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "config:conditional_mtp"
+          ],
+          "group_id": "ggrp_b375601e328ac942decfc6e2",
+          "id": "gnode_9e1512e74134aa3a43cd1ed0",
+          "input_port_ids": [
+            "gport_b635bb30d37fbb9fb8a6c2e0"
+          ],
+          "key": "mtp",
+          "kind": "mtp",
+          "label": "MTP × 1 (conditional)",
+          "opaque": false,
+          "output_port_ids": [
+            "gport_ee4e022fb416e7945bc494ff"
+          ],
+          "subject_ids": [
+            "art_854b6eb8b6663845af52a491",
+            "art_0390ff027be25fafc17e2302",
+            "art_28b76aff71aa5e5fd3249007"
+          ]
+        },
+        {
+          "attributes": {
+            "boundary": "conditional_output",
+            "conditional": true
+          },
+          "coverage": 1.0,
+          "drilldown_view_id": null,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "boundary:conditional_mtp_output"
+          ],
+          "group_id": "ggrp_b375601e328ac942decfc6e2",
+          "id": "gnode_11dd018ced52cfb2053831e8",
+          "input_port_ids": [
+            "gport_5d44fd52bae5b143d8215c34"
+          ],
+          "key": "mtp_logits",
+          "kind": "output",
+          "label": "MTP Draft Logits",
+          "opaque": false,
+          "output_port_ids": [],
+          "subject_ids": [
+            "art_854b6eb8b6663845af52a491",
+            "art_0390ff027be25fafc17e2302",
+            "art_28b76aff71aa5e5fd3249007"
+          ]
+        }
+      ],
+      "parent_view_id": null,
+      "ports": [
+        {
+          "direction": "output",
+          "dtype": "int64",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:token_ids"
+          ],
+          "id": "gport_c89a85ca2c5150bf15b3f9ac",
+          "key": "tokens.token_ids",
+          "name": "token_ids",
+          "node_id": "gnode_7adecef403ac7e0a3212c4cc",
+          "role": "input",
+          "shape": [
+            "B",
+            "T"
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "input",
+          "dtype": "int64",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:token_ids"
+          ],
+          "id": "gport_3174ddeab9248e451e576a5e",
+          "key": "embedding.token_ids",
+          "name": "token_ids",
+          "node_id": "gnode_40391f84c4f457ef17dc62eb",
+          "role": "input",
+          "shape": [
+            "B",
+            "T"
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "output",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected"
+          ],
+          "id": "gport_56e313cfcc11f7a904a9bdb8",
+          "key": "embedding.hidden",
+          "name": "hidden_states",
+          "node_id": "gnode_40391f84c4f457ef17dc62eb",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T",
+            6144
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "input",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected"
+          ],
+          "id": "gport_1ad08863d2a27169c23d8d81",
+          "key": "dense_decoder_stage.hidden_in",
+          "name": "hidden_states",
+          "node_id": "gnode_742ae1a0251bc19d0213ecdf",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T",
+            6144
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "output",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected"
+          ],
+          "id": "gport_0585a99cd0091ec5f3577482",
+          "key": "dense_decoder_stage.hidden",
+          "name": "hidden_states",
+          "node_id": "gnode_742ae1a0251bc19d0213ecdf",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T",
+            6144
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "input",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected"
+          ],
+          "id": "gport_8bfdb8cf0e2c2c6aef692414",
+          "key": "sparse_decoder_stage.hidden_in",
+          "name": "hidden_states",
+          "node_id": "gnode_87aa94ae1c9ac617d396366e",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T",
+            6144
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "output",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected"
+          ],
+          "id": "gport_4733817f9583ee8fc0c61111",
+          "key": "sparse_decoder_stage.hidden",
+          "name": "hidden_states",
+          "node_id": "gnode_87aa94ae1c9ac617d396366e",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T",
+            6144
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "input",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected"
+          ],
+          "id": "gport_c53252fafe37ce078f154af1",
+          "key": "final_norm.in",
+          "name": "hidden_states",
+          "node_id": "gnode_a1a6040d8183cd8ba7f33027",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T",
+            6144
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "output",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected"
+          ],
+          "id": "gport_35f900a0ce87b87dd93a8d9a",
+          "key": "final_norm.out",
+          "name": "normalized_hidden",
+          "node_id": "gnode_a1a6040d8183cd8ba7f33027",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T",
+            6144
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "input",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected"
+          ],
+          "id": "gport_d3c01a07e26577a8a9818c56",
+          "key": "lm_head.hidden",
+          "name": "hidden_states",
+          "node_id": "gnode_7afff757c8b70dbd01a3bc78",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T",
+            6144
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "output",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected"
+          ],
+          "id": "gport_3811953ab167c83ec498a53a",
+          "key": "lm_head.logits",
+          "name": "logits",
+          "node_id": "gnode_7afff757c8b70dbd01a3bc78",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T",
+            154880
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "input",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected"
+          ],
+          "id": "gport_615a4f39f39e0535b8a178b4",
+          "key": "logits.logits",
+          "name": "logits",
+          "node_id": "gnode_1e3e64abd97ed727fda6829a",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T",
+            154880
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "input",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected"
+          ],
+          "id": "gport_b635bb30d37fbb9fb8a6c2e0",
+          "key": "mtp.hidden_in",
+          "name": "hidden_states",
+          "node_id": "gnode_9e1512e74134aa3a43cd1ed0",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T",
+            6144
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "output",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected"
+          ],
+          "id": "gport_ee4e022fb416e7945bc494ff",
+          "key": "mtp.logits",
+          "name": "mtp_logits",
+          "node_id": "gnode_9e1512e74134aa3a43cd1ed0",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T",
+            154880
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "input",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected"
+          ],
+          "id": "gport_5d44fd52bae5b143d8215c34",
+          "key": "mtp_logits.logits",
+          "name": "mtp_logits",
+          "node_id": "gnode_11dd018ced52cfb2053831e8",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T",
+            154880
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        }
+      ],
+      "root_group_id": "ggrp_b375601e328ac942decfc6e2"
+    },
+    {
+      "breadcrumb": [
+        "zai-org/GLM-5.3-BF16",
+        "DSA Decoder",
+        "D0"
+      ],
+      "edges": [
+        {
+          "coverage": 1.0,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "edge:data"
+          ],
+          "id": "gedge_6b53fa73f0de312e3ea0bc1e",
+          "key": "input_to_norm",
+          "kind": "data",
+          "origin": "config",
+          "source_port_id": "gport_ae052f14e2ce283d66e1e251",
+          "target_port_id": "gport_f7a2c98ee676d81cb0c57687",
+          "tensor_spec_id": null
+        },
+        {
+          "coverage": 1.0,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "edge:data"
+          ],
+          "id": "gedge_0daca390a6b1001c3e4fba0e",
+          "key": "norm_to_attention",
+          "kind": "data",
+          "origin": "config",
+          "source_port_id": "gport_c2f829456fa7804523c72fb6",
+          "target_port_id": "gport_97e539d99d6868e1dd2ada69",
+          "tensor_spec_id": null
+        },
+        {
+          "coverage": 1.0,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "edge:data"
+          ],
+          "id": "gedge_671fce9da6a7b4560960ad1b",
+          "key": "input_skip",
+          "kind": "data",
+          "origin": "config",
+          "source_port_id": "gport_ae052f14e2ce283d66e1e251",
+          "target_port_id": "gport_bbce30d7ff825148eb59d4cd",
+          "tensor_spec_id": null
+        },
+        {
+          "coverage": 1.0,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "edge:data"
+          ],
+          "id": "gedge_61096978df418138eeb1d2e0",
+          "key": "attention_to_residual",
+          "kind": "data",
+          "origin": "config",
+          "source_port_id": "gport_941019e797b44a5ebb7d670b",
+          "target_port_id": "gport_c98457ae9a1fae32a8c21ead",
+          "tensor_spec_id": null
+        },
+        {
+          "coverage": 1.0,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "edge:data"
+          ],
+          "id": "gedge_f8eed91eb9ac37c17be2edc4",
+          "key": "residual_to_post_norm",
+          "kind": "data",
+          "origin": "config",
+          "source_port_id": "gport_584baf63b633647020a34bb8",
+          "target_port_id": "gport_665d76619b76d906d0124b90",
+          "tensor_spec_id": null
+        },
+        {
+          "coverage": 1.0,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "edge:data"
+          ],
+          "id": "gedge_e766fffeecedf9f7b3df8021",
+          "key": "post_norm_to_ffn",
+          "kind": "data",
+          "origin": "config",
+          "source_port_id": "gport_c75313a98b9a7eda619da93f",
+          "target_port_id": "gport_c16a0a95f8e07144f7976aee",
+          "tensor_spec_id": null
+        },
+        {
+          "coverage": 1.0,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "edge:data"
+          ],
+          "id": "gedge_d968d91d95e4adfc72abe7ee",
+          "key": "residual_skip_2",
+          "kind": "data",
+          "origin": "config",
+          "source_port_id": "gport_584baf63b633647020a34bb8",
+          "target_port_id": "gport_5ca94bd0c48573fe4def8753",
+          "tensor_spec_id": null
+        },
+        {
+          "coverage": 1.0,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "edge:data"
+          ],
+          "id": "gedge_a8c1c2af77de92c7e43bd8ab",
+          "key": "ffn_to_residual",
+          "kind": "data",
+          "origin": "config",
+          "source_port_id": "gport_977c38da12d617b248f63652",
+          "target_port_id": "gport_abdfa7a29184e677bc9647e9",
+          "tensor_spec_id": null
+        },
+        {
+          "coverage": 1.0,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "edge:data"
+          ],
+          "id": "gedge_f5d89d0c52ebda0a59afaf35",
+          "key": "residual_to_output",
+          "kind": "data",
+          "origin": "config",
+          "source_port_id": "gport_6825900151f3d47fd1226054",
+          "target_port_id": "gport_1e3f0a3f89ce59dc86925d81",
+          "tensor_spec_id": null
+        },
+        {
+          "coverage": 0.0,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "inventory:semantic_contract_not_runtime_parameter_name",
+            "config:use_cache",
+            "coverage:dsa_state_layout_unknown",
+            "edge:state_read"
+          ],
+          "id": "gedge_66fb60b2ac8a18361e21e25c",
+          "key": "state_read_0",
+          "kind": "state_read",
+          "origin": "config",
+          "source_port_id": "gport_7cc6e44917711f2f20320860",
+          "target_port_id": "gport_3aeab88362aa9fcd5c1e935d",
+          "tensor_spec_id": "art_697b2744bd466acc2b6c8ca8"
+        },
+        {
+          "coverage": 0.0,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "inventory:semantic_contract_not_runtime_parameter_name",
+            "config:use_cache",
+            "coverage:dsa_state_layout_unknown",
+            "edge:state_write"
+          ],
+          "id": "gedge_759370d598571acc3bf080c2",
+          "key": "state_write_0",
+          "kind": "state_write",
+          "origin": "config",
+          "source_port_id": "gport_937e80e48f97adafe61b7e26",
+          "target_port_id": "gport_d4ba9a6b7aaa9207f60b50e1",
+          "tensor_spec_id": "art_697b2744bd466acc2b6c8ca8"
+        }
+      ],
+      "groups": [
+        {
+          "attributes": {
+            "layout": "layered",
+            "state_rails": true
+          },
+          "collapsed": false,
+          "id": "ggrp_23767c5770a1d580829975ad",
+          "key": "root",
+          "kind": "decoder_block",
+          "label": "Layer 0",
+          "member_node_ids": [
+            "gnode_99c2239c3b492818defdb586",
+            "gnode_b3ebf17326318af6abb40749",
+            "gnode_2bab95b11077ce11bfb8e696",
+            "gnode_e3ec3f8671cd3566f2ea7a33",
+            "gnode_c6b92ef25b1de1c8594c3f48",
+            "gnode_56dec331af9c2f63bf840ea4",
+            "gnode_16c6dc5f1798ca6e234d1286",
+            "gnode_2bd4dddd718b0111d7c49136",
+            "gnode_f1a9abe6706563c872dc0f49",
+            "gnode_fb4c7bbf76b29c27f8675f30"
+          ],
+          "parent_group_id": null
+        }
+      ],
+      "id": "gvw_30b4ee729d67b8acd56b7317",
+      "key": "l1_dense_dsa",
+      "label": "GLM Dense DSA representative",
+      "layer_index": 0,
+      "level": "L1",
+      "metadata": {
+        "attention_kind": "dsa",
+        "dsa_internals": "opaque",
+        "layer_strip_target": 0,
+        "layout_direction": "RIGHT",
+        "mlp_kind": "dense",
+        "primary_flow": "acyclic",
+        "representative_instance_path": "model.layers.0"
+      },
+      "nodes": [
+        {
+          "attributes": {},
+          "coverage": 1.0,
+          "drilldown_view_id": null,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "layer_strip:layer_index=0",
+            "layer_strip:attention_kind=dsa",
+            "layer_strip:mlp_kind=dense",
+            "boundary:block_input"
+          ],
+          "group_id": "ggrp_23767c5770a1d580829975ad",
+          "id": "gnode_99c2239c3b492818defdb586",
+          "input_port_ids": [],
+          "key": "hidden_in",
+          "kind": "input",
+          "label": "Hidden In",
+          "opaque": false,
+          "output_port_ids": [
+            "gport_ae052f14e2ce283d66e1e251"
+          ],
+          "subject_ids": [
+            "art_37eb263fb7f682b7fb741358",
+            "art_3039ef4de4b06194f5211dbe"
+          ]
+        },
+        {
+          "attributes": {},
+          "coverage": 1.0,
+          "drilldown_view_id": null,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "layer_strip:layer_index=0",
+            "layer_strip:attention_kind=dsa",
+            "layer_strip:mlp_kind=dense"
+          ],
+          "group_id": "ggrp_23767c5770a1d580829975ad",
+          "id": "gnode_b3ebf17326318af6abb40749",
+          "input_port_ids": [
+            "gport_f7a2c98ee676d81cb0c57687"
+          ],
+          "key": "input_norm",
+          "kind": "norm",
+          "label": "Input RMSNorm",
+          "opaque": false,
+          "output_port_ids": [
+            "gport_c2f829456fa7804523c72fb6"
+          ],
+          "subject_ids": [
+            "art_37eb263fb7f682b7fb741358",
+            "art_3039ef4de4b06194f5211dbe"
+          ]
+        },
+        {
+          "attributes": {
+            "attention_kind": "dsa",
+            "internals": "unknown",
+            "state_kind": "kv_cache"
+          },
+          "coverage": 0.0,
+          "drilldown_view_id": null,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "layer_strip:layer_index=0",
+            "layer_strip:attention_kind=dsa",
+            "layer_strip:mlp_kind=dense",
+            "coverage:dsa_internals_unknown"
+          ],
+          "group_id": "ggrp_23767c5770a1d580829975ad",
+          "id": "gnode_2bab95b11077ce11bfb8e696",
+          "input_port_ids": [
+            "gport_97e539d99d6868e1dd2ada69",
+            "gport_3aeab88362aa9fcd5c1e935d"
+          ],
+          "key": "attention",
+          "kind": "dsa",
+          "label": "DSA (internals Unknown)",
+          "opaque": true,
+          "output_port_ids": [
+            "gport_941019e797b44a5ebb7d670b",
+            "gport_937e80e48f97adafe61b7e26"
+          ],
+          "subject_ids": [
+            "art_37eb263fb7f682b7fb741358",
+            "art_3039ef4de4b06194f5211dbe",
+            "art_c7aca61dd60f1ab08cc7432a"
+          ]
+        },
+        {
+          "attributes": {},
+          "coverage": 1.0,
+          "drilldown_view_id": null,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "layer_strip:layer_index=0",
+            "layer_strip:attention_kind=dsa",
+            "layer_strip:mlp_kind=dense"
+          ],
+          "group_id": "ggrp_23767c5770a1d580829975ad",
+          "id": "gnode_e3ec3f8671cd3566f2ea7a33",
+          "input_port_ids": [
+            "gport_bbce30d7ff825148eb59d4cd",
+            "gport_c98457ae9a1fae32a8c21ead"
+          ],
+          "key": "residual_1",
+          "kind": "residual",
+          "label": "Residual Add",
+          "opaque": false,
+          "output_port_ids": [
+            "gport_584baf63b633647020a34bb8"
+          ],
+          "subject_ids": [
+            "art_37eb263fb7f682b7fb741358",
+            "art_3039ef4de4b06194f5211dbe"
+          ]
+        },
+        {
+          "attributes": {},
+          "coverage": 1.0,
+          "drilldown_view_id": null,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "layer_strip:layer_index=0",
+            "layer_strip:attention_kind=dsa",
+            "layer_strip:mlp_kind=dense"
+          ],
+          "group_id": "ggrp_23767c5770a1d580829975ad",
+          "id": "gnode_c6b92ef25b1de1c8594c3f48",
+          "input_port_ids": [
+            "gport_665d76619b76d906d0124b90"
+          ],
+          "key": "post_norm",
+          "kind": "norm",
+          "label": "Post-Attention RMSNorm",
+          "opaque": false,
+          "output_port_ids": [
+            "gport_c75313a98b9a7eda619da93f"
+          ],
+          "subject_ids": [
+            "art_37eb263fb7f682b7fb741358",
+            "art_3039ef4de4b06194f5211dbe"
+          ]
+        },
+        {
+          "attributes": {
+            "intermediate_size": 12288,
+            "mlp_kind": "dense"
+          },
+          "coverage": 1.0,
+          "drilldown_view_id": null,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "layer_strip:layer_index=0",
+            "layer_strip:attention_kind=dsa",
+            "layer_strip:mlp_kind=dense"
+          ],
+          "group_id": "ggrp_23767c5770a1d580829975ad",
+          "id": "gnode_56dec331af9c2f63bf840ea4",
+          "input_port_ids": [
+            "gport_c16a0a95f8e07144f7976aee"
+          ],
+          "key": "ffn",
+          "kind": "ffn",
+          "label": "Dense Gated FFN",
+          "opaque": false,
+          "output_port_ids": [
+            "gport_977c38da12d617b248f63652"
+          ],
+          "subject_ids": [
+            "art_37eb263fb7f682b7fb741358",
+            "art_3039ef4de4b06194f5211dbe"
+          ]
+        },
+        {
+          "attributes": {},
+          "coverage": 1.0,
+          "drilldown_view_id": null,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "layer_strip:layer_index=0",
+            "layer_strip:attention_kind=dsa",
+            "layer_strip:mlp_kind=dense"
+          ],
+          "group_id": "ggrp_23767c5770a1d580829975ad",
+          "id": "gnode_16c6dc5f1798ca6e234d1286",
+          "input_port_ids": [
+            "gport_5ca94bd0c48573fe4def8753",
+            "gport_abdfa7a29184e677bc9647e9"
+          ],
+          "key": "residual_2",
+          "kind": "residual",
+          "label": "Residual Add",
+          "opaque": false,
+          "output_port_ids": [
+            "gport_6825900151f3d47fd1226054"
+          ],
+          "subject_ids": [
+            "art_37eb263fb7f682b7fb741358",
+            "art_3039ef4de4b06194f5211dbe"
+          ]
+        },
+        {
+          "attributes": {},
+          "coverage": 1.0,
+          "drilldown_view_id": null,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "layer_strip:layer_index=0",
+            "layer_strip:attention_kind=dsa",
+            "layer_strip:mlp_kind=dense",
+            "boundary:block_output"
+          ],
+          "group_id": "ggrp_23767c5770a1d580829975ad",
+          "id": "gnode_2bd4dddd718b0111d7c49136",
+          "input_port_ids": [
+            "gport_1e3f0a3f89ce59dc86925d81"
+          ],
+          "key": "hidden_out",
+          "kind": "output",
+          "label": "Hidden Out",
+          "opaque": false,
+          "output_port_ids": [],
+          "subject_ids": [
+            "art_37eb263fb7f682b7fb741358",
+            "art_3039ef4de4b06194f5211dbe"
+          ]
+        },
+        {
+          "attributes": {
+            "rail": "input",
+            "state_kind": "cache"
+          },
+          "coverage": 0.0,
+          "drilldown_view_id": null,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "rail:state_in"
+          ],
+          "group_id": "ggrp_23767c5770a1d580829975ad",
+          "id": "gnode_f1a9abe6706563c872dc0f49",
+          "input_port_ids": [],
+          "key": "state_in",
+          "kind": "state_boundary_in",
+          "label": "KV Cache In",
+          "opaque": false,
+          "output_port_ids": [
+            "gport_7cc6e44917711f2f20320860"
+          ],
+          "subject_ids": [
+            "art_3039ef4de4b06194f5211dbe",
+            "art_b1123b2f633fea6814c76f68"
+          ]
+        },
+        {
+          "attributes": {
+            "rail": "output",
+            "state_kind": "cache"
+          },
+          "coverage": 0.0,
+          "drilldown_view_id": null,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "rail:state_out"
+          ],
+          "group_id": "ggrp_23767c5770a1d580829975ad",
+          "id": "gnode_fb4c7bbf76b29c27f8675f30",
+          "input_port_ids": [
+            "gport_d4ba9a6b7aaa9207f60b50e1"
+          ],
+          "key": "state_out",
+          "kind": "state_boundary_out",
+          "label": "KV Cache Out",
+          "opaque": false,
+          "output_port_ids": [],
+          "subject_ids": [
+            "art_3039ef4de4b06194f5211dbe",
+            "art_b1123b2f633fea6814c76f68"
+          ]
+        }
+      ],
+      "parent_view_id": "gvw_f769ee529d93c5af12ac4313",
+      "ports": [
+        {
+          "direction": "output",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected"
+          ],
+          "id": "gport_ae052f14e2ce283d66e1e251",
+          "key": "hidden_in.hidden",
+          "name": "hidden_states",
+          "node_id": "gnode_99c2239c3b492818defdb586",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T",
+            6144
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "input",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected"
+          ],
+          "id": "gport_f7a2c98ee676d81cb0c57687",
+          "key": "input_norm.in",
+          "name": "hidden_states",
+          "node_id": "gnode_b3ebf17326318af6abb40749",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T",
+            6144
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "output",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected"
+          ],
+          "id": "gport_c2f829456fa7804523c72fb6",
+          "key": "input_norm.out",
+          "name": "normalized",
+          "node_id": "gnode_b3ebf17326318af6abb40749",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T",
+            6144
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "input",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected"
+          ],
+          "id": "gport_97e539d99d6868e1dd2ada69",
+          "key": "attention.hidden_in",
+          "name": "hidden_states",
+          "node_id": "gnode_2bab95b11077ce11bfb8e696",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T",
+            6144
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "output",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected"
+          ],
+          "id": "gport_941019e797b44a5ebb7d670b",
+          "key": "attention.context",
+          "name": "context",
+          "node_id": "gnode_2bab95b11077ce11bfb8e696",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T",
+            6144
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "input",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected"
+          ],
+          "id": "gport_bbce30d7ff825148eb59d4cd",
+          "key": "residual_1.skip",
+          "name": "residual",
+          "node_id": "gnode_e3ec3f8671cd3566f2ea7a33",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T",
+            6144
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "input",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected"
+          ],
+          "id": "gport_c98457ae9a1fae32a8c21ead",
+          "key": "residual_1.branch",
+          "name": "attention_out",
+          "node_id": "gnode_e3ec3f8671cd3566f2ea7a33",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T",
+            6144
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "output",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected"
+          ],
+          "id": "gport_584baf63b633647020a34bb8",
+          "key": "residual_1.hidden",
+          "name": "hidden_states",
+          "node_id": "gnode_e3ec3f8671cd3566f2ea7a33",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T",
+            6144
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "input",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected"
+          ],
+          "id": "gport_665d76619b76d906d0124b90",
+          "key": "post_norm.in",
+          "name": "hidden_states",
+          "node_id": "gnode_c6b92ef25b1de1c8594c3f48",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T",
+            6144
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "output",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected"
+          ],
+          "id": "gport_c75313a98b9a7eda619da93f",
+          "key": "post_norm.out",
+          "name": "normalized",
+          "node_id": "gnode_c6b92ef25b1de1c8594c3f48",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T",
+            6144
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "input",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected"
+          ],
+          "id": "gport_c16a0a95f8e07144f7976aee",
+          "key": "ffn.hidden_in",
+          "name": "hidden_states",
+          "node_id": "gnode_56dec331af9c2f63bf840ea4",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T",
+            6144
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "output",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected"
+          ],
+          "id": "gport_977c38da12d617b248f63652",
+          "key": "ffn.hidden",
+          "name": "ffn_output",
+          "node_id": "gnode_56dec331af9c2f63bf840ea4",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T",
+            6144
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "input",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected"
+          ],
+          "id": "gport_5ca94bd0c48573fe4def8753",
+          "key": "residual_2.skip",
+          "name": "residual",
+          "node_id": "gnode_16c6dc5f1798ca6e234d1286",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T",
+            6144
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "input",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected"
+          ],
+          "id": "gport_abdfa7a29184e677bc9647e9",
+          "key": "residual_2.branch",
+          "name": "ffn_output",
+          "node_id": "gnode_16c6dc5f1798ca6e234d1286",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T",
+            6144
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "output",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected"
+          ],
+          "id": "gport_6825900151f3d47fd1226054",
+          "key": "residual_2.hidden",
+          "name": "hidden_states",
+          "node_id": "gnode_16c6dc5f1798ca6e234d1286",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T",
+            6144
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "input",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected"
+          ],
+          "id": "gport_1e3f0a3f89ce59dc86925d81",
+          "key": "hidden_out.hidden",
+          "name": "hidden_states",
+          "node_id": "gnode_2bd4dddd718b0111d7c49136",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T",
+            6144
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "output",
+          "dtype": "unknown",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "inventory:semantic_contract_not_runtime_parameter_name",
+            "config:use_cache",
+            "coverage:dsa_state_layout_unknown"
+          ],
+          "id": "gport_7cc6e44917711f2f20320860",
+          "key": "state_in.kv_cache",
+          "name": "kv_cache",
+          "node_id": "gnode_f1a9abe6706563c872dc0f49",
+          "role": "cache",
+          "shape": null,
+          "shape_known": false,
+          "tensor_spec_id": "art_697b2744bd466acc2b6c8ca8"
+        },
+        {
+          "direction": "input",
+          "dtype": "unknown",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "inventory:semantic_contract_not_runtime_parameter_name",
+            "config:use_cache",
+            "coverage:dsa_state_layout_unknown"
+          ],
+          "id": "gport_3aeab88362aa9fcd5c1e935d",
+          "key": "attention.kv_cache_in",
+          "name": "kv_cache in",
+          "node_id": "gnode_2bab95b11077ce11bfb8e696",
+          "role": "cache",
+          "shape": null,
+          "shape_known": false,
+          "tensor_spec_id": "art_697b2744bd466acc2b6c8ca8"
+        },
+        {
+          "direction": "output",
+          "dtype": "unknown",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "inventory:semantic_contract_not_runtime_parameter_name",
+            "config:use_cache",
+            "coverage:dsa_state_layout_unknown"
+          ],
+          "id": "gport_937e80e48f97adafe61b7e26",
+          "key": "attention.kv_cache_out",
+          "name": "kv_cache out",
+          "node_id": "gnode_2bab95b11077ce11bfb8e696",
+          "role": "cache",
+          "shape": null,
+          "shape_known": false,
+          "tensor_spec_id": "art_697b2744bd466acc2b6c8ca8"
+        },
+        {
+          "direction": "input",
+          "dtype": "unknown",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "inventory:semantic_contract_not_runtime_parameter_name",
+            "config:use_cache",
+            "coverage:dsa_state_layout_unknown"
+          ],
+          "id": "gport_d4ba9a6b7aaa9207f60b50e1",
+          "key": "state_out.kv_cache",
+          "name": "kv_cache",
+          "node_id": "gnode_fb4c7bbf76b29c27f8675f30",
+          "role": "cache",
+          "shape": null,
+          "shape_known": false,
+          "tensor_spec_id": "art_697b2744bd466acc2b6c8ca8"
+        }
+      ],
+      "root_group_id": "ggrp_23767c5770a1d580829975ad"
+    },
+    {
+      "breadcrumb": [
+        "zai-org/GLM-5.3-BF16",
+        "DSA Decoder",
+        "M3"
+      ],
+      "edges": [
+        {
+          "coverage": 1.0,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "edge:data"
+          ],
+          "id": "gedge_cd7bc2739e724e8d6acf05d7",
+          "key": "input_to_norm",
+          "kind": "data",
+          "origin": "config",
+          "source_port_id": "gport_3dd13389193035d071b93e4c",
+          "target_port_id": "gport_6231b429cdda18e04fa5d7e9",
+          "tensor_spec_id": null
+        },
+        {
+          "coverage": 1.0,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "edge:data"
+          ],
+          "id": "gedge_49eeb69727946f9d3c50169c",
+          "key": "norm_to_attention",
+          "kind": "data",
+          "origin": "config",
+          "source_port_id": "gport_a15c825cc6fb5f6d7983596a",
+          "target_port_id": "gport_e4578d8222bec0061aa943f3",
+          "tensor_spec_id": null
+        },
+        {
+          "coverage": 1.0,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "edge:data"
+          ],
+          "id": "gedge_97294ed9c2b8f3e90c2dab14",
+          "key": "input_skip",
+          "kind": "data",
+          "origin": "config",
+          "source_port_id": "gport_3dd13389193035d071b93e4c",
+          "target_port_id": "gport_f5c85de170fa3b02b912c96a",
+          "tensor_spec_id": null
+        },
+        {
+          "coverage": 1.0,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "edge:data"
+          ],
+          "id": "gedge_7c0eba7e88161e06297e5f95",
+          "key": "attention_to_residual",
+          "kind": "data",
+          "origin": "config",
+          "source_port_id": "gport_f9d9a20ea3b98de050dde6d0",
+          "target_port_id": "gport_c1833f836849b881170c071c",
+          "tensor_spec_id": null
+        },
+        {
+          "coverage": 1.0,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "edge:data"
+          ],
+          "id": "gedge_8de19629e21d5fb53e7e2080",
+          "key": "residual_to_post_norm",
+          "kind": "data",
+          "origin": "config",
+          "source_port_id": "gport_0e1e3d627a99364128c62a6f",
+          "target_port_id": "gport_8ceeb786e29f62d81c926e4a",
+          "tensor_spec_id": null
+        },
+        {
+          "coverage": 1.0,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "edge:data"
+          ],
+          "id": "gedge_9846d61b2798ad9b840e2ef6",
+          "key": "post_norm_to_router",
+          "kind": "data",
+          "origin": "config",
+          "source_port_id": "gport_3f6aff7f1734dfb7e3f63c04",
+          "target_port_id": "gport_292710fec80242f983b1b468",
+          "tensor_spec_id": null
+        },
+        {
+          "coverage": 1.0,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "edge:data"
+          ],
+          "id": "gedge_35e6e0dea6777d5d2e031f08",
+          "key": "post_norm_to_pool",
+          "kind": "data",
+          "origin": "config",
+          "source_port_id": "gport_3f6aff7f1734dfb7e3f63c04",
+          "target_port_id": "gport_bdb4ad7f8fb6156f6504ff66",
+          "tensor_spec_id": null
+        },
+        {
+          "coverage": 1.0,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "edge:data"
+          ],
+          "id": "gedge_bee9ee5c83a94a89097a0527",
+          "key": "post_norm_to_shared",
+          "kind": "data",
+          "origin": "config",
+          "source_port_id": "gport_3f6aff7f1734dfb7e3f63c04",
+          "target_port_id": "gport_4ba1b4deb149d3d2a9cbc112",
+          "tensor_spec_id": null
+        },
+        {
+          "coverage": 1.0,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "edge:route"
+          ],
+          "id": "gedge_e9ed5054f37856afeec89712",
+          "key": "router_to_pool",
+          "kind": "route",
+          "origin": "config",
+          "source_port_id": "gport_d30852d2b9e9a146d689e0ca",
+          "target_port_id": "gport_d6c0068429f39a4b39238b5b",
+          "tensor_spec_id": null
+        },
+        {
+          "coverage": 1.0,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "edge:control"
+          ],
+          "id": "gedge_bfe4723149d5b675971a8b45",
+          "key": "router_to_combine",
+          "kind": "control",
+          "origin": "config",
+          "source_port_id": "gport_86510d84e476cdb567c6e42c",
+          "target_port_id": "gport_9cd5e60aa97fb6860643f993",
+          "tensor_spec_id": null
+        },
+        {
+          "coverage": 1.0,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "edge:data"
+          ],
+          "id": "gedge_0e889910fcff919ea670c559",
+          "key": "pool_to_combine",
+          "kind": "data",
+          "origin": "config",
+          "source_port_id": "gport_9d7bde6db7a05766f4b3b8bd",
+          "target_port_id": "gport_f0c69127c74b5db2650da5c8",
+          "tensor_spec_id": null
+        },
+        {
+          "coverage": 1.0,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "edge:data"
+          ],
+          "id": "gedge_6b37b5fe4c41ba6d6e976edf",
+          "key": "shared_to_combine",
+          "kind": "data",
+          "origin": "config",
+          "source_port_id": "gport_89a77d6acffcbcf103aaae1a",
+          "target_port_id": "gport_0bc2746120699189cb73ae0a",
+          "tensor_spec_id": null
+        },
+        {
+          "coverage": 1.0,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "edge:data"
+          ],
+          "id": "gedge_e84c5054d05a6fa2fca1263b",
+          "key": "residual_skip_2",
+          "kind": "data",
+          "origin": "config",
+          "source_port_id": "gport_0e1e3d627a99364128c62a6f",
+          "target_port_id": "gport_b1465832f7c92217312525af",
+          "tensor_spec_id": null
+        },
+        {
+          "coverage": 1.0,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "edge:data"
+          ],
+          "id": "gedge_42207758415b2042b33f275d",
+          "key": "combine_to_residual",
+          "kind": "data",
+          "origin": "config",
+          "source_port_id": "gport_4c8416ede8d62f201bfd3ff5",
+          "target_port_id": "gport_83e94e27089abcc17d69d93d",
+          "tensor_spec_id": null
+        },
+        {
+          "coverage": 1.0,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "edge:data"
+          ],
+          "id": "gedge_6c2672d1336c6a413116b1b3",
+          "key": "residual_to_output",
+          "kind": "data",
+          "origin": "config",
+          "source_port_id": "gport_0699acb0fb31f35f4eaf1ea1",
+          "target_port_id": "gport_abd92c7d624c0af873d726c2",
+          "tensor_spec_id": null
+        },
+        {
+          "coverage": 0.0,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "inventory:semantic_contract_not_runtime_parameter_name",
+            "config:use_cache",
+            "coverage:dsa_state_layout_unknown",
+            "edge:state_read"
+          ],
+          "id": "gedge_36b9e32a1fe4eee1438b5df0",
+          "key": "state_read_0",
+          "kind": "state_read",
+          "origin": "config",
+          "source_port_id": "gport_1ea54b98cf157cd5f5526ec1",
+          "target_port_id": "gport_5c02d9a614801abd4511e020",
+          "tensor_spec_id": "art_54fe2024b0b2eedc5b97114c"
+        },
+        {
+          "coverage": 0.0,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "inventory:semantic_contract_not_runtime_parameter_name",
+            "config:use_cache",
+            "coverage:dsa_state_layout_unknown",
+            "edge:state_write"
+          ],
+          "id": "gedge_21a729183e2061eae59faccc",
+          "key": "state_write_0",
+          "kind": "state_write",
+          "origin": "config",
+          "source_port_id": "gport_5b3ba12aae5d20fec999b36d",
+          "target_port_id": "gport_f6ce9dfeb88691526b67903c",
+          "tensor_spec_id": "art_54fe2024b0b2eedc5b97114c"
+        }
+      ],
+      "groups": [
+        {
+          "attributes": {
+            "layout": "layered",
+            "state_rails": true
+          },
+          "collapsed": false,
+          "id": "ggrp_fcaf0660f0126ae6950d676a",
+          "key": "root",
+          "kind": "decoder_block",
+          "label": "Layer 3",
+          "member_node_ids": [
+            "gnode_3609d9bddc23835dfa086728",
+            "gnode_155b0a518056501962a8da11",
+            "gnode_e3f5b424bedd537a3aa73925",
+            "gnode_a0df8e74060944467e7eb38d",
+            "gnode_0cb3d35510de10f42ab301ae",
+            "gnode_87bfc0d3e3fb44d163188f6c",
+            "gnode_22b34bdf41821162109d78df",
+            "gnode_eb53933dbba7e4d8eae35e47",
+            "gnode_d9009a6c7698182bd05275a9",
+            "gnode_4b3b3aaa2502a7810891759e",
+            "gnode_6e919b1efbf1d10a5fcd5448",
+            "gnode_be71ffbda780cba182aa8cba",
+            "gnode_7e9fe777a91343a57ea8a67d"
+          ],
+          "parent_group_id": null
+        }
+      ],
+      "id": "gvw_3544ea8386077077e968f3ac",
+      "key": "l1_sparse_dsa_moe",
+      "label": "GLM Sparse DSA + MoE representative",
+      "layer_index": 3,
+      "level": "L1",
+      "metadata": {
+        "attention_kind": "dsa",
+        "dsa_internals": "opaque",
+        "layer_strip_target": 3,
+        "layout_direction": "RIGHT",
+        "mlp_kind": "sparse",
+        "primary_flow": "acyclic",
+        "representative_instance_path": "model.layers.3"
+      },
+      "nodes": [
+        {
+          "attributes": {},
+          "coverage": 1.0,
+          "drilldown_view_id": null,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "layer_strip:layer_index=3",
+            "layer_strip:attention_kind=dsa",
+            "layer_strip:mlp_kind=sparse",
+            "boundary:block_input"
+          ],
+          "group_id": "ggrp_fcaf0660f0126ae6950d676a",
+          "id": "gnode_3609d9bddc23835dfa086728",
+          "input_port_ids": [],
+          "key": "hidden_in",
+          "kind": "input",
+          "label": "Hidden In",
+          "opaque": false,
+          "output_port_ids": [
+            "gport_3dd13389193035d071b93e4c"
+          ],
+          "subject_ids": [
+            "art_69481e2af7523914125295a0",
+            "art_dcf60fab1f468b4a7f083475"
+          ]
+        },
+        {
+          "attributes": {},
+          "coverage": 1.0,
+          "drilldown_view_id": null,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "layer_strip:layer_index=3",
+            "layer_strip:attention_kind=dsa",
+            "layer_strip:mlp_kind=sparse"
+          ],
+          "group_id": "ggrp_fcaf0660f0126ae6950d676a",
+          "id": "gnode_155b0a518056501962a8da11",
+          "input_port_ids": [
+            "gport_6231b429cdda18e04fa5d7e9"
+          ],
+          "key": "input_norm",
+          "kind": "norm",
+          "label": "Input RMSNorm",
+          "opaque": false,
+          "output_port_ids": [
+            "gport_a15c825cc6fb5f6d7983596a"
+          ],
+          "subject_ids": [
+            "art_69481e2af7523914125295a0",
+            "art_dcf60fab1f468b4a7f083475"
+          ]
+        },
+        {
+          "attributes": {
+            "attention_kind": "dsa",
+            "internals": "unknown",
+            "state_kind": "kv_cache"
+          },
+          "coverage": 0.0,
+          "drilldown_view_id": null,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "layer_strip:layer_index=3",
+            "layer_strip:attention_kind=dsa",
+            "layer_strip:mlp_kind=sparse",
+            "coverage:dsa_internals_unknown"
+          ],
+          "group_id": "ggrp_fcaf0660f0126ae6950d676a",
+          "id": "gnode_e3f5b424bedd537a3aa73925",
+          "input_port_ids": [
+            "gport_e4578d8222bec0061aa943f3",
+            "gport_5c02d9a614801abd4511e020"
+          ],
+          "key": "attention",
+          "kind": "dsa",
+          "label": "DSA (internals Unknown)",
+          "opaque": true,
+          "output_port_ids": [
+            "gport_f9d9a20ea3b98de050dde6d0",
+            "gport_5b3ba12aae5d20fec999b36d"
+          ],
+          "subject_ids": [
+            "art_69481e2af7523914125295a0",
+            "art_dcf60fab1f468b4a7f083475",
+            "art_48173add38881bee7778a20d"
+          ]
+        },
+        {
+          "attributes": {},
+          "coverage": 1.0,
+          "drilldown_view_id": null,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "layer_strip:layer_index=3",
+            "layer_strip:attention_kind=dsa",
+            "layer_strip:mlp_kind=sparse"
+          ],
+          "group_id": "ggrp_fcaf0660f0126ae6950d676a",
+          "id": "gnode_a0df8e74060944467e7eb38d",
+          "input_port_ids": [
+            "gport_f5c85de170fa3b02b912c96a",
+            "gport_c1833f836849b881170c071c"
+          ],
+          "key": "residual_1",
+          "kind": "residual",
+          "label": "Residual Add",
+          "opaque": false,
+          "output_port_ids": [
+            "gport_0e1e3d627a99364128c62a6f"
+          ],
+          "subject_ids": [
+            "art_69481e2af7523914125295a0",
+            "art_dcf60fab1f468b4a7f083475"
+          ]
+        },
+        {
+          "attributes": {},
+          "coverage": 1.0,
+          "drilldown_view_id": null,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "layer_strip:layer_index=3",
+            "layer_strip:attention_kind=dsa",
+            "layer_strip:mlp_kind=sparse"
+          ],
+          "group_id": "ggrp_fcaf0660f0126ae6950d676a",
+          "id": "gnode_0cb3d35510de10f42ab301ae",
+          "input_port_ids": [
+            "gport_8ceeb786e29f62d81c926e4a"
+          ],
+          "key": "post_norm",
+          "kind": "norm",
+          "label": "Post-Attention RMSNorm",
+          "opaque": false,
+          "output_port_ids": [
+            "gport_3f6aff7f1734dfb7e3f63c04"
+          ],
+          "subject_ids": [
+            "art_69481e2af7523914125295a0",
+            "art_dcf60fab1f468b4a7f083475"
+          ]
+        },
+        {
+          "attributes": {
+            "routed_experts": 256,
+            "top_k": 8
+          },
+          "coverage": 1.0,
+          "drilldown_view_id": null,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "layer_strip:layer_index=3",
+            "layer_strip:attention_kind=dsa",
+            "layer_strip:mlp_kind=sparse",
+            "config:num_experts_per_tok"
+          ],
+          "group_id": "ggrp_fcaf0660f0126ae6950d676a",
+          "id": "gnode_87bfc0d3e3fb44d163188f6c",
+          "input_port_ids": [
+            "gport_292710fec80242f983b1b468"
+          ],
+          "key": "router",
+          "kind": "moe_router",
+          "label": "MoE Router",
+          "opaque": false,
+          "output_port_ids": [
+            "gport_d30852d2b9e9a146d689e0ca",
+            "gport_86510d84e476cdb567c6e42c"
+          ],
+          "subject_ids": [
+            "art_69481e2af7523914125295a0",
+            "art_dcf60fab1f468b4a7f083475"
+          ]
+        },
+        {
+          "attributes": {
+            "experts_expanded": false,
+            "experts_materialized": 0,
+            "routed_experts": 256,
+            "top_k": 8,
+            "virtual": true
+          },
+          "coverage": 1.0,
+          "drilldown_view_id": null,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "layer_strip:layer_index=3",
+            "layer_strip:attention_kind=dsa",
+            "layer_strip:mlp_kind=sparse",
+            "config:virtual_expert_pool",
+            "experts_expanded:false"
+          ],
+          "group_id": "ggrp_fcaf0660f0126ae6950d676a",
+          "id": "gnode_22b34bdf41821162109d78df",
+          "input_port_ids": [
+            "gport_bdb4ad7f8fb6156f6504ff66",
+            "gport_d6c0068429f39a4b39238b5b"
+          ],
+          "key": "expert_pool",
+          "kind": "expert_pool",
+          "label": "Expert Pool [256 total, top-8 active]",
+          "opaque": false,
+          "output_port_ids": [
+            "gport_9d7bde6db7a05766f4b3b8bd"
+          ],
+          "subject_ids": [
+            "art_b2bc3931c084e939d328ea5e",
+            "art_c7f6b5b1c9524befff4add1b",
+            "art_56d2b267ac211a8a74700429"
+          ]
+        },
+        {
+          "attributes": {
+            "shared_experts": 1
+          },
+          "coverage": 1.0,
+          "drilldown_view_id": null,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "layer_strip:layer_index=3",
+            "layer_strip:attention_kind=dsa",
+            "layer_strip:mlp_kind=sparse",
+            "config:n_shared_experts"
+          ],
+          "group_id": "ggrp_fcaf0660f0126ae6950d676a",
+          "id": "gnode_eb53933dbba7e4d8eae35e47",
+          "input_port_ids": [
+            "gport_4ba1b4deb149d3d2a9cbc112"
+          ],
+          "key": "shared_expert",
+          "kind": "shared_expert",
+          "label": "Shared Expert × 1",
+          "opaque": false,
+          "output_port_ids": [
+            "gport_89a77d6acffcbcf103aaae1a"
+          ],
+          "subject_ids": [
+            "art_69481e2af7523914125295a0",
+            "art_dcf60fab1f468b4a7f083475"
+          ]
+        },
+        {
+          "attributes": {},
+          "coverage": 1.0,
+          "drilldown_view_id": null,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "layer_strip:layer_index=3",
+            "layer_strip:attention_kind=dsa",
+            "layer_strip:mlp_kind=sparse"
+          ],
+          "group_id": "ggrp_fcaf0660f0126ae6950d676a",
+          "id": "gnode_d9009a6c7698182bd05275a9",
+          "input_port_ids": [
+            "gport_f0c69127c74b5db2650da5c8",
+            "gport_0bc2746120699189cb73ae0a",
+            "gport_9cd5e60aa97fb6860643f993"
+          ],
+          "key": "combine",
+          "kind": "moe_combine",
+          "label": "MoE Combine",
+          "opaque": false,
+          "output_port_ids": [
+            "gport_4c8416ede8d62f201bfd3ff5"
+          ],
+          "subject_ids": [
+            "art_69481e2af7523914125295a0",
+            "art_dcf60fab1f468b4a7f083475"
+          ]
+        },
+        {
+          "attributes": {},
+          "coverage": 1.0,
+          "drilldown_view_id": null,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "layer_strip:layer_index=3",
+            "layer_strip:attention_kind=dsa",
+            "layer_strip:mlp_kind=sparse"
+          ],
+          "group_id": "ggrp_fcaf0660f0126ae6950d676a",
+          "id": "gnode_4b3b3aaa2502a7810891759e",
+          "input_port_ids": [
+            "gport_b1465832f7c92217312525af",
+            "gport_83e94e27089abcc17d69d93d"
+          ],
+          "key": "residual_2",
+          "kind": "residual",
+          "label": "Residual Add",
+          "opaque": false,
+          "output_port_ids": [
+            "gport_0699acb0fb31f35f4eaf1ea1"
+          ],
+          "subject_ids": [
+            "art_69481e2af7523914125295a0",
+            "art_dcf60fab1f468b4a7f083475"
+          ]
+        },
+        {
+          "attributes": {},
+          "coverage": 1.0,
+          "drilldown_view_id": null,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "layer_strip:layer_index=3",
+            "layer_strip:attention_kind=dsa",
+            "layer_strip:mlp_kind=sparse",
+            "boundary:block_output"
+          ],
+          "group_id": "ggrp_fcaf0660f0126ae6950d676a",
+          "id": "gnode_6e919b1efbf1d10a5fcd5448",
+          "input_port_ids": [
+            "gport_abd92c7d624c0af873d726c2"
+          ],
+          "key": "hidden_out",
+          "kind": "output",
+          "label": "Hidden Out",
+          "opaque": false,
+          "output_port_ids": [],
+          "subject_ids": [
+            "art_69481e2af7523914125295a0",
+            "art_dcf60fab1f468b4a7f083475"
+          ]
+        },
+        {
+          "attributes": {
+            "rail": "input",
+            "state_kind": "cache"
+          },
+          "coverage": 0.0,
+          "drilldown_view_id": null,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "rail:state_in"
+          ],
+          "group_id": "ggrp_fcaf0660f0126ae6950d676a",
+          "id": "gnode_be71ffbda780cba182aa8cba",
+          "input_port_ids": [],
+          "key": "state_in",
+          "kind": "state_boundary_in",
+          "label": "KV Cache In",
+          "opaque": false,
+          "output_port_ids": [
+            "gport_1ea54b98cf157cd5f5526ec1"
+          ],
+          "subject_ids": [
+            "art_dcf60fab1f468b4a7f083475",
+            "art_60e18e5ca776aa4b9bee04de"
+          ]
+        },
+        {
+          "attributes": {
+            "rail": "output",
+            "state_kind": "cache"
+          },
+          "coverage": 0.0,
+          "drilldown_view_id": null,
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "rail:state_out"
+          ],
+          "group_id": "ggrp_fcaf0660f0126ae6950d676a",
+          "id": "gnode_7e9fe777a91343a57ea8a67d",
+          "input_port_ids": [
+            "gport_f6ce9dfeb88691526b67903c"
+          ],
+          "key": "state_out",
+          "kind": "state_boundary_out",
+          "label": "KV Cache Out",
+          "opaque": false,
+          "output_port_ids": [],
+          "subject_ids": [
+            "art_dcf60fab1f468b4a7f083475",
+            "art_60e18e5ca776aa4b9bee04de"
+          ]
+        }
+      ],
+      "parent_view_id": "gvw_f769ee529d93c5af12ac4313",
+      "ports": [
+        {
+          "direction": "output",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected"
+          ],
+          "id": "gport_3dd13389193035d071b93e4c",
+          "key": "hidden_in.hidden",
+          "name": "hidden_states",
+          "node_id": "gnode_3609d9bddc23835dfa086728",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T",
+            6144
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "input",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected"
+          ],
+          "id": "gport_6231b429cdda18e04fa5d7e9",
+          "key": "input_norm.in",
+          "name": "hidden_states",
+          "node_id": "gnode_155b0a518056501962a8da11",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T",
+            6144
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "output",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected"
+          ],
+          "id": "gport_a15c825cc6fb5f6d7983596a",
+          "key": "input_norm.out",
+          "name": "normalized",
+          "node_id": "gnode_155b0a518056501962a8da11",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T",
+            6144
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "input",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected"
+          ],
+          "id": "gport_e4578d8222bec0061aa943f3",
+          "key": "attention.hidden_in",
+          "name": "hidden_states",
+          "node_id": "gnode_e3f5b424bedd537a3aa73925",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T",
+            6144
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "output",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected"
+          ],
+          "id": "gport_f9d9a20ea3b98de050dde6d0",
+          "key": "attention.context",
+          "name": "context",
+          "node_id": "gnode_e3f5b424bedd537a3aa73925",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T",
+            6144
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "input",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected"
+          ],
+          "id": "gport_f5c85de170fa3b02b912c96a",
+          "key": "residual_1.skip",
+          "name": "residual",
+          "node_id": "gnode_a0df8e74060944467e7eb38d",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T",
+            6144
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "input",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected"
+          ],
+          "id": "gport_c1833f836849b881170c071c",
+          "key": "residual_1.branch",
+          "name": "attention_out",
+          "node_id": "gnode_a0df8e74060944467e7eb38d",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T",
+            6144
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "output",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected"
+          ],
+          "id": "gport_0e1e3d627a99364128c62a6f",
+          "key": "residual_1.hidden",
+          "name": "hidden_states",
+          "node_id": "gnode_a0df8e74060944467e7eb38d",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T",
+            6144
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "input",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected"
+          ],
+          "id": "gport_8ceeb786e29f62d81c926e4a",
+          "key": "post_norm.in",
+          "name": "hidden_states",
+          "node_id": "gnode_0cb3d35510de10f42ab301ae",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T",
+            6144
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "output",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected"
+          ],
+          "id": "gport_3f6aff7f1734dfb7e3f63c04",
+          "key": "post_norm.out",
+          "name": "normalized",
+          "node_id": "gnode_0cb3d35510de10f42ab301ae",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T",
+            6144
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "input",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected"
+          ],
+          "id": "gport_292710fec80242f983b1b468",
+          "key": "router.hidden_in",
+          "name": "hidden_states",
+          "node_id": "gnode_87bfc0d3e3fb44d163188f6c",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T",
+            6144
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "output",
+          "dtype": "int64",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "layer_strip:layer_index=3",
+            "layer_strip:attention_kind=dsa",
+            "layer_strip:mlp_kind=sparse",
+            "config:num_experts_per_tok"
+          ],
+          "id": "gport_d30852d2b9e9a146d689e0ca",
+          "key": "router.routes",
+          "name": "expert_indices",
+          "node_id": "gnode_87bfc0d3e3fb44d163188f6c",
+          "role": "route",
+          "shape": [
+            "B",
+            "T",
+            8
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "output",
+          "dtype": "bool",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "layer_strip:layer_index=3",
+            "layer_strip:attention_kind=dsa",
+            "layer_strip:mlp_kind=sparse",
+            "config:virtual_expert_pool"
+          ],
+          "id": "gport_86510d84e476cdb567c6e42c",
+          "key": "router.dispatch",
+          "name": "dispatch_control",
+          "node_id": "gnode_87bfc0d3e3fb44d163188f6c",
+          "role": "control",
+          "shape": null,
+          "shape_known": false,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "input",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected"
+          ],
+          "id": "gport_bdb4ad7f8fb6156f6504ff66",
+          "key": "expert_pool.hidden_in",
+          "name": "hidden_states",
+          "node_id": "gnode_22b34bdf41821162109d78df",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T",
+            6144
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "input",
+          "dtype": "int64",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "layer_strip:layer_index=3",
+            "layer_strip:attention_kind=dsa",
+            "layer_strip:mlp_kind=sparse",
+            "config:num_experts_per_tok"
+          ],
+          "id": "gport_d6c0068429f39a4b39238b5b",
+          "key": "expert_pool.routes",
+          "name": "expert_indices",
+          "node_id": "gnode_22b34bdf41821162109d78df",
+          "role": "route",
+          "shape": [
+            "B",
+            "T",
+            8
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "output",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected"
+          ],
+          "id": "gport_9d7bde6db7a05766f4b3b8bd",
+          "key": "expert_pool.hidden",
+          "name": "routed_output",
+          "node_id": "gnode_22b34bdf41821162109d78df",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T",
+            6144
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "input",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected"
+          ],
+          "id": "gport_4ba1b4deb149d3d2a9cbc112",
+          "key": "shared_expert.hidden_in",
+          "name": "hidden_states",
+          "node_id": "gnode_eb53933dbba7e4d8eae35e47",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T",
+            6144
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "output",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected"
+          ],
+          "id": "gport_89a77d6acffcbcf103aaae1a",
+          "key": "shared_expert.hidden",
+          "name": "shared_output",
+          "node_id": "gnode_eb53933dbba7e4d8eae35e47",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T",
+            6144
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "input",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected"
+          ],
+          "id": "gport_f0c69127c74b5db2650da5c8",
+          "key": "combine.routed",
+          "name": "routed_output",
+          "node_id": "gnode_d9009a6c7698182bd05275a9",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T",
+            6144
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "input",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected"
+          ],
+          "id": "gport_0bc2746120699189cb73ae0a",
+          "key": "combine.shared",
+          "name": "shared_output",
+          "node_id": "gnode_d9009a6c7698182bd05275a9",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T",
+            6144
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "input",
+          "dtype": "bool",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "layer_strip:layer_index=3",
+            "layer_strip:attention_kind=dsa",
+            "layer_strip:mlp_kind=sparse",
+            "config:virtual_expert_pool"
+          ],
+          "id": "gport_9cd5e60aa97fb6860643f993",
+          "key": "combine.dispatch",
+          "name": "dispatch_control",
+          "node_id": "gnode_d9009a6c7698182bd05275a9",
+          "role": "control",
+          "shape": null,
+          "shape_known": false,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "output",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected"
+          ],
+          "id": "gport_4c8416ede8d62f201bfd3ff5",
+          "key": "combine.hidden",
+          "name": "moe_output",
+          "node_id": "gnode_d9009a6c7698182bd05275a9",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T",
+            6144
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "input",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected"
+          ],
+          "id": "gport_b1465832f7c92217312525af",
+          "key": "residual_2.skip",
+          "name": "residual",
+          "node_id": "gnode_4b3b3aaa2502a7810891759e",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T",
+            6144
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "input",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected"
+          ],
+          "id": "gport_83e94e27089abcc17d69d93d",
+          "key": "residual_2.branch",
+          "name": "moe_output",
+          "node_id": "gnode_4b3b3aaa2502a7810891759e",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T",
+            6144
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "output",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected"
+          ],
+          "id": "gport_0699acb0fb31f35f4eaf1ea1",
+          "key": "residual_2.hidden",
+          "name": "hidden_states",
+          "node_id": "gnode_4b3b3aaa2502a7810891759e",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T",
+            6144
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "input",
+          "dtype": "bfloat16",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "interface:config-projected"
+          ],
+          "id": "gport_abd92c7d624c0af873d726c2",
+          "key": "hidden_out.hidden",
+          "name": "hidden_states",
+          "node_id": "gnode_6e919b1efbf1d10a5fcd5448",
+          "role": "activation",
+          "shape": [
+            "B",
+            "T",
+            6144
+          ],
+          "shape_known": true,
+          "tensor_spec_id": null
+        },
+        {
+          "direction": "output",
+          "dtype": "unknown",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "inventory:semantic_contract_not_runtime_parameter_name",
+            "config:use_cache",
+            "coverage:dsa_state_layout_unknown"
+          ],
+          "id": "gport_1ea54b98cf157cd5f5526ec1",
+          "key": "state_in.kv_cache",
+          "name": "kv_cache",
+          "node_id": "gnode_be71ffbda780cba182aa8cba",
+          "role": "cache",
+          "shape": null,
+          "shape_known": false,
+          "tensor_spec_id": "art_54fe2024b0b2eedc5b97114c"
+        },
+        {
+          "direction": "input",
+          "dtype": "unknown",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "inventory:semantic_contract_not_runtime_parameter_name",
+            "config:use_cache",
+            "coverage:dsa_state_layout_unknown"
+          ],
+          "id": "gport_5c02d9a614801abd4511e020",
+          "key": "attention.kv_cache_in",
+          "name": "kv_cache in",
+          "node_id": "gnode_e3f5b424bedd537a3aa73925",
+          "role": "cache",
+          "shape": null,
+          "shape_known": false,
+          "tensor_spec_id": "art_54fe2024b0b2eedc5b97114c"
+        },
+        {
+          "direction": "output",
+          "dtype": "unknown",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "inventory:semantic_contract_not_runtime_parameter_name",
+            "config:use_cache",
+            "coverage:dsa_state_layout_unknown"
+          ],
+          "id": "gport_5b3ba12aae5d20fec999b36d",
+          "key": "attention.kv_cache_out",
+          "name": "kv_cache out",
+          "node_id": "gnode_e3f5b424bedd537a3aa73925",
+          "role": "cache",
+          "shape": null,
+          "shape_known": false,
+          "tensor_spec_id": "art_54fe2024b0b2eedc5b97114c"
+        },
+        {
+          "direction": "input",
+          "dtype": "unknown",
+          "evidence": [
+            "adapter:glm-moe-dsa",
+            "source:config",
+            "model:art_4060605075c9fea0f067f1c1",
+            "model_map:mmap_2489a5faebf206ff73430116",
+            "weights_loaded:false",
+            "target_model_constructed:false",
+            "target_model_forward:false",
+            "inventory:semantic_contract_not_runtime_parameter_name",
+            "config:use_cache",
+            "coverage:dsa_state_layout_unknown"
+          ],
+          "id": "gport_f6ce9dfeb88691526b67903c",
+          "key": "state_out.kv_cache",
+          "name": "kv_cache",
+          "node_id": "gnode_7e9fe777a91343a57ea8a67d",
+          "role": "cache",
+          "shape": null,
+          "shape_known": false,
+          "tensor_spec_id": "art_54fe2024b0b2eedc5b97114c"
+        }
+      ],
+      "root_group_id": "ggrp_fcaf0660f0126ae6950d676a"
+    }
+  ]
+}

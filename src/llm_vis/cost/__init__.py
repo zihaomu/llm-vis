@@ -1,0 +1,71 @@
+"""Deterministic cost-model primitives."""
+
+from llm_vis.cost.engine import (
+    AggregateScope,
+    CostAnalysis,
+    CostModelError,
+    HotspotEntry,
+    ScenarioCost,
+    SubjectCost,
+    analyze_costs,
+)
+from llm_vis.cost.expressions import (
+    ExpressionEvaluationError,
+    SymbolBindingError,
+    evaluate_expression,
+    required_symbols,
+    validate_symbol_bindings,
+)
+from llm_vis.cost.formulas import (
+    Aggregate,
+    DenseLinearCost,
+    KvCacheCost,
+    aggregate_known,
+    attention_core_flops,
+    attention_core_logical_bytes,
+    causal_attention_pairs,
+    dense_linear_cost,
+    kv_cache_cost,
+    sliding_window_attention_pairs,
+    swiglu_flops,
+)
+from llm_vis.cost.storage import (
+    INT4_FORMAT_NAME,
+    INT4_GROUP_SIZE,
+    INT4_SCALE_BYTES,
+    WeightStorage,
+    dtype_nbytes,
+    weight_storage,
+)
+
+__all__ = [
+    "Aggregate",
+    "AggregateScope",
+    "CostAnalysis",
+    "CostModelError",
+    "DenseLinearCost",
+    "ExpressionEvaluationError",
+    "HotspotEntry",
+    "INT4_FORMAT_NAME",
+    "INT4_GROUP_SIZE",
+    "INT4_SCALE_BYTES",
+    "KvCacheCost",
+    "ScenarioCost",
+    "SubjectCost",
+    "SymbolBindingError",
+    "WeightStorage",
+    "aggregate_known",
+    "analyze_costs",
+    "attention_core_flops",
+    "attention_core_logical_bytes",
+    "causal_attention_pairs",
+    "dense_linear_cost",
+    "dtype_nbytes",
+    "evaluate_expression",
+    "kv_cache_cost",
+    "sliding_window_attention_pairs",
+    "swiglu_flops",
+    "required_symbols",
+    "validate_symbol_bindings",
+    "weight_storage",
+]

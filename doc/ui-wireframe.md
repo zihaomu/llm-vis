@@ -1,0 +1,259 @@
+# LLM-Vis M0 低保真 UI Wireframe
+
+- 状态：M0 可核验交互规格
+- 日期：2026-08-29
+- 最后验收：2026-08-30
+- 实现状态：M0–M3.5 自包含离线 UI 已实现并验收；2026-08-30 完成 graph-first 信息架构收敛，Netron/ComfyUI 风格 L0→L1 DAG 主画布默认占据中心，Browse/Inspector/Layers/Supporting analysis 按需展开；官方 Model Explorer consumer 仍为 Partial，M4 timeline 未实现
+
+## 1. 目标
+
+这份 wireframe 固定 LLM-Vis 的信息层级和关键状态，使前端 spike、静态报告与后续 UI 可以围绕同一组可验收任务实现。它必须同时回答：
+
+- 当前查看的是 L0、L1 还是 L2；
+- 当前 Scenario 是什么；
+- 节点来自 config 语义投影还是受限 capture；
+- 指标是 Exact、Formula、Estimated、Measured 还是 Unknown；
+- 覆盖率是多少，缺失原因在哪里；
+- 热点结论依赖哪些公式和假设；
+- 没有 trace 时为何不存在 Runtime 数值。
+
+本规格遵循 [Model Map IR](model-map-ir.md)、[Adapter 指南](adapter-guide.md)、[测量协议](measurement-protocol.md)和 [DR-0007](decisions/DR-0007-zero-weight-bounded-capture-and-trace-only-runtime.md)。
+
+## 2. 全局框架
+
+```text
+┌ LLM-Vis / Model · rev ───────── [Scenario ▾] [Search graph/layer/ID] [Report status] ┐
+├─────────────────────────────────────────────────────────────────────────────────────┤
+│ Model graph · L0→L1              [Theory heat ▾] [Browse] [Inspector] [Analysis] │
+│ › Layers · 64/78（默认折叠；展开后单行横向滚动）                              │
+│ ┌ Back · View · Breadcrumb ─────────────────────────────── −  +  Fit · Read-only ┐ │
+│ │                                                                               │ │
+│ │                         CENTRAL DAG CANVAS                                    │ │
+│ │ Input ──▶ Embedding ──▶ Decoder Pattern ──▶ Norm ──▶ Head ──▶ Logits         │ │
+│ │                    └─ state/route/control rails                               │ │
+│ │                                                     minimap                   │ │
+│ └───────────────────────────────────────────────────────────────────────────────┘ │
+├─────────────────────────────────────────────────────────────────────────────────────┤
+│ › Supporting analysis（默认折叠：Capture / Structure / Cost / Roofline / Runtime） │
+└─────────────────────────────────────────────────────────────────────────────────────┘
+
+[Browse]    → 左侧按需抽屉：Definitions；Diagnostics 默认二次折叠
+[Inspector] → 右侧按需抽屉：Explain/Tensors/Cost/Runtime/Provenance/Coverage
+```
+
+不可隐藏的全局上下文：模型与 revision、Scenario、当前 L0/L1 层级。Metric origin、Coverage 与零执行状态可收纳到 Report status/Inspector，但不能删除或改写。默认首屏不得同时常驻 Browse、Inspector、Layer 全量按钮和分析表格；信息完整性通过按需抽屉与折叠区保留。
+
+## 3. L0：模型宏观视图
+
+L0 默认目标为 10–50 个节点，不平铺 64 层或数百个专家。
+
+```text
+Input
+  ├─▶ Vision Tower × 27 ─▶ Projector ─┐
+  └─▶ Token Embedding ────────────────┼─▶ Decoder Pattern × 16 ─▶ Final Norm ─▶ LM Head
+                                      │      [L L L A]
+                                      └─▶ MTP [conditional]
+
+Decoder instances: 64
+State summary: Linear layers → recurrent state (48); Full Attention → KV cache (16)
+```
+
+L0 节点至少显示：Definition label、instance count、semantic kind、是否 conditional/opaque、来源和 Coverage badge。GLM 的专家显示为：
+
+```text
+Dense Block × 3 → Sparse Block × 75
+                     └─ Router → Expert Pool [256 total · top-8 active] + Shared Expert × 1
+```
+
+Expert Pool 默认不展开 256 个专家。
+
+## 4. L1：代表性 Block
+
+从 L0 的 pattern、Layer Strip 或搜索结果进入 L1。Breadcrumb 始终保留原实例位置。
+
+```text
+Model › Decoder pattern › layer.3 [Full Attention]
+
+hidden ─▶ RMSNorm ─▶ Q/K/V projection ─▶ Attention semantic core ─▶ O projection ─┐
+   └──────────────────────────────── residual ────────────────────────────────────┼─▶ hidden'
+KV state: read [B,N_KV,L,D] · write [B,N_KV,T,D]                                 │
+                                                  RMSNorm ─▶ FFN ────────────────┘
+```
+
+边使用独立样式或文字编码 `data`、`state_read`、`state_write`、`route` 和 `control`；颜色不能同时承载多个含义。节点选择后，Inspector 显示 Definition 和具体 Instance，不把代表层误认为全部层的实测结果。
+
+### 4.1 M3.5 主画布交互契约
+
+M3.5 的中间区域由结构列表升级为 Netron/ComfyUI 风格的端口级 DAG。画布消费渲染中立 `graph-view.json`，不直接重新解释 config，也不将前端布局字段写回 Model Map IR。
+
+```text
+Top bar: [Scenario ▾] [Global search…] [Report status]
+Canvas:  [Back] [View ▾] [Breadcrumb]                         [−] [+] [Fit]
+Panels:  [Browse] [Inspector] [Analysis]                         Minimap
+
+┌ Node label · semantic kind ─ origin/coverage ─┐ L1 ›
+│ ◀ input port   core attributes   output port ▶ │── Tensor label ──▶
+│ ◀ state-in       instance/group    state-out ▶ │
+└── badge click / double click / Enter: drill down when available ──┘
+```
+
+节点卡只放理解数据流必需的核心信息：`label`、`kind`、代表的 instance/group、主要 I/O、origin/evidence、coverage 与 opaque/conditional 状态。完整 config 字段、公式和诊断仍在 Inspector，不把节点卡做成长表单。
+
+| 连线 kind | 画布语义 | 非颜色编码 |
+|---|---|---|
+| `data` | 当前 token/hidden activation 从 output port 到 input port | 实线 + Tensor 标签 |
+| `route` | Router 选择到 Expert Pool/Shared Expert | 带 `route` 文字的虚线 |
+| `control` | config 可证明的显式路由/调度控制关系 | 点线 + `control` |
+| `state_read` | KV/recurrent state 从独立 state rail 进入 Block | 轨道线 + `read` |
+| `state_write` | Block 更新 KV/recurrent state rail | 轨道线 + `write` |
+
+每条线必须连接明确的 `source_port_id → target_port_id`，固定以三行显示 kind/Tensor 名、紧凑 shape 和 dtype；不可证明的 shape/dtype 显示 `Unknown` 与原因，不猜测。Weight 边保留在 Model Map 事实层中，默认不进入主数据流画布。state rail 表达“本步读/写外部状态”，不用跨 token 回边破坏单步 DAG。不得为 MTP 伪造 decoder control Tensor；已验收的支路是 `decoder hidden → MTP → MTP Draft Logits`，conditional 作为节点属性保留。
+
+只有 `drilldown_view_id` 指向实际存在 view 的节点才显示右上角 `L1 ›` 角标。角标有至少 28×28 的触摸/点击区，单击角标直接进入详情；整张卡片单击仍只选择，双击或键盘 Enter 下钻，Space 只选择。节点的可访问名称和 `aria-keyshortcuts` 必须说明该差异，画布状态栏同时显示当前可下钻节点数。叶节点不显示角标且双击不跳转，避免让用户猜哪些节点可以打开。
+
+必须可操作的动作为：拖拽平移、Ctrl/Cmd+滚轮或按钮缩放、Fit to view、minimap 定位、角标/节点双击/键盘 Enter 下钻、Back/breadcrumb 返回、搜索命中定位，以及选中节点后的上游/下游路径高亮。普通滚轮应继续滚动页面，避免画布形成滚动陷阱。一次只绘制当前 view；64/78 层和 256 个专家以 pattern/group 折叠，默认每级不超过 200 个可见节点。
+
+Qwen 的最小可验收路径是 `Input → Token Embedding → Decoder Pattern → Final Norm → LM Head → Logits`，Vision/MTP 以 config 可追溯分支显示。Decoder Pattern 可下钻到 Linear Attention 和 Full Attention 代表视图，两者分别使用 recurrent-state 和 KV state rail。GLM L0 保留 Dense×3 与 Sparse×75 的折叠阶段；Sparse L1 显示 `Router → Expert Pool (top-8/256) + Shared Expert → Reduce`，不展开 256 个专家，DSA 内部未知部分保持 opaque。
+
+## 5. L2：两种必须区分的状态
+
+### 5.1 M1 config 语义投影
+
+```text
+┌ CONFIG SEMANTIC PROJECTION ─ LogicalOps not captured ─ Coverage: semantic only ┐
+│ Norm → Full Attention → Residual → Norm → FFN → Residual                      │
+│                                                                                │
+│ No aten.* names · no execution order claim · no fusion/kernel claim            │
+└────────────────────────────────────────────────────────────────────────────────┘
+```
+
+该状态只显示 `SemanticNode`。必须展示 `LOGICAL_OPS_NOT_CAPTURED`，禁止为视觉完整而生成虚构 ATen/custom op。
+
+### 5.2 M2 受限代表块 capture
+
+```text
+┌ CAPTURED: tiny/reduced Full Attention · FakeTensor/meta · not full-model perf ┐
+│ aten.rms_norm → aten.linear → ... → [opaque custom op] → aten.linear          │
+│ Coverage: 87% · Opaque: 1 · Source: bounded torch.export                       │
+└────────────────────────────────────────────────────────────────────────────────┘
+```
+
+该状态只能来自 Tiny/语义同类缩小代表块。页头和 Inspector 固定显示 `architecture_equivalence=semantic-kind-only`、`valid_for_full_model_performance=false`；不能把它当成 27B/GLM 的 latency、fusion 或 Kernel 证据。
+
+## 6. Layer Strip
+
+```text
+Layer       0  1  2  3  4  5  6  7 ... 63
+Attention   L  L  L  A  L  L  L  A ...  A
+State       S  S  S  K  S  S  S  K ...  K
+MLP         D  D  D  D  D  D  D  D ...  D
+Coverage    ●  ●  ●  ●  ●  ●  ●  ● ...  ●
+```
+
+Legend：`L` Linear Attention，`A` Full Attention，`S` recurrent state，`K` KV cache，`D` Dense，`M` MoE。Coverage 使用独立符号：complete、partial、opaque、unknown。Layer Strip 默认折叠，展开后只占一行并横向滚动，不再把 64/78 层换行铺满首屏；每个短标签都有完整的 `aria-label`。M0–M3.5 自包含 HTML 点击 layer 会更新 Inspector，并保留原始 layer index、Instance、captured/config/opaque 与异常状态；同一点击同步到对应 L1 GraphView，更新 breadcrumb 并保持六页 Inspector 的实例上下文。该联动已在 Qwen/GLM 浏览器验收中通过。
+
+## 7. Inspector
+
+| Tab | 必须显示 |
+|---|---|
+| Explain | 语义用途、Definition/Instance、简化数据流；候选解释不得冒充事实 |
+| Tensors | 输入输出、symbolic/concrete shape、dtype/storage dtype、state/alias；缺失为 Unknown |
+| Cost | parameters、FLOPs、logical bytes、KV/state、arithmetic intensity、理论瓶颈/下界、HardwareProfile provenance、单位、origin、公式和假设 |
+| Runtime | 仅导入 trace 后显示 measured 数据；无 trace 固定显示 Unknown 与导入提示 |
+| Provenance | revision、SourceArtifact、config JSON Pointer、adapter/capture rule、工具版本 |
+| Coverage | status、coverage 数值、opaque/unmapped/failed 原因及 Diagnostic |
+
+Inspector 不能用 `0` 代替缺失；也不能将 Formula 的 roofline lower bound放进 Runtime latency 字段。
+
+M3.5 画布的节点、端口和边都是可选对象。选中图对象时先更新 Inspector 的待查看状态与按钮标记，不自动用抽屉遮住主图或搜索结果；用户打开 Inspector 后，Explain 显示其 GraphView 语义和所关联的 Model Map subject，Tensors 显示所有 ports 及可用 TensorSpec。来自 Browse/Supporting analysis 的显式“查看详情”动作可以直接打开 Inspector。选中 port 或 edge 时，Tensors 优先定位其 `tensor_spec_id`。Provenance 显示 config JSON Pointer/adapter rule/capture source，Coverage 显示该对象的 coverage/opaque/Unknown 原因。Cost 和 Runtime 仅显示能通过 `subject_ids` 可追溯关联的现有 Metric，不为画布节点伪造数值。
+
+## 8. Scenario 与 workload diff
+
+Scenario selector 显示：
+
+```text
+phase · batch B · new tokens T · past tokens L · S_KV=L+T · output length
+activation dtype · weight format · KV dtype · backend · hardware profile/Unknown
+```
+
+若没有 Scenario：
+
+```text
+No workload selected — workload-dependent metrics are Unknown.
+```
+
+同模型 workload diff 以稳定 `(subject_id, metric name)` 匹配：`added`、`removed`、`changed`、`unknown`。左右任一 Metric 为 Unknown 时，不计算 0 基准 delta。跨模型/revision diff 明确显示“Deferred to M5”。
+
+## 9. Hotspots 与 roofline
+
+热点表每行显示：rank、subject、metric、value/unit、origin、coverage、Scenario。排序规则：
+
+1. 仅已知且同单位的值参与数值排名；
+2. partial value 保留 Coverage badge；
+3. Unknown 行放入未排名区，不按 0 排在末尾；
+4. Formula、Estimated 和 Measured 不静默混成同一排行榜；
+5. M0–M3 点击热点定位对应 Instance 与 Inspector 证据；M3.5 进一步定位对应 GraphNode 并高亮其上下游，该联动已验收。
+
+Roofline 面板只显示：arithmetic intensity、compute lower bound、bandwidth lower bound、二者的 max lower bound 和 bottleneck class，并固定文字：
+
+```text
+Theoretical lower bounds — not a latency estimate.
+```
+
+没有用户提供且 dtype 匹配的 HardwareProfile 时，lower bounds 和 bottleneck 为 Unknown；不得填入默认 GPU。
+
+主图提供 `Pressure / Compute / Memory / Off` 理论热力层：Compute 使用可归因的公式 FLOPs，Memory 使用 logical minimum bytes，Pressure 使用 `max(FLOPs/peak, logical bytes/bandwidth)`。强度只在“当前 Scenario + 当前 view + 当前 mode”内按 `raw / hottest known node` 归一化，不允许跨 view、跨场景比较；legend 固定显示公式、HardwareProfile 名称/ID/provenance、known/total coverage、`Unknown is not zero` 和 `not measured latency`。切换 Scenario 只重算热力值，不改变 view/node ID 或选择。
+
+热力层必须复用 Cost Metric 的显式归属规则，而不是直接按 `subject_ids` 盲连：L0 仅 decoder pattern 聚合成员 Instance；L1 仅 Attention 对应 `*.attention`、FFN 对应 `*.ffn`。Norm、Residual、输入输出等无独立子项指标的节点显示灰色 `not attributable`；metric 缺失、opaque 或硬件不匹配显示灰色斜纹 `Unknown` 并给出原因。Qwen 当前可显示公式热度；GLM DSA/MoE executed FLOPs/bytes 未知时全图保持 Unknown，禁止用 active parameters、weights storage 或 0 代替。颜色不能覆盖白色选择描边或上下游路径描边，tooltip/Inspector 必须同时给出数值、origin、coverage 和公式证据。
+
+## 10. Unknown 与 Coverage 视觉规则
+
+| 数据状态 | 展示 | 禁止行为 |
+|---|---|---|
+| Unknown | `Unknown` + 原因 + coverage 0/unknown | 显示 `0`、空白或灰色数值 |
+| Partial | 已知部分值 + `Partial 62%` | 当成完整值排名而不标注 |
+| Opaque | Opaque node + 已知端口 | 删除该区域或虚构内部 op |
+| Unmapped runtime | `Unattributed/Unmapped` bucket | 静默丢弃 dispatch 时间 |
+| Formula | 值 + Formula badge + 公式/假设 | 标记为 Measured |
+| Measured | 值 + trace/run provenance | 与 counter replay wall time混用 |
+
+## 11. 可核验任务
+
+| ID | 操作 | 通过条件 | M0–M3 状态 |
+|---|---|---|---|
+| UI-01 | 打开 artifact | 模型/revision、Scenario、层级可见；Coverage 与零执行状态可从 Report status 一步打开 | PASS |
+| UI-02 | 查看 Qwen L0 | 64 层压缩为 pattern，KV/recurrent state 分开 | PASS |
+| UI-03 | 展开 Layer Strip 并点击 layer.3 | Inspector 待查看状态保留 layer.3 Instance，并显示 Full Attention、captured/config coverage 与异常状态 | PASS |
+| UI-04 | 打开 M1 L2 | 显示 config semantic projection 与 `LogicalOps not captured` | PASS |
+| UI-05 | 打开 M2 L2 | 显示 tiny/reduced、FakeTensor/meta 和非性能证据告警 | PASS |
+| UI-06 | 选择未知 GLM cost | Value 为 Unknown，Coverage 为 0/partial，原因可见 | PASS |
+| UI-07 | 查看 Runtime 且无 trace | 所有 runtime 值为 Unknown/null，不出现 0 ms | PASS |
+| UI-08 | 切换 prefill/decode | Scenario 全字段更新，结构 ID 不变，成本按 Scenario 更新 | PASS |
+| UI-09 | 打开热点 | 只排名可比较已知值；点击后 Inspector 显示 Instance、Metric 公式、Symbol 绑定与假设 | PASS |
+| UI-10 | 断网打开静态 HTML | 核心结构、Layer Strip、Inspector 和数据不发起外部请求 | PASS |
+
+M3.5 的独立退出任务如下，Qwen/GLM 已在 2026-08-30 完成实际浏览器验收：
+
+| ID | 操作 | 通过条件 | M3.5 状态 |
+|---|---|---|---|
+| DAG-01 | 打开 Qwen L0 | 从 Input 到 Logits 存在端口级可达主路径，Vision/MTP 分支有 config evidence | PASS |
+| DAG-02 | 双击 Qwen Decoder Pattern | 进入 Linear/Full Attention L1，breadcrumb/Back 可返回，recurrent/KV state rail 不混用 | PASS |
+| DAG-03 | 打开 GLM L0/L1 | Dense/Sparse pattern 可下钻，Router/Expert Pool/Shared Expert/Reduce 不展开 256 专家 | PASS |
+| DAG-04 | 点击节点、port 和 edge | 六页 Inspector 定位关联 subject/Tensor/Metric/evidence，Unknown 不补零 | PASS |
+| DAG-05 | 搜索节点/选层/点击热点 | 画布打开正确 view、定位节点并高亮上下游 | PASS |
+| DAG-06 | 平移、缩放、Fit、minimap | 操作可逆，线端持续锚定具体 port，当前 view 不丢失 | PASS |
+| DAG-07 | 切换 Scenario | GraphView/node/port/edge 结构 ID 不变，只更新可关联的指标 | PASS |
+| DAG-08 | 断网打开 Qwen/GLM HTML | DAG 不请求外部资源，console 无 warning/error | PASS |
+| DAG-09 | 默认打开 Qwen/GLM 报告 | 首屏只有紧凑全局栏、中央主图和折叠入口；Browse/Inspector/Analysis 不抢占主图宽度 | PASS |
+| DAG-10 | 打开/关闭 Browse 与 Inspector | 抽屉按需出现，关闭后主图状态、当前 view、选择和路径高亮不丢失；Escape/关闭按钮可返回触发点 | PASS |
+| DAG-11 | 展开 Layers/Supporting analysis | Layer 保持单行滚动，分析内容在折叠区内；两者默认不占主视觉 | PASS |
+| DAG-12 | 查找并打开可下钻节点 | Qwen L0 恰有 1 个、GLM L0 恰有 2 个 `L1 ›`；角标点击、双击、Enter 可下钻，Space 只选择，叶节点无角标 | PASS |
+| DAG-13 | 切换 Pressure/Compute/Memory 与 Scenario | Qwen 仅可归因节点着色并保留选择/路径；legend 显示 synthetic provenance 与非实测声明；GLM 全部 Unknown 且不补 0；console 为空 | PASS |
+
+## 12. 当前实现证据与缺口
+
+当前离线 HTML 已收敛为 graph-first 结构：顶栏只保留模型/revision、Scenario、唯一全局搜索与 Report status；中央 DAG 默认占满可用宽度；Definition/Diagnostic 位于 Browse 抽屉，六页 Inspector 位于右抽屉，64/78 层 Layer Strip 和所有 Supporting analysis 默认折叠。Definition、Semantic/LogicalOp、capture、逐层 captured/config/opaque、异常层、成本、热点、roofline、workload diff 与 Runtime Unknown 证据均仍保留，但不再同时铺满首屏。2026-08-30 的最终 M0–M3 浏览器验收确认：Qwen layer.0 整层可同时看到 Dense 与 Linear State 两种代表体，但具体 Dense FFN 节点只显示 Dense capture SourceArtifact，Linear Attention 节点只显示 Linear State source；layer.1 config-only 只显示 config source，不串入任何 Tiny capture。捕获 Tensor 逐项显示 `origin=capture`、`materialized=false` 和唯一 source。layer.3 仍显示 `full_attention · captured · anomaly=false`；Cost 可读取离线 Symbol 绑定，Provenance 固定显示零权重/零完整 forward。Report status 把结构范围与成本指标可用性分开，例如 GLM 显示 `structure 78/82 · 95.1% | cost 3/8 known`，不再用平均 metric coverage 冒充 decoder layer 覆盖率。GLM 的 executed FLOPs/bytes、roofline 与 Runtime 均显示 Unknown/null/0% coverage，不参与热点排名，也不以 0 代替。对应自动化见 [离线 artifact 集成测试](../tests/integration/test_inspect_artifact.py)、[M3 报告测试](../tests/integration/test_m3_report.py)、[capture 报告测试](../tests/integration/test_capture_cli_report.py)和 [Model Explorer adapter 集成测试](../tests/integration/test_model_explorer_adapter.py)。
+
+M3.5 浏览器验收进一步确认：Qwen L0 为 11 node/19 port/10 edge，Linear/Full L1 各为 10/24/13；GLM L0 为 9/15/8，Dense L1 为 10/20/11，Sparse DSA+MoE L1 为 13/30/17。默认 70% 可读视图、27% Fit 总览、真实拖拽平移及 minimap 同步、缩放/Back、节点/port/edge 选择、Linear/KV state rail、route/control 样式、三行 Tensor 名/shape/dtype、Layer Strip、跨 view 搜索、热点定位、上下游高亮和 Scenario 指标刷新均通过。graph-first 复测进一步确认 1280×720 首屏主图全宽、两个抽屉默认关闭、搜索命中 Sparse L1 时 Inspector 不自动遮挡、Browse/Inspector 可开关且 view/selection 不丢失。DAG-12/13 复测确认 Qwen/GLM 的 `L1 ›` 数量分别为 1/2，角标、双击与键盘契约可用；Qwen L1 只有 Attention/FFN 获得公式热度，Scenario 切换保持 view/selection，GLM 全图为 Unknown 而不是冷色 0，synthetic HardwareProfile 与非 latency 声明在 legend/Inspector 可见。GLM DSA 保持 opaque，未知 KV shape 显示 `Unknown` 与明确原因；L0/L1 不串入 Tiny L2 capture。Qwen/GLM 两页 console 均无 warning/error，24/24 机器退出项及 Python 3.9/3.12 各 150 项测试通过。
+
+仍未完成的只有本里程碑外的官方 Model Explorer consumer 真实加载/交互验收、面向 10k 原始 op 图的性能测试，以及 M4 trace timeline。官方 consumer 与超大 raw-op 图继续按 [DR-0003](decisions/DR-0003-model-explorer-bounded-spike.md) 标为 Partial；它们不应与已经通过的 M0–M3.5 自包含离线 DAG 混为一谈。

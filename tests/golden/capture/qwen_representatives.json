@@ -1,0 +1,59 @@
+{
+  "fixture": "qwen3_8_27b",
+  "revision": "1d4bf0f2ff6012fd82039f2fa52739d0dd7c60c0",
+  "policy": {
+    "architecture_equivalence": "semantic-kind-only",
+    "capture_backend": "torch.export.strict",
+    "capture_source": "project-owned-tiny-fixture",
+    "full_forward_executed": false,
+    "tensor_mode": "meta-parameters-and-inputs/faketensor-trace",
+    "valid_for_full_model_performance": false,
+    "weights_loaded": false
+  },
+  "component_patterns": [
+    "ffn",
+    "full_attention",
+    "linear_attention",
+    "norm",
+    "recurrent_state",
+    "residual"
+  ],
+  "coverage_contract": {
+    "model_scope_diagnostic": "CAPTURE_SCOPE_REPRESENTATIVE_ONLY",
+    "scope": "decoder_attention_semantic_nodes",
+    "scope_evidence": "coverage_scope=decoder_attention_semantic_nodes",
+    "unselected_region_diagnostic": "CAPTURE_REGION_NOT_SELECTED",
+    "unselected_region_evidence": "coverage=0"
+  },
+  "representatives": [
+    {
+      "kind": "dense",
+      "minimum_logical_ops": 1,
+      "minimum_tensors": 1,
+      "module_path": "model.text.layers.0.mlp",
+      "representative_layer_index": 0,
+      "semantic_kind": "ffn"
+    },
+    {
+      "kind": "full_attention",
+      "minimum_logical_ops": 1,
+      "minimum_tensors": 1,
+      "module_path": "model.text.layers.3.self_attn",
+      "representative_layer_index": 3,
+      "semantic_kind": "full_attention"
+    },
+    {
+      "kind": "linear_state",
+      "minimum_logical_ops": 1,
+      "minimum_tensors": 1,
+      "module_path": "model.text.layers.0.linear_attn",
+      "representative_layer_index": 0,
+      "semantic_kind": "linear_attention"
+    }
+  ],
+  "opaque_fallback": {
+    "diagnostic_code": "CAPTURE_EXPORT_FAILED",
+    "full_model_fallback": false,
+    "status": "opaque"
+  }
+}

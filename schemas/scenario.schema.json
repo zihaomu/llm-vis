@@ -1,0 +1,120 @@
+{
+  "$defs": {
+    "DType": {
+      "enum": [
+        "bool",
+        "uint8",
+        "int8",
+        "int16",
+        "int32",
+        "int64",
+        "float8",
+        "float16",
+        "bfloat16",
+        "float32",
+        "float64",
+        "complex64",
+        "complex128",
+        "unknown"
+      ],
+      "title": "DType",
+      "type": "string"
+    },
+    "ScenarioPhase": {
+      "enum": [
+        "prefill",
+        "chunked_prefill",
+        "decode",
+        "train"
+      ],
+      "title": "ScenarioPhase",
+      "type": "string"
+    },
+    "WeightFormat": {
+      "enum": [
+        "float32",
+        "float16",
+        "bfloat16",
+        "float8",
+        "int8",
+        "int4",
+        "nf4",
+        "unknown"
+      ],
+      "title": "WeightFormat",
+      "type": "string"
+    }
+  },
+  "$id": "https://llm-vis.dev/schemas/v0.1/scenario.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "activation_dtype": {
+      "$ref": "#/$defs/DType"
+    },
+    "backend": {
+      "default": "unknown",
+      "minLength": 1,
+      "title": "Backend",
+      "type": "string"
+    },
+    "batch": {
+      "minimum": 1,
+      "title": "Batch",
+      "type": "integer"
+    },
+    "hardware": {
+      "default": "unknown",
+      "minLength": 1,
+      "title": "Hardware",
+      "type": "string"
+    },
+    "id": {
+      "default": "",
+      "title": "Id",
+      "type": "string"
+    },
+    "kv_dtype": {
+      "$ref": "#/$defs/DType"
+    },
+    "new_tokens": {
+      "minimum": 1,
+      "title": "New Tokens",
+      "type": "integer"
+    },
+    "output_length": {
+      "default": 0,
+      "minimum": 0,
+      "title": "Output Length",
+      "type": "integer"
+    },
+    "past_tokens": {
+      "minimum": 0,
+      "title": "Past Tokens",
+      "type": "integer"
+    },
+    "phase": {
+      "$ref": "#/$defs/ScenarioPhase"
+    },
+    "total_visible_length": {
+      "default": 0,
+      "minimum": 0,
+      "title": "Total Visible Length",
+      "type": "integer"
+    },
+    "weight_format": {
+      "$ref": "#/$defs/WeightFormat"
+    }
+  },
+  "required": [
+    "phase",
+    "batch",
+    "new_tokens",
+    "past_tokens",
+    "activation_dtype",
+    "weight_format",
+    "kv_dtype"
+  ],
+  "title": "Scenario",
+  "type": "object"
+}

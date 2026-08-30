@@ -1,0 +1,13 @@
+{
+  "phase": "decode",
+  "batch": 1,
+  "new_tokens": 1,
+  "past_tokens": 4096,
+  "total_visible_length": 4097,
+  "output_length": 1,
+  "activation_dtype": "bfloat16",
+  "weight_format": "int4",
+  "kv_dtype": "bfloat16",
+  "backend": "formula-only",
+  "hardware": "unknown"
+}

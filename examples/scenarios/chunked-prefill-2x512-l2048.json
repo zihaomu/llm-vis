@@ -1,0 +1,13 @@
+{
+  "phase": "chunked_prefill",
+  "batch": 2,
+  "new_tokens": 512,
+  "past_tokens": 2048,
+  "total_visible_length": 2560,
+  "output_length": 256,
+  "activation_dtype": "bfloat16",
+  "weight_format": "bfloat16",
+  "kv_dtype": "bfloat16",
+  "backend": "formula-only",
+  "hardware": "unknown"
+}

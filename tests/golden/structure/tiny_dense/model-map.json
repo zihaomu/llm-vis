@@ -1,0 +1,2957 @@
+{
+  "definitions": [
+    {
+      "children": [
+        "art_d2b9aac64f29f40683db664b",
+        "art_64668dcde0e145c9549e75d9",
+        "art_97eeb0c5ec1f5464444de0b2"
+      ],
+      "class_name": "Qwen2ForCausalLM",
+      "id": "art_4dc096984d50a88f00fff5c7",
+      "kind": "model",
+      "label": "Qwen2 causal language model",
+      "ports": [],
+      "semantic_pattern": null
+    },
+    {
+      "children": [],
+      "class_name": "Embedding",
+      "id": "art_d2b9aac64f29f40683db664b",
+      "kind": "module",
+      "label": "Token embedding",
+      "ports": [
+        {
+          "direction": "input",
+          "name": "token_embedding.weight",
+          "tensor_role": "parameter"
+        }
+      ],
+      "semantic_pattern": null
+    },
+    {
+      "children": [
+        "art_f9c59067facd9071a5a1e693",
+        "art_41d10a25a2193ad6f2fece3b"
+      ],
+      "class_name": "Qwen2Model",
+      "id": "art_64668dcde0e145c9549e75d9",
+      "kind": "stage",
+      "label": "Decoder \u00d7 4",
+      "ports": [],
+      "semantic_pattern": "{\"instance_count\":4}"
+    },
+    {
+      "children": [
+        "art_da70a59b03f29d1ac8308f0c",
+        "art_a8310e32f62823323c458e7c",
+        "art_da70a59b03f29d1ac8308f0c",
+        "art_2d5c3d3c1728ddcd291a78b0"
+      ],
+      "class_name": "Qwen2DecoderLayer",
+      "id": "art_f9c59067facd9071a5a1e693",
+      "kind": "block",
+      "label": "Dense decoder block",
+      "ports": [
+        {
+          "direction": "input",
+          "name": "input_norm.weight",
+          "tensor_role": "parameter"
+        },
+        {
+          "direction": "inout",
+          "name": "kv_cache.key",
+          "tensor_role": "cache"
+        },
+        {
+          "direction": "inout",
+          "name": "kv_cache.value",
+          "tensor_role": "cache"
+        },
+        {
+          "direction": "input",
+          "name": "mlp.down_projection.weight",
+          "tensor_role": "parameter"
+        },
+        {
+          "direction": "input",
+          "name": "mlp.gate_projection.weight",
+          "tensor_role": "parameter"
+        },
+        {
+          "direction": "input",
+          "name": "mlp.up_projection.weight",
+          "tensor_role": "parameter"
+        },
+        {
+          "direction": "input",
+          "name": "post_attention_norm.weight",
+          "tensor_role": "parameter"
+        },
+        {
+          "direction": "input",
+          "name": "self_attention.key_projection.weight",
+          "tensor_role": "parameter"
+        },
+        {
+          "direction": "input",
+          "name": "self_attention.output_projection.weight",
+          "tensor_role": "parameter"
+        },
+        {
+          "direction": "input",
+          "name": "self_attention.query_projection.weight",
+          "tensor_role": "parameter"
+        },
+        {
+          "direction": "input",
+          "name": "self_attention.value_projection.weight",
+          "tensor_role": "parameter"
+        }
+      ],
+      "semantic_pattern": null
+    },
+    {
+      "children": [],
+      "class_name": "Qwen2RMSNorm",
+      "id": "art_da70a59b03f29d1ac8308f0c",
+      "kind": "module",
+      "label": "RMSNorm",
+      "ports": [],
+      "semantic_pattern": null
+    },
+    {
+      "children": [],
+      "class_name": "Qwen2Attention",
+      "id": "art_a8310e32f62823323c458e7c",
+      "kind": "module",
+      "label": "Causal self-attention",
+      "ports": [],
+      "semantic_pattern": "{\"num_kv_heads\":2,\"num_query_heads\":8,\"state_kind\":\"kv_cache\"}"
+    },
+    {
+      "children": [],
+      "class_name": "Qwen2MLP",
+      "id": "art_2d5c3d3c1728ddcd291a78b0",
+      "kind": "module",
+      "label": "Dense gated FFN",
+      "ports": [],
+      "semantic_pattern": "{\"intermediate_size\":1376}"
+    },
+    {
+      "children": [],
+      "class_name": "Qwen2RMSNorm",
+      "id": "art_41d10a25a2193ad6f2fece3b",
+      "kind": "module",
+      "label": "Final RMSNorm",
+      "ports": [
+        {
+          "direction": "input",
+          "name": "final_norm.weight",
+          "tensor_role": "parameter"
+        }
+      ],
+      "semantic_pattern": null
+    },
+    {
+      "children": [],
+      "class_name": "Linear",
+      "id": "art_97eeb0c5ec1f5464444de0b2",
+      "kind": "module",
+      "label": "LM head",
+      "ports": [
+        {
+          "direction": "input",
+          "name": "output_projection.weight",
+          "tensor_role": "parameter"
+        }
+      ],
+      "semantic_pattern": null
+    }
+  ],
+  "diagnostics": [
+    {
+      "code": "CONFIG_BUFFER_INVENTORY_UNKNOWN",
+      "evidence": [
+        "adapter:tiny-dense",
+        "source:config",
+        "inventory:semantic_contract_not_runtime_parameter_name",
+        "weights_loaded:false",
+        "full_meta_tree:false"
+      ],
+      "id": "art_f0ce5b411fba7b1c9f85dbe2",
+      "message": "Config does not enumerate runtime buffers; zero-weight analysis does not construct or inspect named_buffers",
+      "severity": "info",
+      "subject_id": "art_6a5d713af9c0fdfd4c16c440"
+    }
+  ],
+  "edges": [
+    {
+      "id": "art_db5a085b0d77c7ac154ed26c",
+      "kind": "weight",
+      "source_id": "art_d2b9aac64f29f40683db664b",
+      "target_id": "art_72aefd80fbed8b0f4e009e28",
+      "tensor_id": "art_40d0bfd6106e75fa21c3b01f"
+    },
+    {
+      "id": "art_1d7f5617316391a33846c986",
+      "kind": "weight",
+      "source_id": "art_97eeb0c5ec1f5464444de0b2",
+      "target_id": "art_0d989537f02bc45e5b8391b8",
+      "tensor_id": "art_3168b863aab51147a936ea40"
+    },
+    {
+      "id": "art_eae3f5552e129d35af256444",
+      "kind": "weight",
+      "source_id": "art_41d10a25a2193ad6f2fece3b",
+      "target_id": "art_7bb4632b50488e16579e2819",
+      "tensor_id": "art_675f958b592ca0a3a134819d"
+    },
+    {
+      "id": "art_90cdb5d8bcbc8402f6565d66",
+      "kind": "weight",
+      "source_id": "art_f9c59067facd9071a5a1e693",
+      "target_id": "art_bc1dbf0aab68048a5001538f",
+      "tensor_id": "art_3e47ce19cff0d0e74ccbe5f7"
+    },
+    {
+      "id": "art_63c00a4ccadd5d50bff052f6",
+      "kind": "weight",
+      "source_id": "art_f9c59067facd9071a5a1e693",
+      "target_id": "art_bc1dbf0aab68048a5001538f",
+      "tensor_id": "art_478f6a573c8d08912cf01216"
+    },
+    {
+      "id": "art_b915447ab16d24e20c1985c5",
+      "kind": "weight",
+      "source_id": "art_f9c59067facd9071a5a1e693",
+      "target_id": "art_bc1dbf0aab68048a5001538f",
+      "tensor_id": "art_990017c4865c40d4f8b209ef"
+    },
+    {
+      "id": "art_75565a2b4ea4e9072770ea50",
+      "kind": "weight",
+      "source_id": "art_f9c59067facd9071a5a1e693",
+      "target_id": "art_bc1dbf0aab68048a5001538f",
+      "tensor_id": "art_eeed328038ce7efa7dbf5e45"
+    },
+    {
+      "id": "art_45d42c142d1715a407dd601d",
+      "kind": "weight",
+      "source_id": "art_f9c59067facd9071a5a1e693",
+      "target_id": "art_bc1dbf0aab68048a5001538f",
+      "tensor_id": "art_cfcda4d8de4dbb5fd7994947"
+    },
+    {
+      "id": "art_99b5a6f0c9dedd21aae77a90",
+      "kind": "weight",
+      "source_id": "art_f9c59067facd9071a5a1e693",
+      "target_id": "art_bc1dbf0aab68048a5001538f",
+      "tensor_id": "art_0de30bd8b1259197062f71c4"
+    },
+    {
+      "id": "art_8e20f524c70e5247dc35bfac",
+      "kind": "weight",
+      "source_id": "art_f9c59067facd9071a5a1e693",
+      "target_id": "art_bc1dbf0aab68048a5001538f",
+      "tensor_id": "art_014782b91d616ca31d8370f4"
+    },
+    {
+      "id": "art_fcdbd6ca89f0c4bd31044054",
+      "kind": "weight",
+      "source_id": "art_f9c59067facd9071a5a1e693",
+      "target_id": "art_bc1dbf0aab68048a5001538f",
+      "tensor_id": "art_689ec39c826c99cd02f0ac76"
+    },
+    {
+      "id": "art_f157afb9923bff01f5590fe2",
+      "kind": "weight",
+      "source_id": "art_f9c59067facd9071a5a1e693",
+      "target_id": "art_bc1dbf0aab68048a5001538f",
+      "tensor_id": "art_12cd935e13330300bf6aa8c1"
+    },
+    {
+      "id": "art_43d2e74f4bee73d6c0a418f7",
+      "kind": "state_read",
+      "source_id": "art_098835f7119ccf1bec7b2b3c",
+      "target_id": "art_9e60c2da4d8d89c4e9f18bfe",
+      "tensor_id": "art_f836338e1393ed6daeb1d0c7"
+    },
+    {
+      "id": "art_2bf272ce0f7343d1be383a8d",
+      "kind": "state_write",
+      "source_id": "art_9e60c2da4d8d89c4e9f18bfe",
+      "target_id": "art_098835f7119ccf1bec7b2b3c",
+      "tensor_id": "art_f836338e1393ed6daeb1d0c7"
+    },
+    {
+      "id": "art_edbad98e1a155f88b6c3049c",
+      "kind": "state_read",
+      "source_id": "art_098835f7119ccf1bec7b2b3c",
+      "target_id": "art_9e60c2da4d8d89c4e9f18bfe",
+      "tensor_id": "art_083fafa28abc0bc14f6fc3ee"
+    },
+    {
+      "id": "art_b0a675fb64c081a01a168a68",
+      "kind": "state_write",
+      "source_id": "art_9e60c2da4d8d89c4e9f18bfe",
+      "target_id": "art_098835f7119ccf1bec7b2b3c",
+      "tensor_id": "art_083fafa28abc0bc14f6fc3ee"
+    },
+    {
+      "id": "art_ce10ccfd0f0c5808a1f86c4a",
+      "kind": "weight",
+      "source_id": "art_f9c59067facd9071a5a1e693",
+      "target_id": "art_3341d69591bda6502522368d",
+      "tensor_id": "art_528308e07ccd03cc9170cee6"
+    },
+    {
+      "id": "art_e16987ba062fb1db7ec2b40f",
+      "kind": "weight",
+      "source_id": "art_f9c59067facd9071a5a1e693",
+      "target_id": "art_3341d69591bda6502522368d",
+      "tensor_id": "art_0393aa9fbf0f872a0fdff621"
+    },
+    {
+      "id": "art_b3d6a26515061e25b598a7ef",
+      "kind": "weight",
+      "source_id": "art_f9c59067facd9071a5a1e693",
+      "target_id": "art_3341d69591bda6502522368d",
+      "tensor_id": "art_8a45388fe3313fc2e943bc84"
+    },
+    {
+      "id": "art_f439982c9f8125e3df0df079",
+      "kind": "weight",
+      "source_id": "art_f9c59067facd9071a5a1e693",
+      "target_id": "art_3341d69591bda6502522368d",
+      "tensor_id": "art_bcb10b17f25215f8ac9178d5"
+    },
+    {
+      "id": "art_a3dc8402239b29f8e4b530b4",
+      "kind": "weight",
+      "source_id": "art_f9c59067facd9071a5a1e693",
+      "target_id": "art_3341d69591bda6502522368d",
+      "tensor_id": "art_29ad98bc48ab3f3f915b72f9"
+    },
+    {
+      "id": "art_c055a0497cbd115ad7283406",
+      "kind": "weight",
+      "source_id": "art_f9c59067facd9071a5a1e693",
+      "target_id": "art_3341d69591bda6502522368d",
+      "tensor_id": "art_0ad01d3afc92e6dd4b09bfb5"
+    },
+    {
+      "id": "art_daf61adea082459896c64ac7",
+      "kind": "weight",
+      "source_id": "art_f9c59067facd9071a5a1e693",
+      "target_id": "art_3341d69591bda6502522368d",
+      "tensor_id": "art_3341be22c66944fef78569ca"
+    },
+    {
+      "id": "art_cd25e99c3844404d58fff026",
+      "kind": "weight",
+      "source_id": "art_f9c59067facd9071a5a1e693",
+      "target_id": "art_3341d69591bda6502522368d",
+      "tensor_id": "art_6500ee780f26c6981a116ec8"
+    },
+    {
+      "id": "art_7cdbb07e11a5290a49799d45",
+      "kind": "weight",
+      "source_id": "art_f9c59067facd9071a5a1e693",
+      "target_id": "art_3341d69591bda6502522368d",
+      "tensor_id": "art_8343fa04924ad45bd215d200"
+    },
+    {
+      "id": "art_b41f80a095140fa67cb6af79",
+      "kind": "state_read",
+      "source_id": "art_6a67784b42fde78a714b667c",
+      "target_id": "art_df51b665a0eb9c2513bd7f97",
+      "tensor_id": "art_e5518b24de83fd182cf08ddb"
+    },
+    {
+      "id": "art_7b987fd6de9e9f8150bc3a4f",
+      "kind": "state_write",
+      "source_id": "art_df51b665a0eb9c2513bd7f97",
+      "target_id": "art_6a67784b42fde78a714b667c",
+      "tensor_id": "art_e5518b24de83fd182cf08ddb"
+    },
+    {
+      "id": "art_b2669fe6b68d4ea48f418024",
+      "kind": "state_read",
+      "source_id": "art_6a67784b42fde78a714b667c",
+      "target_id": "art_df51b665a0eb9c2513bd7f97",
+      "tensor_id": "art_3f4cf02851567219d82603ed"
+    },
+    {
+      "id": "art_c53dbe734b72f58b43c0e716",
+      "kind": "state_write",
+      "source_id": "art_df51b665a0eb9c2513bd7f97",
+      "target_id": "art_6a67784b42fde78a714b667c",
+      "tensor_id": "art_3f4cf02851567219d82603ed"
+    },
+    {
+      "id": "art_58ed5908e8ccf6b2e1eb3742",
+      "kind": "weight",
+      "source_id": "art_f9c59067facd9071a5a1e693",
+      "target_id": "art_67c11503e53d9d916117433a",
+      "tensor_id": "art_5425913d90e2acdba11caac0"
+    },
+    {
+      "id": "art_c3cf407e187b42e29d105d11",
+      "kind": "weight",
+      "source_id": "art_f9c59067facd9071a5a1e693",
+      "target_id": "art_67c11503e53d9d916117433a",
+      "tensor_id": "art_169b03a9c6b8c696dddf5694"
+    },
+    {
+      "id": "art_2a2ff01f2ea293523cafa8aa",
+      "kind": "weight",
+      "source_id": "art_f9c59067facd9071a5a1e693",
+      "target_id": "art_67c11503e53d9d916117433a",
+      "tensor_id": "art_00cea797b02b9ffeba6d04a0"
+    },
+    {
+      "id": "art_42dba5bcb86a0ad9344e5837",
+      "kind": "weight",
+      "source_id": "art_f9c59067facd9071a5a1e693",
+      "target_id": "art_67c11503e53d9d916117433a",
+      "tensor_id": "art_bdcb880534229ccf085528bc"
+    },
+    {
+      "id": "art_3143d342fb8afc9ab8c68751",
+      "kind": "weight",
+      "source_id": "art_f9c59067facd9071a5a1e693",
+      "target_id": "art_67c11503e53d9d916117433a",
+      "tensor_id": "art_e7d1a0d492ac3034c6bbfd34"
+    },
+    {
+      "id": "art_9e4678dca1f0c990d56d625a",
+      "kind": "weight",
+      "source_id": "art_f9c59067facd9071a5a1e693",
+      "target_id": "art_67c11503e53d9d916117433a",
+      "tensor_id": "art_e6fab87eb64ca8901c5eb620"
+    },
+    {
+      "id": "art_06e263252b5d316e692e4cbe",
+      "kind": "weight",
+      "source_id": "art_f9c59067facd9071a5a1e693",
+      "target_id": "art_67c11503e53d9d916117433a",
+      "tensor_id": "art_a028cf1a185dc20ecfa1e0a7"
+    },
+    {
+      "id": "art_2f42110d1ce85f9b6df4aec0",
+      "kind": "weight",
+      "source_id": "art_f9c59067facd9071a5a1e693",
+      "target_id": "art_67c11503e53d9d916117433a",
+      "tensor_id": "art_cec320c4b5f13756e3ae725d"
+    },
+    {
+      "id": "art_8886f41df13e1045e4bd74fc",
+      "kind": "weight",
+      "source_id": "art_f9c59067facd9071a5a1e693",
+      "target_id": "art_67c11503e53d9d916117433a",
+      "tensor_id": "art_2a3a1735cf4f7d0dd6485b56"
+    },
+    {
+      "id": "art_9092909f63dc6345252577ec",
+      "kind": "state_read",
+      "source_id": "art_7cd1026d4d3bd0044c309d9b",
+      "target_id": "art_3a7bc098fb23112c1ee7e4d2",
+      "tensor_id": "art_8a65dd410299cc86bf473568"
+    },
+    {
+      "id": "art_5d5b02b6bc7b44bbc0c0a24c",
+      "kind": "state_write",
+      "source_id": "art_3a7bc098fb23112c1ee7e4d2",
+      "target_id": "art_7cd1026d4d3bd0044c309d9b",
+      "tensor_id": "art_8a65dd410299cc86bf473568"
+    },
+    {
+      "id": "art_badeec00e785e4e78ee09b0e",
+      "kind": "state_read",
+      "source_id": "art_7cd1026d4d3bd0044c309d9b",
+      "target_id": "art_3a7bc098fb23112c1ee7e4d2",
+      "tensor_id": "art_c80081fa77965ce135f41572"
+    },
+    {
+      "id": "art_634ec26a5184ff91587930f0",
+      "kind": "state_write",
+      "source_id": "art_3a7bc098fb23112c1ee7e4d2",
+      "target_id": "art_7cd1026d4d3bd0044c309d9b",
+      "tensor_id": "art_c80081fa77965ce135f41572"
+    },
+    {
+      "id": "art_d110ca85e17118892813753c",
+      "kind": "weight",
+      "source_id": "art_f9c59067facd9071a5a1e693",
+      "target_id": "art_1f32b32f613d1052d0740262",
+      "tensor_id": "art_77d1ee30f4090904be76849a"
+    },
+    {
+      "id": "art_e122fb0e9f494a88916cfaee",
+      "kind": "weight",
+      "source_id": "art_f9c59067facd9071a5a1e693",
+      "target_id": "art_1f32b32f613d1052d0740262",
+      "tensor_id": "art_413b08eff452aef90befaf61"
+    },
+    {
+      "id": "art_103897c9c0bea86b77988bd8",
+      "kind": "weight",
+      "source_id": "art_f9c59067facd9071a5a1e693",
+      "target_id": "art_1f32b32f613d1052d0740262",
+      "tensor_id": "art_787633a783d08eb548aa548e"
+    },
+    {
+      "id": "art_f1db6314a4ce2742a728a9bb",
+      "kind": "weight",
+      "source_id": "art_f9c59067facd9071a5a1e693",
+      "target_id": "art_1f32b32f613d1052d0740262",
+      "tensor_id": "art_98cb002288e8d34b64dee4ce"
+    },
+    {
+      "id": "art_5278144a531ef6e512c70388",
+      "kind": "weight",
+      "source_id": "art_f9c59067facd9071a5a1e693",
+      "target_id": "art_1f32b32f613d1052d0740262",
+      "tensor_id": "art_3955e59621ef62283979c61d"
+    },
+    {
+      "id": "art_a9a6cc30523517af73293bb3",
+      "kind": "weight",
+      "source_id": "art_f9c59067facd9071a5a1e693",
+      "target_id": "art_1f32b32f613d1052d0740262",
+      "tensor_id": "art_75409893953167d8400c2d6b"
+    },
+    {
+      "id": "art_a32e31fd2a4a7da82dd2220e",
+      "kind": "weight",
+      "source_id": "art_f9c59067facd9071a5a1e693",
+      "target_id": "art_1f32b32f613d1052d0740262",
+      "tensor_id": "art_0477184991f94a8ced0a9f21"
+    },
+    {
+      "id": "art_dab304ada5549e27ac4c6fda",
+      "kind": "weight",
+      "source_id": "art_f9c59067facd9071a5a1e693",
+      "target_id": "art_1f32b32f613d1052d0740262",
+      "tensor_id": "art_2ac7601c6900bdb56dc30fa0"
+    },
+    {
+      "id": "art_b4e561d291b4531501b74fc7",
+      "kind": "weight",
+      "source_id": "art_f9c59067facd9071a5a1e693",
+      "target_id": "art_1f32b32f613d1052d0740262",
+      "tensor_id": "art_b671431fdcb829180ccfaad1"
+    },
+    {
+      "id": "art_85b29734d85a37be0e070553",
+      "kind": "state_read",
+      "source_id": "art_edcfcfc91662cfea72373c81",
+      "target_id": "art_f52a08e9e396acde47b8e154",
+      "tensor_id": "art_472f68304709dcdd6a8c419c"
+    },
+    {
+      "id": "art_f18dd9892ade9d329dbb22a4",
+      "kind": "state_write",
+      "source_id": "art_f52a08e9e396acde47b8e154",
+      "target_id": "art_edcfcfc91662cfea72373c81",
+      "tensor_id": "art_472f68304709dcdd6a8c419c"
+    },
+    {
+      "id": "art_714648f5a6aa4d8219e83bd4",
+      "kind": "state_read",
+      "source_id": "art_edcfcfc91662cfea72373c81",
+      "target_id": "art_f52a08e9e396acde47b8e154",
+      "tensor_id": "art_66d1b7a489f7b0b28f8271fd"
+    },
+    {
+      "id": "art_814d37d712f2c6c8188686a4",
+      "kind": "state_write",
+      "source_id": "art_f52a08e9e396acde47b8e154",
+      "target_id": "art_edcfcfc91662cfea72373c81",
+      "tensor_id": "art_66d1b7a489f7b0b28f8271fd"
+    }
+  ],
+  "instances": [
+    {
+      "definition_id": "art_4dc096984d50a88f00fff5c7",
+      "id": "art_4c3a0ee76fc2192888fdc819",
+      "layer_index": null,
+      "module_path": "model",
+      "overrides": {
+        "canonical_semantic_key": "sem_4956fb112860ef2b4f284934"
+      },
+      "parent_id": null
+    },
+    {
+      "definition_id": "art_d2b9aac64f29f40683db664b",
+      "id": "art_72aefd80fbed8b0f4e009e28",
+      "layer_index": null,
+      "module_path": "model.embed_tokens",
+      "overrides": {
+        "canonical_semantic_key": "sem_71a4f161513fb7d165316f70"
+      },
+      "parent_id": "art_4c3a0ee76fc2192888fdc819"
+    },
+    {
+      "definition_id": "art_64668dcde0e145c9549e75d9",
+      "id": "art_1ba1fb010a76a84747546017",
+      "layer_index": null,
+      "module_path": "model.layers",
+      "overrides": {
+        "canonical_semantic_key": "sem_3c4f6f363541d32dbf8241a6",
+        "definition_attributes": {
+          "instance_count": 4
+        }
+      },
+      "parent_id": "art_4c3a0ee76fc2192888fdc819"
+    },
+    {
+      "definition_id": "art_f9c59067facd9071a5a1e693",
+      "id": "art_bc1dbf0aab68048a5001538f",
+      "layer_index": 0,
+      "module_path": "model.layers.0",
+      "overrides": {
+        "canonical_semantic_key": "sem_3425c8cedf5dca4f16e4b896"
+      },
+      "parent_id": "art_1ba1fb010a76a84747546017"
+    },
+    {
+      "definition_id": "art_f9c59067facd9071a5a1e693",
+      "id": "art_3341d69591bda6502522368d",
+      "layer_index": 1,
+      "module_path": "model.layers.1",
+      "overrides": {
+        "canonical_semantic_key": "sem_99afd9460c6d555e5dba56f6"
+      },
+      "parent_id": "art_1ba1fb010a76a84747546017"
+    },
+    {
+      "definition_id": "art_f9c59067facd9071a5a1e693",
+      "id": "art_67c11503e53d9d916117433a",
+      "layer_index": 2,
+      "module_path": "model.layers.2",
+      "overrides": {
+        "canonical_semantic_key": "sem_8c0385b34dffe10cd08e56ec"
+      },
+      "parent_id": "art_1ba1fb010a76a84747546017"
+    },
+    {
+      "definition_id": "art_f9c59067facd9071a5a1e693",
+      "id": "art_1f32b32f613d1052d0740262",
+      "layer_index": 3,
+      "module_path": "model.layers.3",
+      "overrides": {
+        "canonical_semantic_key": "sem_2e54ead9274849003b32301c"
+      },
+      "parent_id": "art_1ba1fb010a76a84747546017"
+    },
+    {
+      "definition_id": "art_41d10a25a2193ad6f2fece3b",
+      "id": "art_7bb4632b50488e16579e2819",
+      "layer_index": null,
+      "module_path": "model.norm",
+      "overrides": {
+        "canonical_semantic_key": "sem_0bb6e7c25b2c607911ef0c66"
+      },
+      "parent_id": "art_4c3a0ee76fc2192888fdc819"
+    },
+    {
+      "definition_id": "art_97eeb0c5ec1f5464444de0b2",
+      "id": "art_0d989537f02bc45e5b8391b8",
+      "layer_index": null,
+      "module_path": "lm_head",
+      "overrides": {
+        "canonical_semantic_key": "sem_ed55cd1346e6d4f429d53971"
+      },
+      "parent_id": "art_4c3a0ee76fc2192888fdc819"
+    }
+  ],
+  "logical_ops": [],
+  "lowerings": [],
+  "metrics": [],
+  "model": {
+    "family": "qwen2",
+    "framework": "transformers",
+    "id": "art_6a5d713af9c0fdfd4c16c440",
+    "name": "llm-vis/tiny-dense-qwen2",
+    "revision": "fixture-v1",
+    "source_artifact_ids": [
+      "art_ca7f64a42ca3d2bc002f2340"
+    ]
+  },
+  "scenarios": [],
+  "schema_version": "0.1",
+  "semantic_nodes": [
+    {
+      "child_ids": [
+        "art_098835f7119ccf1bec7b2b3c"
+      ],
+      "confidence": 1.0,
+      "definition_id": "art_f9c59067facd9071a5a1e693",
+      "evidence": [
+        "adapter:tiny-dense",
+        "source:config",
+        "attributes:{\"attention_kind\":\"full_attention\",\"hidden_size\":512,\"mlp_kind\":\"dense\"}"
+      ],
+      "id": "art_9e60c2da4d8d89c4e9f18bfe",
+      "input_tensor_ids": [
+        "art_f836338e1393ed6daeb1d0c7",
+        "art_083fafa28abc0bc14f6fc3ee"
+      ],
+      "instance_ids": [
+        "art_bc1dbf0aab68048a5001538f"
+      ],
+      "kind": "full_attention",
+      "label": "Dense layer 0",
+      "opaque": false,
+      "output_tensor_ids": [
+        "art_f836338e1393ed6daeb1d0c7",
+        "art_083fafa28abc0bc14f6fc3ee"
+      ]
+    },
+    {
+      "child_ids": [],
+      "confidence": 1.0,
+      "definition_id": "art_f9c59067facd9071a5a1e693",
+      "evidence": [
+        "adapter:tiny-dense",
+        "state:kv_cache"
+      ],
+      "id": "art_098835f7119ccf1bec7b2b3c",
+      "input_tensor_ids": [
+        "art_f836338e1393ed6daeb1d0c7",
+        "art_083fafa28abc0bc14f6fc3ee"
+      ],
+      "instance_ids": [
+        "art_bc1dbf0aab68048a5001538f"
+      ],
+      "kind": "kv_cache",
+      "label": "Dense layer 0 KV cache",
+      "opaque": false,
+      "output_tensor_ids": [
+        "art_f836338e1393ed6daeb1d0c7",
+        "art_083fafa28abc0bc14f6fc3ee"
+      ]
+    },
+    {
+      "child_ids": [
+        "art_6a67784b42fde78a714b667c"
+      ],
+      "confidence": 1.0,
+      "definition_id": "art_f9c59067facd9071a5a1e693",
+      "evidence": [
+        "adapter:tiny-dense",
+        "source:config",
+        "attributes:{\"attention_kind\":\"full_attention\",\"hidden_size\":512,\"mlp_kind\":\"dense\"}"
+      ],
+      "id": "art_df51b665a0eb9c2513bd7f97",
+      "input_tensor_ids": [
+        "art_e5518b24de83fd182cf08ddb",
+        "art_3f4cf02851567219d82603ed"
+      ],
+      "instance_ids": [
+        "art_3341d69591bda6502522368d"
+      ],
+      "kind": "full_attention",
+      "label": "Dense layer 1",
+      "opaque": false,
+      "output_tensor_ids": [
+        "art_e5518b24de83fd182cf08ddb",
+        "art_3f4cf02851567219d82603ed"
+      ]
+    },
+    {
+      "child_ids": [],
+      "confidence": 1.0,
+      "definition_id": "art_f9c59067facd9071a5a1e693",
+      "evidence": [
+        "adapter:tiny-dense",
+        "state:kv_cache"
+      ],
+      "id": "art_6a67784b42fde78a714b667c",
+      "input_tensor_ids": [
+        "art_e5518b24de83fd182cf08ddb",
+        "art_3f4cf02851567219d82603ed"
+      ],
+      "instance_ids": [
+        "art_3341d69591bda6502522368d"
+      ],
+      "kind": "kv_cache",
+      "label": "Dense layer 1 KV cache",
+      "opaque": false,
+      "output_tensor_ids": [
+        "art_e5518b24de83fd182cf08ddb",
+        "art_3f4cf02851567219d82603ed"
+      ]
+    },
+    {
+      "child_ids": [
+        "art_7cd1026d4d3bd0044c309d9b"
+      ],
+      "confidence": 1.0,
+      "definition_id": "art_f9c59067facd9071a5a1e693",
+      "evidence": [
+        "adapter:tiny-dense",
+        "source:config",
+        "attributes:{\"attention_kind\":\"full_attention\",\"hidden_size\":512,\"mlp_kind\":\"dense\"}"
+      ],
+      "id": "art_3a7bc098fb23112c1ee7e4d2",
+      "input_tensor_ids": [
+        "art_8a65dd410299cc86bf473568",
+        "art_c80081fa77965ce135f41572"
+      ],
+      "instance_ids": [
+        "art_67c11503e53d9d916117433a"
+      ],
+      "kind": "full_attention",
+      "label": "Dense layer 2",
+      "opaque": false,
+      "output_tensor_ids": [
+        "art_8a65dd410299cc86bf473568",
+        "art_c80081fa77965ce135f41572"
+      ]
+    },
+    {
+      "child_ids": [],
+      "confidence": 1.0,
+      "definition_id": "art_f9c59067facd9071a5a1e693",
+      "evidence": [
+        "adapter:tiny-dense",
+        "state:kv_cache"
+      ],
+      "id": "art_7cd1026d4d3bd0044c309d9b",
+      "input_tensor_ids": [
+        "art_8a65dd410299cc86bf473568",
+        "art_c80081fa77965ce135f41572"
+      ],
+      "instance_ids": [
+        "art_67c11503e53d9d916117433a"
+      ],
+      "kind": "kv_cache",
+      "label": "Dense layer 2 KV cache",
+      "opaque": false,
+      "output_tensor_ids": [
+        "art_8a65dd410299cc86bf473568",
+        "art_c80081fa77965ce135f41572"
+      ]
+    },
+    {
+      "child_ids": [
+        "art_edcfcfc91662cfea72373c81"
+      ],
+      "confidence": 1.0,
+      "definition_id": "art_f9c59067facd9071a5a1e693",
+      "evidence": [
+        "adapter:tiny-dense",
+        "source:config",
+        "attributes:{\"attention_kind\":\"full_attention\",\"hidden_size\":512,\"mlp_kind\":\"dense\"}"
+      ],
+      "id": "art_f52a08e9e396acde47b8e154",
+      "input_tensor_ids": [
+        "art_472f68304709dcdd6a8c419c",
+        "art_66d1b7a489f7b0b28f8271fd"
+      ],
+      "instance_ids": [
+        "art_1f32b32f613d1052d0740262"
+      ],
+      "kind": "full_attention",
+      "label": "Dense layer 3",
+      "opaque": false,
+      "output_tensor_ids": [
+        "art_472f68304709dcdd6a8c419c",
+        "art_66d1b7a489f7b0b28f8271fd"
+      ]
+    },
+    {
+      "child_ids": [],
+      "confidence": 1.0,
+      "definition_id": "art_f9c59067facd9071a5a1e693",
+      "evidence": [
+        "adapter:tiny-dense",
+        "state:kv_cache"
+      ],
+      "id": "art_edcfcfc91662cfea72373c81",
+      "input_tensor_ids": [
+        "art_472f68304709dcdd6a8c419c",
+        "art_66d1b7a489f7b0b28f8271fd"
+      ],
+      "instance_ids": [
+        "art_1f32b32f613d1052d0740262"
+      ],
+      "kind": "kv_cache",
+      "label": "Dense layer 3 KV cache",
+      "opaque": false,
+      "output_tensor_ids": [
+        "art_472f68304709dcdd6a8c419c",
+        "art_66d1b7a489f7b0b28f8271fd"
+      ]
+    }
+  ],
+  "source_artifacts": [
+    {
+      "id": "art_ca7f64a42ca3d2bc002f2340",
+      "kind": "huggingface_config",
+      "license": null,
+      "path": null,
+      "revision": "fixture-v1",
+      "sha256": "c66f60bbfab94875593208f31c63225e92bb2148cb096cacafcebb6e27fd5062",
+      "trusted": false,
+      "uri": "hf://llm-vis/tiny-dense-qwen2@fixture-v1/config.json"
+    }
+  ],
+  "symbols": [
+    {
+      "default_value": null,
+      "description": "Batch size; bound by a Scenario at cost-analysis time",
+      "id": "art_a860158322136b3097c6c172",
+      "lower_bound": 1,
+      "name": "B",
+      "unit": null,
+      "upper_bound": null
+    },
+    {
+      "default_value": null,
+      "description": "Visible KV sequence length; bound by a Scenario at cost-analysis time",
+      "id": "art_2854d1028779a94941263250",
+      "lower_bound": 0,
+      "name": "S_KV",
+      "unit": null,
+      "upper_bound": null
+    }
+  ],
+  "tensors": [
+    {
+      "alias_group": null,
+      "concrete_shape": [
+        32000,
+        512
+      ],
+      "device": null,
+      "dtype": "bfloat16",
+      "evidence": [
+        "adapter:tiny-dense",
+        "source:config",
+        "inventory:semantic_contract_not_runtime_parameter_name",
+        "weights_loaded:false",
+        "config:tie_word_embeddings=false",
+        "shape:embedding[vocab,hidden]"
+      ],
+      "id": "art_40d0bfd6106e75fa21c3b01f",
+      "layout": "unknown",
+      "materialized": false,
+      "origin": "config",
+      "owner_id": "art_72aefd80fbed8b0f4e009e28",
+      "role": "parameter",
+      "semantic_name": "token_embedding.weight",
+      "shape_known": true,
+      "source_artifact_ids": [
+        "art_ca7f64a42ca3d2bc002f2340"
+      ],
+      "storage_dtype": "bfloat16",
+      "stride": null,
+      "symbolic_shape": [
+        {
+          "args": [],
+          "op": "literal",
+          "symbol": null,
+          "value": 32000
+        },
+        {
+          "args": [],
+          "op": "literal",
+          "symbol": null,
+          "value": 512
+        }
+      ]
+    },
+    {
+      "alias_group": null,
+      "concrete_shape": [
+        32000,
+        512
+      ],
+      "device": null,
+      "dtype": "bfloat16",
+      "evidence": [
+        "adapter:tiny-dense",
+        "source:config",
+        "inventory:semantic_contract_not_runtime_parameter_name",
+        "weights_loaded:false",
+        "config:tie_word_embeddings=false",
+        "shape:linear[out,in]"
+      ],
+      "id": "art_3168b863aab51147a936ea40",
+      "layout": "unknown",
+      "materialized": false,
+      "origin": "config",
+      "owner_id": "art_0d989537f02bc45e5b8391b8",
+      "role": "parameter",
+      "semantic_name": "output_projection.weight",
+      "shape_known": true,
+      "source_artifact_ids": [
+        "art_ca7f64a42ca3d2bc002f2340"
+      ],
+      "storage_dtype": "bfloat16",
+      "stride": null,
+      "symbolic_shape": [
+        {
+          "args": [],
+          "op": "literal",
+          "symbol": null,
+          "value": 32000
+        },
+        {
+          "args": [],
+          "op": "literal",
+          "symbol": null,
+          "value": 512
+        }
+      ]
+    },
+    {
+      "alias_group": null,
+      "concrete_shape": [
+        512
+      ],
+      "device": null,
+      "dtype": "bfloat16",
+      "evidence": [
+        "adapter:tiny-dense",
+        "source:config",
+        "inventory:semantic_contract_not_runtime_parameter_name",
+        "weights_loaded:false",
+        "config:hidden_size"
+      ],
+      "id": "art_675f958b592ca0a3a134819d",
+      "layout": "unknown",
+      "materialized": false,
+      "origin": "config",
+      "owner_id": "art_7bb4632b50488e16579e2819",
+      "role": "parameter",
+      "semantic_name": "final_norm.weight",
+      "shape_known": true,
+      "source_artifact_ids": [
+        "art_ca7f64a42ca3d2bc002f2340"
+      ],
+      "storage_dtype": "bfloat16",
+      "stride": null,
+      "symbolic_shape": [
+        {
+          "args": [],
+          "op": "literal",
+          "symbol": null,
+          "value": 512
+        }
+      ]
+    },
+    {
+      "alias_group": null,
+      "concrete_shape": [
+        512
+      ],
+      "device": null,
+      "dtype": "bfloat16",
+      "evidence": [
+        "adapter:tiny-dense",
+        "source:config",
+        "inventory:semantic_contract_not_runtime_parameter_name",
+        "weights_loaded:false",
+        "config:hidden_size"
+      ],
+      "id": "art_3e47ce19cff0d0e74ccbe5f7",
+      "layout": "unknown",
+      "materialized": false,
+      "origin": "config",
+      "owner_id": "art_bc1dbf0aab68048a5001538f",
+      "role": "parameter",
+      "semantic_name": "input_norm.weight",
+      "shape_known": true,
+      "source_artifact_ids": [
+        "art_ca7f64a42ca3d2bc002f2340"
+      ],
+      "storage_dtype": "bfloat16",
+      "stride": null,
+      "symbolic_shape": [
+        {
+          "args": [],
+          "op": "literal",
+          "symbol": null,
+          "value": 512
+        }
+      ]
+    },
+    {
+      "alias_group": null,
+      "concrete_shape": [
+        512
+      ],
+      "device": null,
+      "dtype": "bfloat16",
+      "evidence": [
+        "adapter:tiny-dense",
+        "source:config",
+        "inventory:semantic_contract_not_runtime_parameter_name",
+        "weights_loaded:false",
+        "config:hidden_size"
+      ],
+      "id": "art_478f6a573c8d08912cf01216",
+      "layout": "unknown",
+      "materialized": false,
+      "origin": "config",
+      "owner_id": "art_bc1dbf0aab68048a5001538f",
+      "role": "parameter",
+      "semantic_name": "post_attention_norm.weight",
+      "shape_known": true,
+      "source_artifact_ids": [
+        "art_ca7f64a42ca3d2bc002f2340"
+      ],
+      "storage_dtype": "bfloat16",
+      "stride": null,
+      "symbolic_shape": [
+        {
+          "args": [],
+          "op": "literal",
+          "symbol": null,
+          "value": 512
+        }
+      ]
+    },
+    {
+      "alias_group": null,
+      "concrete_shape": [
+        512,
+        512
+      ],
+      "device": null,
+      "dtype": "bfloat16",
+      "evidence": [
+        "adapter:tiny-dense",
+        "source:config",
+        "inventory:semantic_contract_not_runtime_parameter_name",
+        "weights_loaded:false",
+        "shape:linear[out,in]"
+      ],
+      "id": "art_990017c4865c40d4f8b209ef",
+      "layout": "unknown",
+      "materialized": false,
+      "origin": "config",
+      "owner_id": "art_bc1dbf0aab68048a5001538f",
+      "role": "parameter",
+      "semantic_name": "self_attention.query_projection.weight",
+      "shape_known": true,
+      "source_artifact_ids": [
+        "art_ca7f64a42ca3d2bc002f2340"
+      ],
+      "storage_dtype": "bfloat16",
+      "stride": null,
+      "symbolic_shape": [
+        {
+          "args": [],
+          "op": "literal",
+          "symbol": null,
+          "value": 512
+        },
+        {
+          "args": [],
+          "op": "literal",
+          "symbol": null,
+          "value": 512
+        }
+      ]
+    },
+    {
+      "alias_group": null,
+      "concrete_shape": [
+        128,
+        512
+      ],
+      "device": null,
+      "dtype": "bfloat16",
+      "evidence": [
+        "adapter:tiny-dense",
+        "source:config",
+        "inventory:semantic_contract_not_runtime_parameter_name",
+        "weights_loaded:false",
+        "shape:linear[out,in]"
+      ],
+      "id": "art_eeed328038ce7efa7dbf5e45",
+      "layout": "unknown",
+      "materialized": false,
+      "origin": "config",
+      "owner_id": "art_bc1dbf0aab68048a5001538f",
+      "role": "parameter",
+      "semantic_name": "self_attention.key_projection.weight",
+      "shape_known": true,
+      "source_artifact_ids": [
+        "art_ca7f64a42ca3d2bc002f2340"
+      ],
+      "storage_dtype": "bfloat16",
+      "stride": null,
+      "symbolic_shape": [
+        {
+          "args": [],
+          "op": "literal",
+          "symbol": null,
+          "value": 128
+        },
+        {
+          "args": [],
+          "op": "literal",
+          "symbol": null,
+          "value": 512
+        }
+      ]
+    },
+    {
+      "alias_group": null,
+      "concrete_shape": [
+        128,
+        512
+      ],
+      "device": null,
+      "dtype": "bfloat16",
+      "evidence": [
+        "adapter:tiny-dense",
+        "source:config",
+        "inventory:semantic_contract_not_runtime_parameter_name",
+        "weights_loaded:false",
+        "shape:linear[out,in]"
+      ],
+      "id": "art_cfcda4d8de4dbb5fd7994947",
+      "layout": "unknown",
+      "materialized": false,
+      "origin": "config",
+      "owner_id": "art_bc1dbf0aab68048a5001538f",
+      "role": "parameter",
+      "semantic_name": "self_attention.value_projection.weight",
+      "shape_known": true,
+      "source_artifact_ids": [
+        "art_ca7f64a42ca3d2bc002f2340"
+      ],
+      "storage_dtype": "bfloat16",
+      "stride": null,
+      "symbolic_shape": [
+        {
+          "args": [],
+          "op": "literal",
+          "symbol": null,
+          "value": 128
+        },
+        {
+          "args": [],
+          "op": "literal",
+          "symbol": null,
+          "value": 512
+        }
+      ]
+    },
+    {
+      "alias_group": null,
+      "concrete_shape": [
+        512,
+        512
+      ],
+      "device": null,
+      "dtype": "bfloat16",
+      "evidence": [
+        "adapter:tiny-dense",
+        "source:config",
+        "inventory:semantic_contract_not_runtime_parameter_name",
+        "weights_loaded:false",
+        "shape:linear[out,in]"
+      ],
+      "id": "art_0de30bd8b1259197062f71c4",
+      "layout": "unknown",
+      "materialized": false,
+      "origin": "config",
+      "owner_id": "art_bc1dbf0aab68048a5001538f",
+      "role": "parameter",
+      "semantic_name": "self_attention.output_projection.weight",
+      "shape_known": true,
+      "source_artifact_ids": [
+        "art_ca7f64a42ca3d2bc002f2340"
+      ],
+      "storage_dtype": "bfloat16",
+      "stride": null,
+      "symbolic_shape": [
+        {
+          "args": [],
+          "op": "literal",
+          "symbol": null,
+          "value": 512
+        },
+        {
+          "args": [],
+          "op": "literal",
+          "symbol": null,
+          "value": 512
+        }
+      ]
+    },
+    {
+      "alias_group": null,
+      "concrete_shape": [
+        1376,
+        512
+      ],
+      "device": null,
+      "dtype": "bfloat16",
+      "evidence": [
+        "adapter:tiny-dense",
+        "source:config",
+        "inventory:semantic_contract_not_runtime_parameter_name",
+        "weights_loaded:false",
+        "shape:linear[out,in]"
+      ],
+      "id": "art_014782b91d616ca31d8370f4",
+      "layout": "unknown",
+      "materialized": false,
+      "origin": "config",
+      "owner_id": "art_bc1dbf0aab68048a5001538f",
+      "role": "parameter",
+      "semantic_name": "mlp.gate_projection.weight",
+      "shape_known": true,
+      "source_artifact_ids": [
+        "art_ca7f64a42ca3d2bc002f2340"
+      ],
+      "storage_dtype": "bfloat16",
+      "stride": null,
+      "symbolic_shape": [
+        {
+          "args": [],
+          "op": "literal",
+          "symbol": null,
+          "value": 1376
+        },
+        {
+          "args": [],
+          "op": "literal",
+          "symbol": null,
+          "value": 512
+        }
+      ]
+    },
+    {
+      "alias_group": null,
+      "concrete_shape": [
+        1376,
+        512
+      ],
+      "device": null,
+      "dtype": "bfloat16",
+      "evidence": [
+        "adapter:tiny-dense",
+        "source:config",
+        "inventory:semantic_contract_not_runtime_parameter_name",
+        "weights_loaded:false",
+        "shape:linear[out,in]"
+      ],
+      "id": "art_689ec39c826c99cd02f0ac76",
+      "layout": "unknown",
+      "materialized": false,
+      "origin": "config",
+      "owner_id": "art_bc1dbf0aab68048a5001538f",
+      "role": "parameter",
+      "semantic_name": "mlp.up_projection.weight",
+      "shape_known": true,
+      "source_artifact_ids": [
+        "art_ca7f64a42ca3d2bc002f2340"
+      ],
+      "storage_dtype": "bfloat16",
+      "stride": null,
+      "symbolic_shape": [
+        {
+          "args": [],
+          "op": "literal",
+          "symbol": null,
+          "value": 1376
+        },
+        {
+          "args": [],
+          "op": "literal",
+          "symbol": null,
+          "value": 512
+        }
+      ]
+    },
+    {
+      "alias_group": null,
+      "concrete_shape": [
+        512,
+        1376
+      ],
+      "device": null,
+      "dtype": "bfloat16",
+      "evidence": [
+        "adapter:tiny-dense",
+        "source:config",
+        "inventory:semantic_contract_not_runtime_parameter_name",
+        "weights_loaded:false",
+        "shape:linear[out,in]"
+      ],
+      "id": "art_12cd935e13330300bf6aa8c1",
+      "layout": "unknown",
+      "materialized": false,
+      "origin": "config",
+      "owner_id": "art_bc1dbf0aab68048a5001538f",
+      "role": "parameter",
+      "semantic_name": "mlp.down_projection.weight",
+      "shape_known": true,
+      "source_artifact_ids": [
+        "art_ca7f64a42ca3d2bc002f2340"
+      ],
+      "storage_dtype": "bfloat16",
+      "stride": null,
+      "symbolic_shape": [
+        {
+          "args": [],
+          "op": "literal",
+          "symbol": null,
+          "value": 512
+        },
+        {
+          "args": [],
+          "op": "literal",
+          "symbol": null,
+          "value": 1376
+        }
+      ]
+    },
+    {
+      "alias_group": null,
+      "concrete_shape": null,
+      "device": null,
+      "dtype": "unknown",
+      "evidence": [
+        "adapter:tiny-dense",
+        "source:config",
+        "inventory:semantic_contract_not_runtime_parameter_name",
+        "weights_loaded:false",
+        "config:use_cache=True"
+      ],
+      "id": "art_f836338e1393ed6daeb1d0c7",
+      "layout": "unknown",
+      "materialized": false,
+      "origin": "config",
+      "owner_id": "art_bc1dbf0aab68048a5001538f",
+      "role": "cache",
+      "semantic_name": "kv_cache.key",
+      "shape_known": true,
+      "source_artifact_ids": [
+        "art_ca7f64a42ca3d2bc002f2340"
+      ],
+      "storage_dtype": "unknown",
+      "stride": null,
+      "symbolic_shape": [
+        {
+          "args": [],
+          "op": "symbol",
+          "symbol": "B",
+          "value": null
+        },
+        {
+          "args": [],
+          "op": "literal",
+          "symbol": null,
+          "value": 2
+        },
+        {
+          "args": [],
+          "op": "symbol",
+          "symbol": "S_KV",
+          "value": null
+        },
+        {
+          "args": [],
+          "op": "literal",
+          "symbol": null,
+          "value": 64
+        }
+      ]
+    },
+    {
+      "alias_group": null,
+      "concrete_shape": null,
+      "device": null,
+      "dtype": "unknown",
+      "evidence": [
+        "adapter:tiny-dense",
+        "source:config",
+        "inventory:semantic_contract_not_runtime_parameter_name",
+        "weights_loaded:false",
+        "config:use_cache=True"
+      ],
+      "id": "art_083fafa28abc0bc14f6fc3ee",
+      "layout": "unknown",
+      "materialized": false,
+      "origin": "config",
+      "owner_id": "art_bc1dbf0aab68048a5001538f",
+      "role": "cache",
+      "semantic_name": "kv_cache.value",
+      "shape_known": true,
+      "source_artifact_ids": [
+        "art_ca7f64a42ca3d2bc002f2340"
+      ],
+      "storage_dtype": "unknown",
+      "stride": null,
+      "symbolic_shape": [
+        {
+          "args": [],
+          "op": "symbol",
+          "symbol": "B",
+          "value": null
+        },
+        {
+          "args": [],
+          "op": "literal",
+          "symbol": null,
+          "value": 2
+        },
+        {
+          "args": [],
+          "op": "symbol",
+          "symbol": "S_KV",
+          "value": null
+        },
+        {
+          "args": [],
+          "op": "literal",
+          "symbol": null,
+          "value": 64
+        }
+      ]
+    },
+    {
+      "alias_group": null,
+      "concrete_shape": [
+        512
+      ],
+      "device": null,
+      "dtype": "bfloat16",
+      "evidence": [
+        "adapter:tiny-dense",
+        "source:config",
+        "inventory:semantic_contract_not_runtime_parameter_name",
+        "weights_loaded:false",
+        "config:hidden_size"
+      ],
+      "id": "art_528308e07ccd03cc9170cee6",
+      "layout": "unknown",
+      "materialized": false,
+      "origin": "config",
+      "owner_id": "art_3341d69591bda6502522368d",
+      "role": "parameter",
+      "semantic_name": "input_norm.weight",
+      "shape_known": true,
+      "source_artifact_ids": [
+        "art_ca7f64a42ca3d2bc002f2340"
+      ],
+      "storage_dtype": "bfloat16",
+      "stride": null,
+      "symbolic_shape": [
+        {
+          "args": [],
+          "op": "literal",
+          "symbol": null,
+          "value": 512
+        }
+      ]
+    },
+    {
+      "alias_group": null,
+      "concrete_shape": [
+        512
+      ],
+      "device": null,
+      "dtype": "bfloat16",
+      "evidence": [
+        "adapter:tiny-dense",
+        "source:config",
+        "inventory:semantic_contract_not_runtime_parameter_name",
+        "weights_loaded:false",
+        "config:hidden_size"
+      ],
+      "id": "art_0393aa9fbf0f872a0fdff621",
+      "layout": "unknown",
+      "materialized": false,
+      "origin": "config",
+      "owner_id": "art_3341d69591bda6502522368d",
+      "role": "parameter",
+      "semantic_name": "post_attention_norm.weight",
+      "shape_known": true,
+      "source_artifact_ids": [
+        "art_ca7f64a42ca3d2bc002f2340"
+      ],
+      "storage_dtype": "bfloat16",
+      "stride": null,
+      "symbolic_shape": [
+        {
+          "args": [],
+          "op": "literal",
+          "symbol": null,
+          "value": 512
+        }
+      ]
+    },
+    {
+      "alias_group": null,
+      "concrete_shape": [
+        512,
+        512
+      ],
+      "device": null,
+      "dtype": "bfloat16",
+      "evidence": [
+        "adapter:tiny-dense",
+        "source:config",
+        "inventory:semantic_contract_not_runtime_parameter_name",
+        "weights_loaded:false",
+        "shape:linear[out,in]"
+      ],
+      "id": "art_8a45388fe3313fc2e943bc84",
+      "layout": "unknown",
+      "materialized": false,
+      "origin": "config",
+      "owner_id": "art_3341d69591bda6502522368d",
+      "role": "parameter",
+      "semantic_name": "self_attention.query_projection.weight",
+      "shape_known": true,
+      "source_artifact_ids": [
+        "art_ca7f64a42ca3d2bc002f2340"
+      ],
+      "storage_dtype": "bfloat16",
+      "stride": null,
+      "symbolic_shape": [
+        {
+          "args": [],
+          "op": "literal",
+          "symbol": null,
+          "value": 512
+        },
+        {
+          "args": [],
+          "op": "literal",
+          "symbol": null,
+          "value": 512
+        }
+      ]
+    },
+    {
+      "alias_group": null,
+      "concrete_shape": [
+        128,
+        512
+      ],
+      "device": null,
+      "dtype": "bfloat16",
+      "evidence": [
+        "adapter:tiny-dense",
+        "source:config",
+        "inventory:semantic_contract_not_runtime_parameter_name",
+        "weights_loaded:false",
+        "shape:linear[out,in]"
+      ],
+      "id": "art_bcb10b17f25215f8ac9178d5",
+      "layout": "unknown",
+      "materialized": false,
+      "origin": "config",
+      "owner_id": "art_3341d69591bda6502522368d",
+      "role": "parameter",
+      "semantic_name": "self_attention.key_projection.weight",
+      "shape_known": true,
+      "source_artifact_ids": [
+        "art_ca7f64a42ca3d2bc002f2340"
+      ],
+      "storage_dtype": "bfloat16",
+      "stride": null,
+      "symbolic_shape": [
+        {
+          "args": [],
+          "op": "literal",
+          "symbol": null,
+          "value": 128
+        },
+        {
+          "args": [],
+          "op": "literal",
+          "symbol": null,
+          "value": 512
+        }
+      ]
+    },
+    {
+      "alias_group": null,
+      "concrete_shape": [
+        128,
+        512
+      ],
+      "device": null,
+      "dtype": "bfloat16",
+      "evidence": [
+        "adapter:tiny-dense",
+        "source:config",
+        "inventory:semantic_contract_not_runtime_parameter_name",
+        "weights_loaded:false",
+        "shape:linear[out,in]"
+      ],
+      "id": "art_29ad98bc48ab3f3f915b72f9",
+      "layout": "unknown",
+      "materialized": false,
+      "origin": "config",
+      "owner_id": "art_3341d69591bda6502522368d",
+      "role": "parameter",
+      "semantic_name": "self_attention.value_projection.weight",
+      "shape_known": true,
+      "source_artifact_ids": [
+        "art_ca7f64a42ca3d2bc002f2340"
+      ],
+      "storage_dtype": "bfloat16",
+      "stride": null,
+      "symbolic_shape": [
+        {
+          "args": [],
+          "op": "literal",
+          "symbol": null,
+          "value": 128
+        },
+        {
+          "args": [],
+          "op": "literal",
+          "symbol": null,
+          "value": 512
+        }
+      ]
+    },
+    {
+      "alias_group": null,
+      "concrete_shape": [
+        512,
+        512
+      ],
+      "device": null,
+      "dtype": "bfloat16",
+      "evidence": [
+        "adapter:tiny-dense",
+        "source:config",
+        "inventory:semantic_contract_not_runtime_parameter_name",
+        "weights_loaded:false",
+        "shape:linear[out,in]"
+      ],
+      "id": "art_0ad01d3afc92e6dd4b09bfb5",
+      "layout": "unknown",
+      "materialized": false,
+      "origin": "config",
+      "owner_id": "art_3341d69591bda6502522368d",
+      "role": "parameter",
+      "semantic_name": "self_attention.output_projection.weight",
+      "shape_known": true,
+      "source_artifact_ids": [
+        "art_ca7f64a42ca3d2bc002f2340"
+      ],
+      "storage_dtype": "bfloat16",
+      "stride": null,
+      "symbolic_shape": [
+        {
+          "args": [],
+          "op": "literal",
+          "symbol": null,
+          "value": 512
+        },
+        {
+          "args": [],
+          "op": "literal",
+          "symbol": null,
+          "value": 512
+        }
+      ]
+    },
+    {
+      "alias_group": null,
+      "concrete_shape": [
+        1376,
+        512
+      ],
+      "device": null,
+      "dtype": "bfloat16",
+      "evidence": [
+        "adapter:tiny-dense",
+        "source:config",
+        "inventory:semantic_contract_not_runtime_parameter_name",
+        "weights_loaded:false",
+        "shape:linear[out,in]"
+      ],
+      "id": "art_3341be22c66944fef78569ca",
+      "layout": "unknown",
+      "materialized": false,
+      "origin": "config",
+      "owner_id": "art_3341d69591bda6502522368d",
+      "role": "parameter",
+      "semantic_name": "mlp.gate_projection.weight",
+      "shape_known": true,
+      "source_artifact_ids": [
+        "art_ca7f64a42ca3d2bc002f2340"
+      ],
+      "storage_dtype": "bfloat16",
+      "stride": null,
+      "symbolic_shape": [
+        {
+          "args": [],
+          "op": "literal",
+          "symbol": null,
+          "value": 1376
+        },
+        {
+          "args": [],
+          "op": "literal",
+          "symbol": null,
+          "value": 512
+        }
+      ]
+    },
+    {
+      "alias_group": null,
+      "concrete_shape": [
+        1376,
+        512
+      ],
+      "device": null,
+      "dtype": "bfloat16",
+      "evidence": [
+        "adapter:tiny-dense",
+        "source:config",
+        "inventory:semantic_contract_not_runtime_parameter_name",
+        "weights_loaded:false",
+        "shape:linear[out,in]"
+      ],
+      "id": "art_6500ee780f26c6981a116ec8",
+      "layout": "unknown",
+      "materialized": false,
+      "origin": "config",
+      "owner_id": "art_3341d69591bda6502522368d",
+      "role": "parameter",
+      "semantic_name": "mlp.up_projection.weight",
+      "shape_known": true,
+      "source_artifact_ids": [
+        "art_ca7f64a42ca3d2bc002f2340"
+      ],
+      "storage_dtype": "bfloat16",
+      "stride": null,
+      "symbolic_shape": [
+        {
+          "args": [],
+          "op": "literal",
+          "symbol": null,
+          "value": 1376
+        },
+        {
+          "args": [],
+          "op": "literal",
+          "symbol": null,
+          "value": 512
+        }
+      ]
+    },
+    {
+      "alias_group": null,
+      "concrete_shape": [
+        512,
+        1376
+      ],
+      "device": null,
+      "dtype": "bfloat16",
+      "evidence": [
+        "adapter:tiny-dense",
+        "source:config",
+        "inventory:semantic_contract_not_runtime_parameter_name",
+        "weights_loaded:false",
+        "shape:linear[out,in]"
+      ],
+      "id": "art_8343fa04924ad45bd215d200",
+      "layout": "unknown",
+      "materialized": false,
+      "origin": "config",
+      "owner_id": "art_3341d69591bda6502522368d",
+      "role": "parameter",
+      "semantic_name": "mlp.down_projection.weight",
+      "shape_known": true,
+      "source_artifact_ids": [
+        "art_ca7f64a42ca3d2bc002f2340"
+      ],
+      "storage_dtype": "bfloat16",
+      "stride": null,
+      "symbolic_shape": [
+        {
+          "args": [],
+          "op": "literal",
+          "symbol": null,
+          "value": 512
+        },
+        {
+          "args": [],
+          "op": "literal",
+          "symbol": null,
+          "value": 1376
+        }
+      ]
+    },
+    {
+      "alias_group": null,
+      "concrete_shape": null,
+      "device": null,
+      "dtype": "unknown",
+      "evidence": [
+        "adapter:tiny-dense",
+        "source:config",
+        "inventory:semantic_contract_not_runtime_parameter_name",
+        "weights_loaded:false",
+        "config:use_cache=True"
+      ],
+      "id": "art_e5518b24de83fd182cf08ddb",
+      "layout": "unknown",
+      "materialized": false,
+      "origin": "config",
+      "owner_id": "art_3341d69591bda6502522368d",
+      "role": "cache",
+      "semantic_name": "kv_cache.key",
+      "shape_known": true,
+      "source_artifact_ids": [
+        "art_ca7f64a42ca3d2bc002f2340"
+      ],
+      "storage_dtype": "unknown",
+      "stride": null,
+      "symbolic_shape": [
+        {
+          "args": [],
+          "op": "symbol",
+          "symbol": "B",
+          "value": null
+        },
+        {
+          "args": [],
+          "op": "literal",
+          "symbol": null,
+          "value": 2
+        },
+        {
+          "args": [],
+          "op": "symbol",
+          "symbol": "S_KV",
+          "value": null
+        },
+        {
+          "args": [],
+          "op": "literal",
+          "symbol": null,
+          "value": 64
+        }
+      ]
+    },
+    {
+      "alias_group": null,
+      "concrete_shape": null,
+      "device": null,
+      "dtype": "unknown",
+      "evidence": [
+        "adapter:tiny-dense",
+        "source:config",
+        "inventory:semantic_contract_not_runtime_parameter_name",
+        "weights_loaded:false",
+        "config:use_cache=True"
+      ],
+      "id": "art_3f4cf02851567219d82603ed",
+      "layout": "unknown",
+      "materialized": false,
+      "origin": "config",
+      "owner_id": "art_3341d69591bda6502522368d",
+      "role": "cache",
+      "semantic_name": "kv_cache.value",
+      "shape_known": true,
+      "source_artifact_ids": [
+        "art_ca7f64a42ca3d2bc002f2340"
+      ],
+      "storage_dtype": "unknown",
+      "stride": null,
+      "symbolic_shape": [
+        {
+          "args": [],
+          "op": "symbol",
+          "symbol": "B",
+          "value": null
+        },
+        {
+          "args": [],
+          "op": "literal",
+          "symbol": null,
+          "value": 2
+        },
+        {
+          "args": [],
+          "op": "symbol",
+          "symbol": "S_KV",
+          "value": null
+        },
+        {
+          "args": [],
+          "op": "literal",
+          "symbol": null,
+          "value": 64
+        }
+      ]
+    },
+    {
+      "alias_group": null,
+      "concrete_shape": [
+        512
+      ],
+      "device": null,
+      "dtype": "bfloat16",
+      "evidence": [
+        "adapter:tiny-dense",
+        "source:config",
+        "inventory:semantic_contract_not_runtime_parameter_name",
+        "weights_loaded:false",
+        "config:hidden_size"
+      ],
+      "id": "art_5425913d90e2acdba11caac0",
+      "layout": "unknown",
+      "materialized": false,
+      "origin": "config",
+      "owner_id": "art_67c11503e53d9d916117433a",
+      "role": "parameter",
+      "semantic_name": "input_norm.weight",
+      "shape_known": true,
+      "source_artifact_ids": [
+        "art_ca7f64a42ca3d2bc002f2340"
+      ],
+      "storage_dtype": "bfloat16",
+      "stride": null,
+      "symbolic_shape": [
+        {
+          "args": [],
+          "op": "literal",
+          "symbol": null,
+          "value": 512
+        }
+      ]
+    },
+    {
+      "alias_group": null,
+      "concrete_shape": [
+        512
+      ],
+      "device": null,
+      "dtype": "bfloat16",
+      "evidence": [
+        "adapter:tiny-dense",
+        "source:config",
+        "inventory:semantic_contract_not_runtime_parameter_name",
+        "weights_loaded:false",
+        "config:hidden_size"
+      ],
+      "id": "art_169b03a9c6b8c696dddf5694",
+      "layout": "unknown",
+      "materialized": false,
+      "origin": "config",
+      "owner_id": "art_67c11503e53d9d916117433a",
+      "role": "parameter",
+      "semantic_name": "post_attention_norm.weight",
+      "shape_known": true,
+      "source_artifact_ids": [
+        "art_ca7f64a42ca3d2bc002f2340"
+      ],
+      "storage_dtype": "bfloat16",
+      "stride": null,
+      "symbolic_shape": [
+        {
+          "args": [],
+          "op": "literal",
+          "symbol": null,
+          "value": 512
+        }
+      ]
+    },
+    {
+      "alias_group": null,
+      "concrete_shape": [
+        512,
+        512
+      ],
+      "device": null,
+      "dtype": "bfloat16",
+      "evidence": [
+        "adapter:tiny-dense",
+        "source:config",
+        "inventory:semantic_contract_not_runtime_parameter_name",
+        "weights_loaded:false",
+        "shape:linear[out,in]"
+      ],
+      "id": "art_00cea797b02b9ffeba6d04a0",
+      "layout": "unknown",
+      "materialized": false,
+      "origin": "config",
+      "owner_id": "art_67c11503e53d9d916117433a",
+      "role": "parameter",
+      "semantic_name": "self_attention.query_projection.weight",
+      "shape_known": true,
+      "source_artifact_ids": [
+        "art_ca7f64a42ca3d2bc002f2340"
+      ],
+      "storage_dtype": "bfloat16",
+      "stride": null,
+      "symbolic_shape": [
+        {
+          "args": [],
+          "op": "literal",
+          "symbol": null,
+          "value": 512
+        },
+        {
+          "args": [],
+          "op": "literal",
+          "symbol": null,
+          "value": 512
+        }
+      ]
+    },
+    {
+      "alias_group": null,
+      "concrete_shape": [
+        128,
+        512
+      ],
+      "device": null,
+      "dtype": "bfloat16",
+      "evidence": [
+        "adapter:tiny-dense",
+        "source:config",
+        "inventory:semantic_contract_not_runtime_parameter_name",
+        "weights_loaded:false",
+        "shape:linear[out,in]"
+      ],
+      "id": "art_bdcb880534229ccf085528bc",
+      "layout": "unknown",
+      "materialized": false,
+      "origin": "config",
+      "owner_id": "art_67c11503e53d9d916117433a",
+      "role": "parameter",
+      "semantic_name": "self_attention.key_projection.weight",
+      "shape_known": true,
+      "source_artifact_ids": [
+        "art_ca7f64a42ca3d2bc002f2340"
+      ],
+      "storage_dtype": "bfloat16",
+      "stride": null,
+      "symbolic_shape": [
+        {
+          "args": [],
+          "op": "literal",
+          "symbol": null,
+          "value": 128
+        },
+        {
+          "args": [],
+          "op": "literal",
+          "symbol": null,
+          "value": 512
+        }
+      ]
+    },
+    {
+      "alias_group": null,
+      "concrete_shape": [
+        128,
+        512
+      ],
+      "device": null,
+      "dtype": "bfloat16",
+      "evidence": [
+        "adapter:tiny-dense",
+        "source:config",
+        "inventory:semantic_contract_not_runtime_parameter_name",
+        "weights_loaded:false",
+        "shape:linear[out,in]"
+      ],
+      "id": "art_e7d1a0d492ac3034c6bbfd34",
+      "layout": "unknown",
+      "materialized": false,
+      "origin": "config",
+      "owner_id": "art_67c11503e53d9d916117433a",
+      "role": "parameter",
+      "semantic_name": "self_attention.value_projection.weight",
+      "shape_known": true,
+      "source_artifact_ids": [
+        "art_ca7f64a42ca3d2bc002f2340"
+      ],
+      "storage_dtype": "bfloat16",
+      "stride": null,
+      "symbolic_shape": [
+        {
+          "args": [],
+          "op": "literal",
+          "symbol": null,
+          "value": 128
+        },
+        {
+          "args": [],
+          "op": "literal",
+          "symbol": null,
+          "value": 512
+        }
+      ]
+    },
+    {
+      "alias_group": null,
+      "concrete_shape": [
+        512,
+        512
+      ],
+      "device": null,
+      "dtype": "bfloat16",
+      "evidence": [
+        "adapter:tiny-dense",
+        "source:config",
+        "inventory:semantic_contract_not_runtime_parameter_name",
+        "weights_loaded:false",
+        "shape:linear[out,in]"
+      ],
+      "id": "art_e6fab87eb64ca8901c5eb620",
+      "layout": "unknown",
+      "materialized": false,
+      "origin": "config",
+      "owner_id": "art_67c11503e53d9d916117433a",
+      "role": "parameter",
+      "semantic_name": "self_attention.output_projection.weight",
+      "shape_known": true,
+      "source_artifact_ids": [
+        "art_ca7f64a42ca3d2bc002f2340"
+      ],
+      "storage_dtype": "bfloat16",
+      "stride": null,
+      "symbolic_shape": [
+        {
+          "args": [],
+          "op": "literal",
+          "symbol": null,
+          "value": 512
+        },
+        {
+          "args": [],
+          "op": "literal",
+          "symbol": null,
+          "value": 512
+        }
+      ]
+    },
+    {
+      "alias_group": null,
+      "concrete_shape": [
+        1376,
+        512
+      ],
+      "device": null,
+      "dtype": "bfloat16",
+      "evidence": [
+        "adapter:tiny-dense",
+        "source:config",
+        "inventory:semantic_contract_not_runtime_parameter_name",
+        "weights_loaded:false",
+        "shape:linear[out,in]"
+      ],
+      "id": "art_a028cf1a185dc20ecfa1e0a7",
+      "layout": "unknown",
+      "materialized": false,
+      "origin": "config",
+      "owner_id": "art_67c11503e53d9d916117433a",
+      "role": "parameter",
+      "semantic_name": "mlp.gate_projection.weight",
+      "shape_known": true,
+      "source_artifact_ids": [
+        "art_ca7f64a42ca3d2bc002f2340"
+      ],
+      "storage_dtype": "bfloat16",
+      "stride": null,
+      "symbolic_shape": [
+        {
+          "args": [],
+          "op": "literal",
+          "symbol": null,
+          "value": 1376
+        },
+        {
+          "args": [],
+          "op": "literal",
+          "symbol": null,
+          "value": 512
+        }
+      ]
+    },
+    {
+      "alias_group": null,
+      "concrete_shape": [
+        1376,
+        512
+      ],
+      "device": null,
+      "dtype": "bfloat16",
+      "evidence": [
+        "adapter:tiny-dense",
+        "source:config",
+        "inventory:semantic_contract_not_runtime_parameter_name",
+        "weights_loaded:false",
+        "shape:linear[out,in]"
+      ],
+      "id": "art_cec320c4b5f13756e3ae725d",
+      "layout": "unknown",
+      "materialized": false,
+      "origin": "config",
+      "owner_id": "art_67c11503e53d9d916117433a",
+      "role": "parameter",
+      "semantic_name": "mlp.up_projection.weight",
+      "shape_known": true,
+      "source_artifact_ids": [
+        "art_ca7f64a42ca3d2bc002f2340"
+      ],
+      "storage_dtype": "bfloat16",
+      "stride": null,
+      "symbolic_shape": [
+        {
+          "args": [],
+          "op": "literal",
+          "symbol": null,
+          "value": 1376
+        },
+        {
+          "args": [],
+          "op": "literal",
+          "symbol": null,
+          "value": 512
+        }
+      ]
+    },
+    {
+      "alias_group": null,
+      "concrete_shape": [
+        512,
+        1376
+      ],
+      "device": null,
+      "dtype": "bfloat16",
+      "evidence": [
+        "adapter:tiny-dense",
+        "source:config",
+        "inventory:semantic_contract_not_runtime_parameter_name",
+        "weights_loaded:false",
+        "shape:linear[out,in]"
+      ],
+      "id": "art_2a3a1735cf4f7d0dd6485b56",
+      "layout": "unknown",
+      "materialized": false,
+      "origin": "config",
+      "owner_id": "art_67c11503e53d9d916117433a",
+      "role": "parameter",
+      "semantic_name": "mlp.down_projection.weight",
+      "shape_known": true,
+      "source_artifact_ids": [
+        "art_ca7f64a42ca3d2bc002f2340"
+      ],
+      "storage_dtype": "bfloat16",
+      "stride": null,
+      "symbolic_shape": [
+        {
+          "args": [],
+          "op": "literal",
+          "symbol": null,
+          "value": 512
+        },
+        {
+          "args": [],
+          "op": "literal",
+          "symbol": null,
+          "value": 1376
+        }
+      ]
+    },
+    {
+      "alias_group": null,
+      "concrete_shape": null,
+      "device": null,
+      "dtype": "unknown",
+      "evidence": [
+        "adapter:tiny-dense",
+        "source:config",
+        "inventory:semantic_contract_not_runtime_parameter_name",
+        "weights_loaded:false",
+        "config:use_cache=True"
+      ],
+      "id": "art_8a65dd410299cc86bf473568",
+      "layout": "unknown",
+      "materialized": false,
+      "origin": "config",
+      "owner_id": "art_67c11503e53d9d916117433a",
+      "role": "cache",
+      "semantic_name": "kv_cache.key",
+      "shape_known": true,
+      "source_artifact_ids": [
+        "art_ca7f64a42ca3d2bc002f2340"
+      ],
+      "storage_dtype": "unknown",
+      "stride": null,
+      "symbolic_shape": [
+        {
+          "args": [],
+          "op": "symbol",
+          "symbol": "B",
+          "value": null
+        },
+        {
+          "args": [],
+          "op": "literal",
+          "symbol": null,
+          "value": 2
+        },
+        {
+          "args": [],
+          "op": "symbol",
+          "symbol": "S_KV",
+          "value": null
+        },
+        {
+          "args": [],
+          "op": "literal",
+          "symbol": null,
+          "value": 64
+        }
+      ]
+    },
+    {
+      "alias_group": null,
+      "concrete_shape": null,
+      "device": null,
+      "dtype": "unknown",
+      "evidence": [
+        "adapter:tiny-dense",
+        "source:config",
+        "inventory:semantic_contract_not_runtime_parameter_name",
+        "weights_loaded:false",
+        "config:use_cache=True"
+      ],
+      "id": "art_c80081fa77965ce135f41572",
+      "layout": "unknown",
+      "materialized": false,
+      "origin": "config",
+      "owner_id": "art_67c11503e53d9d916117433a",
+      "role": "cache",
+      "semantic_name": "kv_cache.value",
+      "shape_known": true,
+      "source_artifact_ids": [
+        "art_ca7f64a42ca3d2bc002f2340"
+      ],
+      "storage_dtype": "unknown",
+      "stride": null,
+      "symbolic_shape": [
+        {
+          "args": [],
+          "op": "symbol",
+          "symbol": "B",
+          "value": null
+        },
+        {
+          "args": [],
+          "op": "literal",
+          "symbol": null,
+          "value": 2
+        },
+        {
+          "args": [],
+          "op": "symbol",
+          "symbol": "S_KV",
+          "value": null
+        },
+        {
+          "args": [],
+          "op": "literal",
+          "symbol": null,
+          "value": 64
+        }
+      ]
+    },
+    {
+      "alias_group": null,
+      "concrete_shape": [
+        512
+      ],
+      "device": null,
+      "dtype": "bfloat16",
+      "evidence": [
+        "adapter:tiny-dense",
+        "source:config",
+        "inventory:semantic_contract_not_runtime_parameter_name",
+        "weights_loaded:false",
+        "config:hidden_size"
+      ],
+      "id": "art_77d1ee30f4090904be76849a",
+      "layout": "unknown",
+      "materialized": false,
+      "origin": "config",
+      "owner_id": "art_1f32b32f613d1052d0740262",
+      "role": "parameter",
+      "semantic_name": "input_norm.weight",
+      "shape_known": true,
+      "source_artifact_ids": [
+        "art_ca7f64a42ca3d2bc002f2340"
+      ],
+      "storage_dtype": "bfloat16",
+      "stride": null,
+      "symbolic_shape": [
+        {
+          "args": [],
+          "op": "literal",
+          "symbol": null,
+          "value": 512
+        }
+      ]
+    },
+    {
+      "alias_group": null,
+      "concrete_shape": [
+        512
+      ],
+      "device": null,
+      "dtype": "bfloat16",
+      "evidence": [
+        "adapter:tiny-dense",
+        "source:config",
+        "inventory:semantic_contract_not_runtime_parameter_name",
+        "weights_loaded:false",
+        "config:hidden_size"
+      ],
+      "id": "art_413b08eff452aef90befaf61",
+      "layout": "unknown",
+      "materialized": false,
+      "origin": "config",
+      "owner_id": "art_1f32b32f613d1052d0740262",
+      "role": "parameter",
+      "semantic_name": "post_attention_norm.weight",
+      "shape_known": true,
+      "source_artifact_ids": [
+        "art_ca7f64a42ca3d2bc002f2340"
+      ],
+      "storage_dtype": "bfloat16",
+      "stride": null,
+      "symbolic_shape": [
+        {
+          "args": [],
+          "op": "literal",
+          "symbol": null,
+          "value": 512
+        }
+      ]
+    },
+    {
+      "alias_group": null,
+      "concrete_shape": [
+        512,
+        512
+      ],
+      "device": null,
+      "dtype": "bfloat16",
+      "evidence": [
+        "adapter:tiny-dense",
+        "source:config",
+        "inventory:semantic_contract_not_runtime_parameter_name",
+        "weights_loaded:false",
+        "shape:linear[out,in]"
+      ],
+      "id": "art_787633a783d08eb548aa548e",
+      "layout": "unknown",
+      "materialized": false,
+      "origin": "config",
+      "owner_id": "art_1f32b32f613d1052d0740262",
+      "role": "parameter",
+      "semantic_name": "self_attention.query_projection.weight",
+      "shape_known": true,
+      "source_artifact_ids": [
+        "art_ca7f64a42ca3d2bc002f2340"
+      ],
+      "storage_dtype": "bfloat16",
+      "stride": null,
+      "symbolic_shape": [
+        {
+          "args": [],
+          "op": "literal",
+          "symbol": null,
+          "value": 512
+        },
+        {
+          "args": [],
+          "op": "literal",
+          "symbol": null,
+          "value": 512
+        }
+      ]
+    },
+    {
+      "alias_group": null,
+      "concrete_shape": [
+        128,
+        512
+      ],
+      "device": null,
+      "dtype": "bfloat16",
+      "evidence": [
+        "adapter:tiny-dense",
+        "source:config",
+        "inventory:semantic_contract_not_runtime_parameter_name",
+        "weights_loaded:false",
+        "shape:linear[out,in]"
+      ],
+      "id": "art_98cb002288e8d34b64dee4ce",
+      "layout": "unknown",
+      "materialized": false,
+      "origin": "config",
+      "owner_id": "art_1f32b32f613d1052d0740262",
+      "role": "parameter",
+      "semantic_name": "self_attention.key_projection.weight",
+      "shape_known": true,
+      "source_artifact_ids": [
+        "art_ca7f64a42ca3d2bc002f2340"
+      ],
+      "storage_dtype": "bfloat16",
+      "stride": null,
+      "symbolic_shape": [
+        {
+          "args": [],
+          "op": "literal",
+          "symbol": null,
+          "value": 128
+        },
+        {
+          "args": [],
+          "op": "literal",
+          "symbol": null,
+          "value": 512
+        }
+      ]
+    },
+    {
+      "alias_group": null,
+      "concrete_shape": [
+        128,
+        512
+      ],
+      "device": null,
+      "dtype": "bfloat16",
+      "evidence": [
+        "adapter:tiny-dense",
+        "source:config",
+        "inventory:semantic_contract_not_runtime_parameter_name",
+        "weights_loaded:false",
+        "shape:linear[out,in]"
+      ],
+      "id": "art_3955e59621ef62283979c61d",
+      "layout": "unknown",
+      "materialized": false,
+      "origin": "config",
+      "owner_id": "art_1f32b32f613d1052d0740262",
+      "role": "parameter",
+      "semantic_name": "self_attention.value_projection.weight",
+      "shape_known": true,
+      "source_artifact_ids": [
+        "art_ca7f64a42ca3d2bc002f2340"
+      ],
+      "storage_dtype": "bfloat16",
+      "stride": null,
+      "symbolic_shape": [
+        {
+          "args": [],
+          "op": "literal",
+          "symbol": null,
+          "value": 128
+        },
+        {
+          "args": [],
+          "op": "literal",
+          "symbol": null,
+          "value": 512
+        }
+      ]
+    },
+    {
+      "alias_group": null,
+      "concrete_shape": [
+        512,
+        512
+      ],
+      "device": null,
+      "dtype": "bfloat16",
+      "evidence": [
+        "adapter:tiny-dense",
+        "source:config",
+        "inventory:semantic_contract_not_runtime_parameter_name",
+        "weights_loaded:false",
+        "shape:linear[out,in]"
+      ],
+      "id": "art_75409893953167d8400c2d6b",
+      "layout": "unknown",
+      "materialized": false,
+      "origin": "config",
+      "owner_id": "art_1f32b32f613d1052d0740262",
+      "role": "parameter",
+      "semantic_name": "self_attention.output_projection.weight",
+      "shape_known": true,
+      "source_artifact_ids": [
+        "art_ca7f64a42ca3d2bc002f2340"
+      ],
+      "storage_dtype": "bfloat16",
+      "stride": null,
+      "symbolic_shape": [
+        {
+          "args": [],
+          "op": "literal",
+          "symbol": null,
+          "value": 512
+        },
+        {
+          "args": [],
+          "op": "literal",
+          "symbol": null,
+          "value": 512
+        }
+      ]
+    },
+    {
+      "alias_group": null,
+      "concrete_shape": [
+        1376,
+        512
+      ],
+      "device": null,
+      "dtype": "bfloat16",
+      "evidence": [
+        "adapter:tiny-dense",
+        "source:config",
+        "inventory:semantic_contract_not_runtime_parameter_name",
+        "weights_loaded:false",
+        "shape:linear[out,in]"
+      ],
+      "id": "art_0477184991f94a8ced0a9f21",
+      "layout": "unknown",
+      "materialized": false,
+      "origin": "config",
+      "owner_id": "art_1f32b32f613d1052d0740262",
+      "role": "parameter",
+      "semantic_name": "mlp.gate_projection.weight",
+      "shape_known": true,
+      "source_artifact_ids": [
+        "art_ca7f64a42ca3d2bc002f2340"
+      ],
+      "storage_dtype": "bfloat16",
+      "stride": null,
+      "symbolic_shape": [
+        {
+          "args": [],
+          "op": "literal",
+          "symbol": null,
+          "value": 1376
+        },
+        {
+          "args": [],
+          "op": "literal",
+          "symbol": null,
+          "value": 512
+        }
+      ]
+    },
+    {
+      "alias_group": null,
+      "concrete_shape": [
+        1376,
+        512
+      ],
+      "device": null,
+      "dtype": "bfloat16",
+      "evidence": [
+        "adapter:tiny-dense",
+        "source:config",
+        "inventory:semantic_contract_not_runtime_parameter_name",
+        "weights_loaded:false",
+        "shape:linear[out,in]"
+      ],
+      "id": "art_2ac7601c6900bdb56dc30fa0",
+      "layout": "unknown",
+      "materialized": false,
+      "origin": "config",
+      "owner_id": "art_1f32b32f613d1052d0740262",
+      "role": "parameter",
+      "semantic_name": "mlp.up_projection.weight",
+      "shape_known": true,
+      "source_artifact_ids": [
+        "art_ca7f64a42ca3d2bc002f2340"
+      ],
+      "storage_dtype": "bfloat16",
+      "stride": null,
+      "symbolic_shape": [
+        {
+          "args": [],
+          "op": "literal",
+          "symbol": null,
+          "value": 1376
+        },
+        {
+          "args": [],
+          "op": "literal",
+          "symbol": null,
+          "value": 512
+        }
+      ]
+    },
+    {
+      "alias_group": null,
+      "concrete_shape": [
+        512,
+        1376
+      ],
+      "device": null,
+      "dtype": "bfloat16",
+      "evidence": [
+        "adapter:tiny-dense",
+        "source:config",
+        "inventory:semantic_contract_not_runtime_parameter_name",
+        "weights_loaded:false",
+        "shape:linear[out,in]"
+      ],
+      "id": "art_b671431fdcb829180ccfaad1",
+      "layout": "unknown",
+      "materialized": false,
+      "origin": "config",
+      "owner_id": "art_1f32b32f613d1052d0740262",
+      "role": "parameter",
+      "semantic_name": "mlp.down_projection.weight",
+      "shape_known": true,
+      "source_artifact_ids": [
+        "art_ca7f64a42ca3d2bc002f2340"
+      ],
+      "storage_dtype": "bfloat16",
+      "stride": null,
+      "symbolic_shape": [
+        {
+          "args": [],
+          "op": "literal",
+          "symbol": null,
+          "value": 512
+        },
+        {
+          "args": [],
+          "op": "literal",
+          "symbol": null,
+          "value": 1376
+        }
+      ]
+    },
+    {
+      "alias_group": null,
+      "concrete_shape": null,
+      "device": null,
+      "dtype": "unknown",
+      "evidence": [
+        "adapter:tiny-dense",
+        "source:config",
+        "inventory:semantic_contract_not_runtime_parameter_name",
+        "weights_loaded:false",
+        "config:use_cache=True"
+      ],
+      "id": "art_472f68304709dcdd6a8c419c",
+      "layout": "unknown",
+      "materialized": false,
+      "origin": "config",
+      "owner_id": "art_1f32b32f613d1052d0740262",
+      "role": "cache",
+      "semantic_name": "kv_cache.key",
+      "shape_known": true,
+      "source_artifact_ids": [
+        "art_ca7f64a42ca3d2bc002f2340"
+      ],
+      "storage_dtype": "unknown",
+      "stride": null,
+      "symbolic_shape": [
+        {
+          "args": [],
+          "op": "symbol",
+          "symbol": "B",
+          "value": null
+        },
+        {
+          "args": [],
+          "op": "literal",
+          "symbol": null,
+          "value": 2
+        },
+        {
+          "args": [],
+          "op": "symbol",
+          "symbol": "S_KV",
+          "value": null
+        },
+        {
+          "args": [],
+          "op": "literal",
+          "symbol": null,
+          "value": 64
+        }
+      ]
+    },
+    {
+      "alias_group": null,
+      "concrete_shape": null,
+      "device": null,
+      "dtype": "unknown",
+      "evidence": [
+        "adapter:tiny-dense",
+        "source:config",
+        "inventory:semantic_contract_not_runtime_parameter_name",
+        "weights_loaded:false",
+        "config:use_cache=True"
+      ],
+      "id": "art_66d1b7a489f7b0b28f8271fd",
+      "layout": "unknown",
+      "materialized": false,
+      "origin": "config",
+      "owner_id": "art_1f32b32f613d1052d0740262",
+      "role": "cache",
+      "semantic_name": "kv_cache.value",
+      "shape_known": true,
+      "source_artifact_ids": [
+        "art_ca7f64a42ca3d2bc002f2340"
+      ],
+      "storage_dtype": "unknown",
+      "stride": null,
+      "symbolic_shape": [
+        {
+          "args": [],
+          "op": "symbol",
+          "symbol": "B",
+          "value": null
+        },
+        {
+          "args": [],
+          "op": "literal",
+          "symbol": null,
+          "value": 2
+        },
+        {
+          "args": [],
+          "op": "symbol",
+          "symbol": "S_KV",
+          "value": null
+        },
+        {
+          "args": [],
+          "op": "literal",
+          "symbol": null,
+          "value": 64
+        }
+      ]
+    }
+  ],
+  "trace_events": []
+}

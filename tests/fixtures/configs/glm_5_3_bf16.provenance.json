@@ -1,0 +1,13 @@
+{
+  "fixture_version": 1,
+  "fixture_canonical_sha256": "5fbd481275467a598bd6dfbd486a8cccf48508343112b9642da14c04e5af6029",
+  "kind": "huggingface_config_subset",
+  "model_id": "zai-org/GLM-5.3-BF16",
+  "revision": "304b8051cfb2b260b61ce0cbe330e02a98e73639",
+  "source_path": "config.json",
+  "source_uri": "https://huggingface.co/zai-org/GLM-5.3-BF16/blob/304b8051cfb2b260b61ce0cbe330e02a98e73639/config.json",
+  "upstream_config_raw_sha256": "ca8f2f47b07919a514c0ca223dc2ea2bc7445afaa5ac76c013a3784e096426ca",
+  "license": "glm-5.3",
+  "retrieved_at": "2026-08-29",
+  "weights_included": false
+}
