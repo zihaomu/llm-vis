@@ -9,6 +9,10 @@
 
 LLM Vis turns a Hugging Face `config.json` into an interactive, top-to-bottom model DAG. Start with the model architecture, open Attention, FFN, or MoE blocks, follow tensor and state edges, and inspect theoretical compute and memory pressure—all without loading the target model's weights or running a full forward pass.
 
+![LLM Vis showing a Qwen3.8 model as a top-to-bottom DAG with tensor edges and a theoretical pressure heatmap.](doc/assets/llm-vis-qwen-dag.png)
+
+<p align="center"><sub>Qwen3.8 in LLM Vis: a top-to-bottom architecture DAG, typed tensor flows, recursive child nodes, and scenario-aware theoretical pressure.</sub></p>
+
 ## Why LLM Vis?
 
 Very large models are difficult to inspect directly: their weights may not fit locally, generic operator graphs are overwhelming, and static Transformer diagrams hide model-specific structure. LLM Vis provides a middle ground between a teaching diagram and a runtime profiler.
