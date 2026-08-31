@@ -199,6 +199,7 @@ def _layer_signature(item: Dict[str, Any]) -> tuple[str, ...]:
         str(item.get(key, ""))
         for key in (
             "label",
+            "definition_key",
             "attention_kind",
             "mlp_kind",
             "state_kind",
@@ -206,7 +207,26 @@ def _layer_signature(item: Dict[str, Any]) -> tuple[str, ...]:
     )
 
 
-def _layer_runs(items: list[Dict[str, Any]]) -> list[Dict[str, Any]]:
+def _layer_display_labels(layer_strip: list[Dict[str, Any]]) -> Dict[tuple[str, ...], str]:
+    """Disambiguate reused one-letter labels when their definitions differ."""
+
+    signatures_by_label: Dict[str, list[tuple[str, ...]]] = {}
+    for item in layer_strip:
+        label = str(item.get("label", "?"))
+        signature = _layer_signature(item)
+        known = signatures_by_label.setdefault(label, [])
+        if signature not in known:
+            known.append(signature)
+    return {
+        signature: label if len(signatures) == 1 else f"{label}#{index + 1}"
+        for label, signatures in signatures_by_label.items()
+        for index, signature in enumerate(signatures)
+    }
+
+
+def _layer_runs(
+    items: list[Dict[str, Any]], display_labels: Dict[tuple[str, ...], str]
+) -> list[Dict[str, Any]]:
     runs: list[Dict[str, Any]] = []
     for item in items:
         if runs and runs[-1]["signature"] == _layer_signature(item):
@@ -215,9 +235,11 @@ def _layer_runs(items: list[Dict[str, Any]]) -> list[Dict[str, Any]]:
         runs.append(
             {
                 "signature": _layer_signature(item),
-                "label": str(item.get("label", "?")),
+                "label": display_labels[_layer_signature(item)],
+                "source_label": str(item.get("label", "?")),
                 "count": 1,
                 "first_layer_index": int(item.get("layer_index", 0)),
+                "definition_key": str(item.get("definition_key", "unknown")),
                 "attention_kind": str(item.get("attention_kind", "unknown")),
                 "mlp_kind": str(item.get("mlp_kind", "unknown")),
                 "state_kind": str(item.get("state_kind", "unknown")),
@@ -233,7 +255,9 @@ def _layer_run_text(run: Dict[str, Any]) -> str:
     return str(run["label"]) if count == 1 else f"{run['label']}×{count}"
 
 
-def _layer_legend(layer_strip: list[Dict[str, Any]]) -> list[Dict[str, str]]:
+def _layer_legend(
+    layer_strip: list[Dict[str, Any]], display_labels: Dict[tuple[str, ...], str]
+) -> list[Dict[str, str]]:
     legend: list[Dict[str, str]] = []
     seen: set[tuple[str, ...]] = set()
     attention_kinds = {str(item.get("attention_kind", "unknown")) for item in layer_strip}
@@ -251,7 +275,7 @@ def _layer_legend(layer_strip: list[Dict[str, Any]]) -> list[Dict[str, str]]:
         )
         mlp = _MLP_LABELS.get(mlp_kind, mlp_kind.replace("_", " ").title())
         state = _STATE_LABELS.get(state_kind, state_kind.replace("_", " "))
-        label = str(item.get("label", "?"))
+        label = display_labels[signature]
         if len(mlp_kinds) > 1 and len(attention_kinds) == 1:
             description = mlp
         elif len(attention_kinds) > 1 and len(mlp_kinds) == 1:
@@ -262,6 +286,7 @@ def _layer_legend(layer_strip: list[Dict[str, Any]]) -> list[Dict[str, str]]:
             {
                 "label": label,
                 "description": description,
+                "definition_key": str(item.get("definition_key", "unknown")),
                 "attention_kind": attention_kind,
                 "mlp_kind": mlp_kind,
                 "state_kind": state_kind,
@@ -285,6 +310,36 @@ def _layer_legend_context(layer_strip: list[Dict[str, Any]]) -> Optional[str]:
     return f"all layers · {attention} · {state}"
 
 
+def _layer_deviation(item: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    """Return one identity-preserving deviation without trusting a single flag."""
+
+    expected_pattern = str(item.get("expected_pattern") or "")
+    actual_patterns = {
+        str(item.get("attention_kind") or ""),
+        str(item.get("mlp_kind") or ""),
+    }
+    expected_mismatch = bool(
+        expected_pattern and expected_pattern not in actual_patterns
+    )
+    if not item.get("anomaly") and not expected_mismatch:
+        return None
+    return {
+        "layer_index": int(item.get("layer_index", 0)),
+        "instance_path": str(item.get("instance_path") or ""),
+        "expected_pattern": expected_pattern,
+        "attention_kind": str(item.get("attention_kind") or "unknown"),
+        "mlp_kind": str(item.get("mlp_kind") or "unknown"),
+        "reason": str(
+            item.get("reason")
+            or (
+                "expected_pattern_mismatch"
+                if expected_mismatch
+                else "adapter_marked_anomaly"
+            )
+        ),
+    }
+
+
 def _layer_pattern_payload(layer_strip: list[Dict[str, Any]]) -> Dict[str, Any]:
     """Build a truthful compact pattern without replacing exact layer instances."""
 
@@ -300,6 +355,7 @@ def _layer_pattern_payload(layer_strip: list[Dict[str, Any]]) -> Dict[str, Any]:
             "legend": [],
             "legend_context": None,
             "anomaly_count": 0,
+            "deviations": [],
         }
 
     signatures = [_layer_signature(item) for item in layer_strip]
@@ -319,11 +375,17 @@ def _layer_pattern_payload(layer_strip: list[Dict[str, Any]]) -> Dict[str, Any]:
                 tail_length = candidate_tail
                 break
 
+    display_labels = _layer_display_labels(layer_strip)
     repeat_unit = layer_strip[:period_length]
     tail = layer_strip[period_length * repeat_count :] if tail_length else []
-    segments = _layer_runs(repeat_unit)
-    tail_segments = _layer_runs(tail)
-    anomaly_count = sum(bool(item.get("anomaly")) for item in layer_strip)
+    segments = _layer_runs(repeat_unit, display_labels)
+    tail_segments = _layer_runs(tail, display_labels)
+    deviations = [
+        deviation
+        for item in layer_strip
+        if (deviation := _layer_deviation(item)) is not None
+    ]
+    anomaly_count = len(deviations)
 
     if len(segments) > 6:
         if repeat_count > 1:
@@ -356,9 +418,10 @@ def _layer_pattern_payload(layer_strip: list[Dict[str, Any]]) -> Dict[str, Any]:
         "repeat_count": repeat_count,
         "segments": display_segments,
         "tail_segments": tail_segments,
-        "legend": _layer_legend(layer_strip),
+        "legend": _layer_legend(layer_strip, display_labels),
         "legend_context": _layer_legend_context(layer_strip),
         "anomaly_count": anomaly_count,
+        "deviations": deviations,
     }
 
 
@@ -515,6 +578,17 @@ def render_html(
     config_sha256 = str(bundle.resolved.sha256)
     config_hash_title = html.escape(config_sha256)
     config_hash_short = html.escape(config_sha256[:8])
+    heatmap_options = (
+        '<option value="pressure">Pressure</option>'
+        '<option value="compute">Compute</option>'
+        '<option value="memory">Memory</option>'
+        '<option value="off">Off</option>'
+        if bundle.hardware_profile is not None
+        else '<option value="pressure" disabled>Pressure (requires HardwareProfile)</option>'
+        '<option value="compute" selected>Compute</option>'
+        '<option value="memory">Memory</option>'
+        '<option value="off">Off</option>'
+    )
     template = """<!doctype html>
 <html lang="en">
 <head>
@@ -565,6 +639,7 @@ section { min-width:0; background:var(--panel); border:1px solid var(--line); bo
 .workspace-actions { flex-wrap:wrap; justify-content:flex-end; }
 .heat-control { display:flex; align-items:center; gap:6px; color:var(--muted); font-size:11px; white-space:nowrap; }
 .heat-control select { min-height:32px; padding:5px 8px; font-size:11px; }
+.heat-note { max-width:160px; color:#8fa2c2; font-size:9px; line-height:1.2; white-space:normal; }
 .workspace-action:hover,.drawer-close:hover { border-color:#4f6f9a; background:#162742; }
 .workspace-action:focus-visible,.drawer-close:focus-visible,.status-menu summary:focus-visible,.inspector-tab:focus-visible,.layer-panel > summary:focus-visible,.layer:focus-visible { outline:2px solid #9bc7ff; outline-offset:2px; }
 .layer-panel { margin-bottom:8px; border:1px solid var(--line); border-radius:8px; background:#0e1728; }
@@ -729,7 +804,7 @@ __DAG_ASSETS__
     <div class="workspace-heading">
       <div><div class="workspace-title"><h2 id="graph-heading">Model graph</h2><span class="level-pill">Top → bottom DAG</span></div><p class="dag-help">Follow tensors from top to bottom. Single-click a node for its explanation and equation; double-click a node marked “N nodes ↓” to enter its child graph. Collapse returns to the parent.</p><p class="dag-evidence"><span class="badge safe">Target input: config.json only</span><span class="badge" id="source-evidence-badge"></span><span class="badge" title="Config SHA-256 __CONFIG_HASH_TITLE__">config __CONFIG_HASH_SHORT__</span><span class="badge" id="graph-evidence-badge"></span><span>no target weights · no model code · no full forward</span></p></div>
       <div class="workspace-actions" aria-label="Workspace panels">
-        <label class="heat-control"><span>Theory heat</span><select id="heatmap-mode" aria-label="Theoretical bottleneck heatmap"><option value="pressure">Pressure</option><option value="compute">Compute</option><option value="memory">Memory</option><option value="off">Off</option></select></label>
+        <label class="heat-control"><span>Theory heat</span><select id="heatmap-mode" aria-label="Theoretical bottleneck heatmap" aria-describedby="heatmap-note">__HEATMAP_OPTIONS__</select><span class="heat-note" id="heatmap-note" aria-live="polite"></span></label>
         <button class="workspace-action" type="button" data-drawer-target="navigator-drawer" aria-controls="navigator-drawer" aria-expanded="false">Browse</button>
         <button class="workspace-action" type="button" data-drawer-target="inspector-drawer" aria-controls="inspector-drawer" aria-expanded="false">Inspector</button>
         <button class="workspace-action" id="analysis-toggle" type="button">Analysis</button>
@@ -905,6 +980,11 @@ function scopedGraphMetrics(detail,node,view,subjectIds){
   return {metrics:[],scope:'not-attributable',unknown_reason:node.opaque?'Opaque internals prevent trustworthy component attribution.':'Available estimates are block aggregates and are not attributed to this synthetic semantic node.'};
 }
 function currentScenario(){const id=byId('scenario-select')?.value||'';return map.scenarios.find(item=>item.id===id)||null;}
+function setupHeatmapMode(){
+  const select=byId('heatmap-mode'),pressure=[...select.options].find(option=>option.value==='pressure'),note=byId('heatmap-note');
+  if(hardwareProfile){pressure.disabled=false;pressure.textContent='Pressure';select.value='pressure';note.textContent='';select.title='Pressure uses the explicit HardwareProfile embedded in this report.';return;}
+  pressure.disabled=true;pressure.textContent='Pressure (requires HardwareProfile)';select.value='compute';note.textContent='Pressure requires an explicit HardwareProfile.';select.title='Compute and Memory are formula estimates. Pressure is unavailable without an explicit HardwareProfile.';
+}
 function graphMetricBinding(node,baseName){return (node?.metric_bindings||[]).find(binding=>binding.dimension===baseName)||null;}
 function metricNameForGraphNode(node,view,baseName){
   const binding=graphMetricBinding(node,baseName);if(binding?.status==='known')return binding.metric_name;
@@ -1182,9 +1262,10 @@ function renderLayerSummary(){
 }
 function renderStrip(){
   const root=byId('strip');if(root.dataset.rendered==='true')return;clear(root);
+  const deviationByIdentity=new Map((data.layerPattern?.deviations||[]).map(item=>[`${item.layer_index}:${item.instance_path}`,item]));
   for(const item of data.layerStrip){
-    const selection=layerInspection(item),targetView=selection.targetView,coverageStatus=selection.context.coverage_status,el=document.createElement('button');el.type='button';el.className='layer';el.dataset.layerIndex=String(item.layer_index);el.dataset.state=item.state_kind;el.dataset.mlp=item.mlp_kind;el.dataset.coverage=coverageStatus;el.dataset.anomaly=String(Boolean(item.anomaly));if(targetView)el.dataset.graphViewId=targetView.id;el.textContent=item.label;
-    el.title=`layer ${item.layer_index} · ${item.attention_kind} · ${item.mlp_kind} · ${item.state_kind} · expected ${item.expected_pattern} · ${coverageStatus}${item.anomaly?` · anomaly: ${item.reason}`:''}`;
+    const deviation=deviationByIdentity.get(`${item.layer_index}:${item.instance_path}`),selection=layerInspection(item),targetView=selection.targetView,coverageStatus=selection.context.coverage_status,el=document.createElement('button');el.type='button';el.className='layer';el.dataset.layerIndex=String(item.layer_index);el.dataset.state=item.state_kind;el.dataset.mlp=item.mlp_kind;el.dataset.coverage=coverageStatus;el.dataset.anomaly=String(Boolean(deviation));if(targetView)el.dataset.graphViewId=targetView.id;el.textContent=item.label;
+    el.title=`layer ${item.layer_index} · ${item.attention_kind} · ${item.mlp_kind} · ${item.state_kind} · expected ${item.expected_pattern} · ${coverageStatus}${deviation?` · deviation: ${deviation.reason}`:''}`;
     el.setAttribute('aria-label',el.title);
     el.onclick=()=>openLayer(item);root.append(el);
   }
@@ -1216,8 +1297,9 @@ function renderGraphEvidence(view){
   badge.title='Evidence coverage for nodes in the currently visible DAG view; opaque and partial regions are never filled by inference.';
 }
 function renderScenario(){const id=byId('scenario-select').value,scenario=map.scenarios.find(item=>item.id===id);renderScenarioCard(scenario);renderCosts(scenario);renderHotspots(scenario);renderRoofline(scenario);renderDiff(scenario);renderRuntime(scenario);renderCoverageBadge(scenario);renderHeatmap(scenario);if(lastGraphDetail)setInspector(graphSelectionContext(lastGraphDetail),{reveal:false});}
-function setupScenarios(){const select=byId('scenario-select');clear(select);if(!map.scenarios.length){const option=document.createElement('option');option.textContent='No workload';option.value='';select.append(option);select.disabled=true;}else for(const scenario of map.scenarios){const option=document.createElement('option');option.value=scenario.id;option.textContent=`${scenario.phase} · B${scenario.batch} T${scenario.new_tokens} L${scenario.past_tokens} · ${scenario.weight_format}`;select.append(option);}select.onchange=renderScenario;renderScenario();}
-byId('heatmap-mode').onchange=()=>{renderHeatmap();if(lastGraphDetail)setInspector(graphSelectionContext(lastGraphDetail),{reveal:false});};
+function scenarioOptionLabel(scenario){const preset=scenario.backend==='llm-vis-default-preset'?'Default preset · ':'';const phase=scenario.phase==='prefill'?'Prefill':scenario.phase==='decode'?'Decode':scenario.phase;return `${preset}${phase} · B${scenario.batch} T${scenario.new_tokens} L${scenario.past_tokens} · ${scenario.weight_format}`;}
+function setupScenarios(){const select=byId('scenario-select');clear(select);if(!map.scenarios.length){const option=document.createElement('option');option.textContent='No workload';option.value='';select.append(option);select.disabled=true;}else for(const scenario of map.scenarios){const option=document.createElement('option');option.value=scenario.id;option.textContent=scenarioOptionLabel(scenario);select.append(option);}select.onchange=renderScenario;renderScenario();}
+byId('heatmap-mode').onchange=event=>{if(event.target.value==='pressure'&&!hardwareProfile)event.target.value='compute';renderHeatmap();if(lastGraphDetail)setInspector(graphSelectionContext(lastGraphDetail),{reveal:false});};
 byId('model-dag').addEventListener('llm-vis:dag-view-change',event=>{
   const view=event.detail.view,saved=graphDetailByView.get(view.id)||null;
   lastGraphDetail=saved;
@@ -1228,7 +1310,7 @@ byId('model-dag').addEventListener('llm-vis:dag-view-change',event=>{
 byId('search').addEventListener('input',event=>{const query=event.target.value;renderDefinitions(query);renderSemantics(query);renderLogical(query);window.LLMVisDAG?.search('model-dag',query);});
 document.querySelectorAll('.inspector-tab').forEach(button=>{button.onclick=()=>{inspectorTab=button.dataset.inspectorTab;renderInspector();};button.onkeydown=event=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;event.preventDefault();const tabs=[...document.querySelectorAll('.inspector-tab')],index=tabs.indexOf(button),next=event.key==='Home'?0:event.key==='End'?tabs.length-1:(index+(event.key==='ArrowRight'?1:-1)+tabs.length)%tabs.length;tabs[next].click();tabs[next].focus();};});
 document.querySelectorAll('.capture-card').forEach((element,index)=>{element.onclick=()=>inspect(captureContext(data.captures[index]));});
-renderDefinitions();renderSemantics();renderLogical();renderDiagnostics();renderLayerSummary();renderGraphEvidence(graphView.views[0]);setupScenarios();renderInspector();
+renderDefinitions();renderSemantics();renderLogical();renderDiagnostics();renderLayerSummary();renderGraphEvidence(graphView.views[0]);setupHeatmapMode();setupScenarios();renderInspector();
 </script>
 </body>
 </html>
@@ -1240,6 +1322,7 @@ renderDefinitions();renderSemantics();renderLogical();renderDiagnostics();render
         .replace("__REVISION_SHORT__", revision_short)
         .replace("__CONFIG_HASH_TITLE__", config_hash_title)
         .replace("__CONFIG_HASH_SHORT__", config_hash_short)
+        .replace("__HEATMAP_OPTIONS__", heatmap_options)
         .replace("__DAG_ASSETS__", render_dag_canvas_assets())
         .replace("__DAG_CANVAS__", dag_canvas)
         .replace("__CAPTURES__", _capture_summary(bundle))

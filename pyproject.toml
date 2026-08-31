@@ -1,15 +1,40 @@
 [build-system]
-requires = ["hatchling>=1.25"]
+requires = ["hatchling==1.32.0"]
 build-backend = "hatchling.build"
 
 [project]
 name = "llm-vis"
 version = "0.1.0"
-description = "Config-first LLM architecture and performance visualization toolkit"
+description = "Weight-free recursive LLM architecture and compute graph explorer"
 readme = "README.md"
 requires-python = ">=3.9"
-license = { text = "Apache-2.0" }
+license = "Apache-2.0"
+license-files = ["LICENSE"]
 authors = [{ name = "LLM-Vis contributors" }]
+keywords = [
+  "llm",
+  "model-visualization",
+  "transformer",
+  "compute-graph",
+  "attention",
+  "mixture-of-experts",
+  "performance-modeling",
+]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "Intended Audience :: Education",
+  "Intended Audience :: Science/Research",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+]
 dependencies = [
   "pydantic>=2.8,<3",
 ]
@@ -23,10 +48,19 @@ capture = [
 [project.scripts]
 llm-vis = "llm_vis.cli:main"
 
+[project.urls]
+Homepage = "https://github.com/zihaomu/llm-vis"
+Repository = "https://github.com/zihaomu/llm-vis.git"
+Issues = "https://github.com/zihaomu/llm-vis/issues"
+Documentation = "https://github.com/zihaomu/llm-vis#readme"
+Changelog = "https://github.com/zihaomu/llm-vis/blob/main/CHANGELOG.md"
+Security = "https://github.com/zihaomu/llm-vis/security/policy"
+
 [dependency-groups]
 dev = [
   "hypothesis>=6.120,<7",
   "jsonschema>=4.23,<5",
+  "playwright>=1.55,<2",
   "pytest>=8.3,<9",
   "pytest-cov>=5,<7",
   "ruff>=0.8,<1",
@@ -38,6 +72,9 @@ packages = ["src/llm_vis"]
 [tool.pytest.ini_options]
 addopts = "-ra"
 testpaths = ["tests"]
+markers = [
+  "browser: real Chromium end-to-end report tests",
+]
 
 [tool.ruff]
 line-length = 100

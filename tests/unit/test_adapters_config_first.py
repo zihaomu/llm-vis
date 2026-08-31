@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import builtins
 import json
+from dataclasses import replace
 from pathlib import Path
 from typing import Any, Dict, Tuple
 
@@ -250,6 +251,23 @@ def test_rejects_inconsistent_explicit_layer_pattern() -> None:
 
     with pytest.raises(AdapterConfigError, match="expected 64"):
         build_from_config(config)
+
+
+def test_layer_strip_rejects_non_contiguous_or_duplicate_instance_identity() -> None:
+    config, _ = _fixture("tiny_dense")
+    result = build_from_config(config)
+
+    non_contiguous = list(result.layer_strip)
+    non_contiguous[1] = replace(non_contiguous[1], layer_index=2)
+    with pytest.raises(AdapterConfigError, match="contiguous"):
+        replace(result, layer_strip=tuple(non_contiguous))
+
+    duplicate_path = list(result.layer_strip)
+    duplicate_path[1] = replace(
+        duplicate_path[1], instance_path=duplicate_path[0].instance_path
+    )
+    with pytest.raises(AdapterConfigError, match="instance_path values must be unique"):
+        replace(result, layer_strip=tuple(duplicate_path))
 
 
 def test_fixture_provenance_never_claims_weights() -> None:

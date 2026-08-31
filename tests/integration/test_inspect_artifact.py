@@ -228,6 +228,62 @@ def test_cli_view_reads_json_from_stdin(tmp_path: Path, monkeypatch: pytest.Monk
     assert manifest["source"]["input_kind"] == "inline_json"
 
 
+def test_cli_view_adds_labeled_prefill_and_decode_presets_without_pressure(
+    tmp_path: Path,
+) -> None:
+    output = tmp_path / "default-view-presets"
+
+    assert (
+        main(
+            [
+                "view",
+                str(FIXTURE_DIR / "tiny_dense.json"),
+                "--output",
+                str(output),
+                "--no-open",
+            ]
+        )
+        == 0
+    )
+
+    scenarios = json.loads((output / "scenarios.json").read_text(encoding="utf-8"))
+    metrics = json.loads((output / "metrics.json").read_text(encoding="utf-8"))
+    manifest = json.loads((output / "manifest.json").read_text(encoding="utf-8"))
+    html = (output / "reports" / "report.html").read_text(encoding="utf-8")
+
+    assert [(item["phase"], item["new_tokens"], item["past_tokens"]) for item in scenarios] == [
+        ("prefill", 512, 0),
+        ("decode", 1, 512),
+    ]
+    assert {item["backend"] for item in scenarios} == {"llm-vis-default-preset"}
+    assert {item["hardware"] for item in scenarios} == {"unprofiled"}
+    assert manifest["cost"]["scenario_count"] == 2
+    assert manifest["hardware_profile"] is None
+    assert manifest["roofline"]["enabled"] is False
+    cost_scenario_ids = {
+        item["scenario_id"] for item in metrics if item["name"] in {"flops", "logical_bytes"}
+    }
+    assert cost_scenario_ids == {
+        item["id"] for item in scenarios
+    }
+    assert "Default preset · " in html
+    assert (
+        '<option value="pressure" disabled>Pressure (requires HardwareProfile)</option>' in html
+    )
+    assert '<option value="compute" selected>Compute</option>' in html
+    assert "Pressure (requires HardwareProfile)" in html
+    assert "pressure.disabled=true" in html
+    assert "select.value='compute'" in html
+    assert "Pressure requires an explicit HardwareProfile." in html
+    assert manifest["safety"] == {
+        "weights_loaded": False,
+        "full_model_constructed": False,
+        "full_forward_executed": False,
+        "remote_code_executed": False,
+        "full_meta_tree_enabled": False,
+    }
+
+
 def test_cli_view_opens_by_default_and_keeps_artifact_when_open_fails(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,

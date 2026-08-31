@@ -118,6 +118,10 @@ def test_m3_artifact_contains_hotspots_roofline_diff_and_offline_controls(
     assert "renderHeatmap(scenario)" in html
     assert "Unknown is not zero" in html
     assert "not measured latency" in html
+    assert "function setupHeatmapMode()" in html
+    assert "if(hardwareProfile){pressure.disabled=false" in html
+    assert "select.value='pressure'" in html
+    assert 'id="heatmap-note" aria-live="polite"' in html
     assert '"hardwareProfile": {' in html
     assert '"id": "synthetic-bf16-report"' in html
     assert '"kind": "synthetic"' in html
@@ -156,11 +160,13 @@ def test_m3_artifact_contains_hotspots_roofline_diff_and_offline_controls(
     assert '"layerPattern": {' in html
     assert '"summary": "D×4"' in html
     assert "repeat notation is not a cycle and does not imply weight sharing" in html
+    assert "deviationByIdentity" in html
+    assert "deviation: ${deviation.reason}" in html
     assert "panel.addEventListener('toggle',()=>{if(panel.open)renderStrip();})" in html
     assert "if(root.dataset.rendered==='true')return" in html
     assert (
         "renderDiagnostics();renderLayerSummary();"
-        "renderGraphEvidence(graphView.views[0]);setupScenarios()" in html
+        "renderGraphEvidence(graphView.views[0]);setupHeatmapMode();setupScenarios()" in html
     )
     assert "setInspector(graphSelectionContext(detail),{reveal:detail?.reveal===true})" in html
     assert "renderNodeExplanation" in html
@@ -217,6 +223,8 @@ def test_layer_pattern_summary_is_derived_from_exact_qwen_glm_and_tiny_strips() 
 
     assert qwen["summary"] == "[L×3 → A] ×16"
     assert qwen_strip == qwen_strip_before
+    assert [item["layer_index"] for item in qwen_strip] == list(range(64))
+    assert len({item["instance_path"] for item in qwen_strip}) == 64
     assert qwen["total_layers"] == 64
     assert qwen["period_length"] == 4
     assert qwen["repeat_count"] == 16
@@ -247,6 +255,23 @@ def test_layer_pattern_summary_is_derived_from_exact_qwen_glm_and_tiny_strips() 
     assert tiny["summary"] == "D×4"
     assert tiny["total_layers"] == 4
 
+    same_label_different_definition = deepcopy(list(tiny_bundle.layer_strip))
+    for layer_index in (1, 3):
+        same_label_different_definition[layer_index]["definition_key"] = (
+            "alternate_dense_decoder_block"
+        )
+    same_label_before = deepcopy(same_label_different_definition)
+    disambiguated = _layer_pattern_payload(same_label_different_definition)
+    assert same_label_different_definition == same_label_before
+    assert disambiguated["summary"] == "[D#1 → D#2] ×2"
+    assert disambiguated["period_length"] == 2
+    assert disambiguated["repeat_count"] == 2
+    assert [item["label"] for item in disambiguated["legend"]] == ["D#1", "D#2"]
+    assert [item["definition_key"] for item in disambiguated["legend"]] == [
+        "dense_decoder_block",
+        "alternate_dense_decoder_block",
+    ]
+
     anomaly_only_strip = deepcopy(qwen_strip)
     anomaly_only_strip[4].update(
         {"anomaly": True, "reason": "test-only expected-pattern deviation"}
@@ -254,6 +279,32 @@ def test_layer_pattern_summary_is_derived_from_exact_qwen_glm_and_tiny_strips() 
     anomaly_only = _layer_pattern_payload(anomaly_only_strip)
     assert anomaly_only["summary"] == "[L×3 → A] ×16 · 1 deviation"
     assert anomaly_only["anomaly_count"] == 1
+    assert anomaly_only["deviations"] == [
+        {
+            "layer_index": 4,
+            "instance_path": qwen_strip[4]["instance_path"],
+            "expected_pattern": "linear_attention",
+            "attention_kind": "linear_attention",
+            "mlp_kind": "dense",
+            "reason": "test-only expected-pattern deviation",
+        }
+    ]
+
+    expected_mismatch_strip = deepcopy(qwen_strip)
+    expected_mismatch_strip[4]["expected_pattern"] = "full_attention"
+    expected_mismatch_before = deepcopy(expected_mismatch_strip)
+    expected_mismatch = _layer_pattern_payload(expected_mismatch_strip)
+    assert expected_mismatch_strip == expected_mismatch_before
+    assert expected_mismatch["summary"] == "[L×3 → A] ×16 · 1 deviation"
+    assert expected_mismatch["anomaly_count"] == 1
+    assert expected_mismatch["deviations"][0] == {
+        "layer_index": 4,
+        "instance_path": qwen_strip[4]["instance_path"],
+        "expected_pattern": "full_attention",
+        "attention_kind": "linear_attention",
+        "mlp_kind": "dense",
+        "reason": "expected_pattern_mismatch",
+    }
 
     deviating_strip = deepcopy(qwen_strip)
     deviating_strip[4].update(

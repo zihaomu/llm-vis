@@ -18,10 +18,10 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -44,3 +44,56 @@ jobs:
 
       - name: Verify M0-M3 milestone assets
         run: uv run --frozen --group dev --extra capture python scripts/verify_milestones.py --milestone all
+
+      - name: Build release archives
+        run: uv build --clear
+
+      - name: Verify release archive contents
+        run: uv run --frozen python scripts/verify_distribution.py
+
+      - name: Check package long description
+        if: matrix.python-version == '3.12'
+        run: uvx --python 3.12 --from twine==7.0.0 twine check dist/*
+
+      - name: Smoke-test the core wheel in isolation
+        run: |
+          uv venv .release-smoke --python "${{ matrix.python-version }}"
+          uv pip install --python .release-smoke/bin/python dist/*.whl
+          .release-smoke/bin/python -c "import importlib.util; assert importlib.util.find_spec('torch') is None; assert importlib.util.find_spec('numpy') is None"
+          .release-smoke/bin/llm-vis --help >/dev/null
+          .release-smoke/bin/python -m llm_vis --help >/dev/null
+          .release-smoke/bin/llm-vis view tests/fixtures/configs/qwen3_8_27b.json \
+            --local-files-only \
+            --output .release-smoke-artifact \
+            --no-open
+          test -f .release-smoke-artifact/reports/report.html
+
+  browser-e2e:
+    name: Browser E2E (Chromium)
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      - name: Install development dependencies
+        run: uv sync --frozen --python "3.12" --group dev
+
+      - name: Install Chromium
+        run: uv run --frozen playwright install --with-deps chromium
+
+      - name: Run browser acceptance tests
+        env:
+          LLM_VIS_BROWSER_E2E: "1"
+        run: uv run --frozen pytest -q -m browser tests/browser

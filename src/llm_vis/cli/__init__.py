@@ -23,6 +23,8 @@ from llm_vis.performance import HardwareProfile
 from llm_vis.report import ArtifactWriteError, write_analysis
 from llm_vis.resolver import ResolutionError
 
+_DEFAULT_VIEW_PRESET_BACKEND = "llm-vis-default-preset"
+
 
 def _scenario(path: Optional[str]) -> Sequence[Scenario]:
     if path is None:
@@ -30,6 +32,38 @@ def _scenario(path: Optional[str]) -> Sequence[Scenario]:
     payload = json.loads(Path(path).read_text(encoding="utf-8"))
     values = payload if isinstance(payload, list) else [payload]
     return tuple(Scenario.model_validate(value) for value in values)
+
+
+def _default_view_scenarios() -> tuple[Scenario, Scenario]:
+    """Return useful formula-only workloads for the zero-argument ``view`` path.
+
+    These are deliberately ordinary Scenario records, so every assumption is
+    persisted in ``scenarios.json`` and visible in the report.  They do not imply
+    a HardwareProfile and therefore cannot enable theoretical pressure.
+    """
+
+    common = {
+        "batch": 1,
+        "activation_dtype": "bfloat16",
+        "weight_format": "bfloat16",
+        "kv_dtype": "bfloat16",
+        "backend": _DEFAULT_VIEW_PRESET_BACKEND,
+        "hardware": "unprofiled",
+    }
+    return (
+        Scenario(
+            phase="prefill",
+            new_tokens=512,
+            past_tokens=0,
+            **common,
+        ),
+        Scenario(
+            phase="decode",
+            new_tokens=1,
+            past_tokens=512,
+            **common,
+        ),
+    )
 
 
 def _hardware_profile(path: Optional[str]) -> Optional[HardwareProfile]:
@@ -201,10 +235,13 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                 source = sys.stdin.read()
                 if not source.strip():
                     raise ValueError("stdin did not contain a JSON config")
+            scenarios = _scenario(args.scenario)
+            if args.command == "view" and args.scenario is None:
+                scenarios = _default_view_scenarios()
             bundle = inspect_model(
                 source,
                 revision=args.revision,
-                scenarios=_scenario(args.scenario),
+                scenarios=scenarios,
                 local_files_only=args.local_files_only,
                 hardware_profile=_hardware_profile(args.hardware_profile),
             )

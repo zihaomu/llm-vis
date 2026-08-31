@@ -166,7 +166,14 @@ class AdapterResult:
         strip_indices = [entry.layer_index for entry in self.layer_strip]
         if strip_indices != list(range(len(strip_indices))):
             raise AdapterConfigError("Layer strip must be contiguous and start at layer zero")
+        strip_instance_paths = [entry.instance_path for entry in self.layer_strip]
+        if len(strip_instance_paths) != len(set(strip_instance_paths)):
+            raise AdapterConfigError("Layer strip instance_path values must be unique")
         for entry in self.layer_strip:
+            if entry.instance_path not in known_instances:
+                raise AdapterConfigError(
+                    f"Layer strip references unknown instance path {entry.instance_path!r}"
+                )
             if not entry.expected_pattern:
                 raise AdapterConfigError("Layer strip expected_pattern must be non-empty")
             if entry.anomaly and not entry.reason:

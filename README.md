@@ -9,7 +9,7 @@
 
 LLM Vis turns a Hugging Face `config.json` into an interactive, top-to-bottom model DAG. Start with the model architecture, open Attention, FFN, or MoE blocks, follow tensor and state edges, and inspect theoretical compute and memory pressure—all without loading the target model's weights or running a full forward pass.
 
-![LLM Vis showing a Qwen3.8 model as a top-to-bottom DAG with tensor edges and a theoretical pressure heatmap.](doc/assets/llm-vis-qwen-dag.png)
+![LLM Vis showing a Qwen3.8 model as a top-to-bottom DAG with tensor edges and a theoretical pressure heatmap.](https://raw.githubusercontent.com/zihaomu/llm-vis/main/doc/assets/llm-vis-qwen-dag.png)
 
 <p align="center"><sub>Qwen3.8 in LLM Vis: a top-to-bottom architecture DAG, typed tensor flows, recursive child nodes, and scenario-aware theoretical pressure.</sub></p>
 
@@ -21,7 +21,7 @@ Very large models are difficult to inspect directly: their weights may not fit l
 - **Recursive, not flattened.** Double-click a compound node to enter a real child graph, from Attention or FFN down to semantic primitives such as GEMM, MatMul, Softmax, RMSNorm, activation, and Multiply.
 - **Explanations in context.** Single-click any node to see its purpose, a simplified equation, input/output shape and dtype, child graphs, and evidence boundary.
 - **Tensor and state flow.** Edges distinguish data, KV cache, recurrent state, route, and control semantics with explicit ports.
-- **Theoretical bottleneck views.** Compare Pressure, Compute, and Memory heatmaps for a selected prefill or decode scenario. Heat is formula-derived and never presented as measured latency.
+- **Theoretical bottleneck views.** Compute and Memory are immediately available for the built-in prefill/decode presets. Pressure is enabled only when you provide an explicit HardwareProfile; every heatmap is formula-derived and never presented as measured latency.
 - **Evidence-aware by design.** Unsupported or unverifiable regions remain `Unknown` or opaque instead of being guessed or silently treated as zero.
 - **Local and shareable.** Each run produces a self-contained offline HTML report plus deterministic JSON and Markdown artifacts.
 
@@ -32,18 +32,23 @@ LLM Vis is currently installed from source. It requires Python 3.9 or newer; [uv
 ```bash
 git clone https://github.com/zihaomu/llm-vis.git
 cd llm-vis
-uv sync --locked
+uv tool install .
 
 # Fetch config metadata only, then open the generated local report.
-uv run llm-vis view Qwen/Qwen3.8-27B
+llm-vis view Qwen/Qwen3.8-27B
 ```
 
 The command resolves the requested Hugging Face revision to an immutable commit, records the `config.json` SHA-256, writes an artifact to a unique temporary directory, and opens its self-contained report. It does **not** download model weights.
 
+When no Scenario is supplied, the report includes clearly labeled Prefill
+(`B1 T512 L0`) and Decode (`B1 T1 L512`) presets. It opens on Compute, allows a
+Memory view, and keeps Pressure disabled until an explicit HardwareProfile is
+provided.
+
 For a deterministic demo that requires no network access:
 
 ```bash
-uv run llm-vis view tests/fixtures/configs/qwen3_8_27b.json \
+llm-vis view tests/fixtures/configs/qwen3_8_27b.json \
   --local-files-only \
   --output artifacts/qwen-demo
 ```
@@ -63,18 +68,18 @@ llm-vis view Qwen/Qwen3.8-27B
 
 ```bash
 # Hugging Face model IDs and URLs
-uv run llm-vis view gpt2
-uv run llm-vis view https://huggingface.co/Qwen/Qwen3.8-27B
-uv run llm-vis view \
+llm-vis view gpt2
+llm-vis view https://huggingface.co/Qwen/Qwen3.8-27B
+llm-vis view \
   https://huggingface.co/Qwen/Qwen3.8-27B/blob/main/config.json
 
 # Local config file or model directory
-uv run llm-vis view ./config.json
-uv run llm-vis view ./downloaded-model-directory
+llm-vis view ./config.json
+llm-vis view ./downloaded-model-directory
 
 # Inline JSON or stdin; --no-open is useful in CI/headless environments
-uv run llm-vis view '{"model_type":"future_model"}' --no-open
-printf '%s' '{"model_type":"future_model"}' | uv run llm-vis view - --no-open
+llm-vis view '{"model_type":"future_model"}' --no-open
+printf '%s' '{"model_type":"future_model"}' | llm-vis view - --no-open
 ```
 
 Known adapters produce the detailed recursive DAG. A valid but unsupported configuration still produces a conservative C0/opaque report, with its limited evidence coverage shown explicitly; it does not crash or invent internals.
@@ -114,7 +119,7 @@ The DAG is therefore an explainable model projection, not a claim that LLM Vis r
 | Dense Llama / Qwen2 (`llama`, `qwen2`) | Config-first dense decoder structure |
 | Other valid JSON configs | Generic C0 skeleton with opaque architecture and explicit partial/unknown coverage |
 
-Adapters are intentionally conservative. See the [adapter guide](doc/adapter-guide.md) for the evidence required to add another architecture family.
+Adapters are intentionally conservative. See the [adapter guide](https://github.com/zihaomu/llm-vis/blob/main/doc/adapter-guide.md) for the evidence required to add another architecture family.
 
 ## Safety and privacy boundary
 
@@ -171,15 +176,22 @@ CI covers Python 3.9 and 3.12. The optional capture path uses Torch; config-firs
 
 ## Documentation
 
-- [Project positioning](doc/project-positioning.md) — audience, product promise, terminology, and non-goals
-- [Implementation plan](doc/llm-visualization-plan.md) — milestone status and acceptance criteria
-- [Model Map IR](doc/model-map-ir.md) — canonical schema, stable identity, and provenance
-- [UI wireframe](doc/ui-wireframe.md) — graph interaction and responsive behavior
-- [Measurement protocol](doc/measurement-protocol.md) — theoretical versus measured metrics
-- [Decision records](doc/decisions/README.md) — frozen boundaries and their review conditions
+- [Project positioning](https://github.com/zihaomu/llm-vis/blob/main/doc/project-positioning.md) — audience, product promise, terminology, and non-goals
+- [Implementation plan](https://github.com/zihaomu/llm-vis/blob/main/doc/llm-visualization-plan.md) — milestone status and acceptance criteria
+- [Model Map IR](https://github.com/zihaomu/llm-vis/blob/main/doc/model-map-ir.md) — canonical schema, stable identity, and provenance
+- [UI wireframe](https://github.com/zihaomu/llm-vis/blob/main/doc/ui-wireframe.md) — graph interaction and responsive behavior
+- [Measurement protocol](https://github.com/zihaomu/llm-vis/blob/main/doc/measurement-protocol.md) — theoretical versus measured metrics
+- [Decision records](https://github.com/zihaomu/llm-vis/blob/main/doc/decisions/README.md) — frozen boundaries and their review conditions
+- [Changelog](https://github.com/zihaomu/llm-vis/blob/main/CHANGELOG.md) — notable changes and current release-candidate scope
+- [Contributing](https://github.com/zihaomu/llm-vis/blob/main/CONTRIBUTING.md) — development, testing, and adapter requirements
+- [Security policy](https://github.com/zihaomu/llm-vis/security/policy) — vulnerability reporting and the zero-execution boundary
 
 ## Project status
 
-LLM Vis is at `0.1.0` and under active development. Config-first import, recursive Qwen/GLM DAGs, explainable node details, scenario-based theoretical heatmaps, and offline reports are implemented. Runtime trace import and hardware-backed operator-to-kernel mappings remain roadmap work; the [implementation plan](doc/llm-visualization-plan.md) is the source of truth.
+LLM Vis is at `0.1.0` and under active development. Config-first import, recursive Qwen/GLM DAGs, explainable node details, scenario-based theoretical heatmaps, and offline reports are implemented. Runtime trace import and hardware-backed operator-to-kernel mappings remain roadmap work; the [implementation plan](https://github.com/zihaomu/llm-vis/blob/main/doc/llm-visualization-plan.md) is the source of truth.
 
 Focused bug reports and architecture-adapter contributions are welcome through [GitHub Issues](https://github.com/zihaomu/llm-vis/issues).
+
+## License
+
+LLM Vis is available under the [Apache License 2.0](https://github.com/zihaomu/llm-vis/blob/main/LICENSE).
