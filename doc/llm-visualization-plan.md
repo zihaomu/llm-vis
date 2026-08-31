@@ -9,7 +9,7 @@
 ## 实施状态（实时维护）
 
 > 最后更新：2026-08-31
-> 当前阶段：**M0–M3.7 已完成；M3.8 Decoder Pattern Summary 与 M3.9 One-Input Model Import 的功能/自动化已完成、`file://` 真实页面待手工退出；M4a 因 AMD reference stack 未冻结而保持 Blocked**
+> 当前阶段：**M0–M3.7 与 M3.10 已完成；M3.8/M3.9 的功能与自动化已完成、`file://` 真实页面待手工退出；M4a 因 AMD reference stack 未冻结而保持 Blocked**
 > 状态规则：只有对应机器退出清单全部通过后才标记为完成；代码存在但尚未验收时保持“实施中”。
 
 | 里程碑 | 状态 | 当前证据 | 下一退出检查 |
@@ -23,12 +23,13 @@
 | M3.7 | **完成** | 每个非 root GraphView 已有稳定 `parent_node_id`；左下直属母图、源节点高亮、单层 parent + breadcrumb、per-view viewport/selection 恢复、结构父节点 focus 与 `≤720px` 折叠路径已完成 | Python 3.9/3.12 isolated 全套各 197 passed、Ruff、27/27 verifier；Qwen/GLM acceptance 报告已重生成并通过 JavaScript syntax/safety 检查，UI agent 完成三层、700px 与浏览器交互验收 |
 | M3.8 | **实施中（功能与自动化完成）** | 完整 `layerStrip` 派生可见重复摘要与文字图例；Qwen/GLM/Tiny 定向、tail/anomaly 防伪、惰性精确层契约已实现；Python 3.9/3.12 各 198、Ruff、27/27 verifier、Qwen/GLM HTML JavaScript/safety 通过 | 自动浏览器因本地 `file://` URL policy 无法重载；用户手动刷新现有 Qwen/GLM 标签页完成 LAY UI 退出后标为完成 |
 | M3.9 | **功能与自动化完成，页面手工退出待确认** | `llm-vis view` 五类语义输入、HF immutable commit/本地 SHA-256 身份、known DAG、generic C0/opaque、2 MiB/64 层/项数安全限额、默认唯一临时 artifact + 打开和 HTML Source/Evidence status 已交付 | IMP-01～07、09～10 自动化 PASS；IMP-08 静态/报告自动化 PASS，待手工打开真实 `file://` 页面后标记里程碑完成 |
+| M3.10 | **完成** | GraphView 正式切换为 `DOWN`；主图、端口、连线、minimap 与 Parent context 统一为上入下出；节点单击解释、去抖双击下钻、结构化用途/简式公式/I/O/child view 已落地 | EXP-01～EXP-10 PASS；Python 3.9/3.12 各 260、Ruff、27/27 verifier、Qwen/GLM acceptance、JavaScript 与 1280/700px 浏览器通过 |
 
 ### 已冻结的执行边界
 
-- M0–M3.9 默认 **零权重、零完整模型 `forward()`**，任何结构分析、导航、输入便利性或展示增强都不得依赖完整模型推理；
+- M0–M3.10 默认 **零权重、零完整模型 `forward()`**，任何结构分析、导航、输入便利性或展示增强都不得依赖完整模型推理；
 - 已知架构由 config adapter 直接生成惰性 Definition/Instance、代表模板和虚拟 Expert Pool；
-- 完整 meta module tree 在 M0–M3.9 禁用且没有 CLI opt-in；仅对项目自有 Tiny 语义代表 Block 使用 meta/FakeTensor；
+- 完整 meta module tree 在 M0–M3.10 禁用且没有 CLI opt-in；仅对项目自有 Tiny 语义代表 Block 使用 meta/FakeTensor；
 - `torch.export` 只允许捕获 Tiny fixture 或缩小后的代表性 Block，不得因捕获失败退回完整模型执行；失败区域必须成为 opaque node 与 Diagnostic；
 - M4 Runtime 的核心工作流固定为导入外部目标环境产生的 trace，LLM-Vis 核心程序不负责启动完整模型；
 - 没有 trace 时，Runtime latency、Kernel、HBM counter 等指标保持 `Unknown`，不得从静态结构伪造；
@@ -65,6 +66,8 @@
 | 2026-08-31 | 完成 M3.8 功能、自动化与 Qwen/GLM 报告重生成 | Python 3.9/3.12 全套各 198 passed，Ruff、27/27 verifier、golden current；Qwen/GLM 内嵌 pattern 分别为 `[L×3 → A] ×16`/`D×3 → M×75`，两页 JavaScript syntax 与 safety flags 通过。自动浏览器拒绝重载本地 `file://` URL，未绕过策略，最终 LAY UI 交互保留为手动刷新退出项 |
 | 2026-08-31 | 冻结 M3.9 One-Input 实施契约（历史记录） | 在实施前冻结五类 Hugging Face/本地/JSON 输入形式、immutable revision + canonical JSON hash、known rich DAG 与 unknown C0/opaque 降级、HF host/大小/深度限额、默认 artifact 与自动打开报告、页面证据状态及 IMP-01～IMP-10；当前完成状态见下一行 |
 | 2026-08-31 | 完成 M3.9 One-Input 功能与自动化 | 交付 `llm-vis view`、Model ID/HF 模型页/HF config URL/本地 config/JSON 文本与 stdin、HF revision 固定、内容 hash 身份、generic C0/opaque GraphView、2 MiB/64 层/100,000 项限额、默认临时 artifact/auto-open 和 Source/Evidence HTML；IMP-01～07、09～10 自动化通过，IMP-08 静态/报告自动化通过、真实 `file://` 页面待手工退出 |
+| 2026-08-31 | 正式启动 M3.10 Top-Down Explainable DAG | 按 Netron 阅读习惯把所有 GraphView、端口、连线与两类缩略图统一为从上到下；冻结“单击解释、双击下钻、叶节点双击不跳转”、Qwen alternate child 选择、语义简式公式与 Cost 公式隔离、零执行及 EXP-01～EXP-10 验收契约 |
+| 2026-08-31 | 完成 M3.10 Top-Down Explainable DAG 与 EXP-01～EXP-10 | Qwen/GLM 所有 view、端口、连线与 Parent/current minimap 已统一为纵向；跨 rank 边使用稳定左右 lane，13 个 view 的几何采样为 0 条 edge/label 穿过非端点卡片；单击 Explain、跨 view 安全的去抖双击、primary/alternate child、Softmax 简式公式和 GLM DSA opaque 边界完成真实浏览器验收；700px Inspector 无横向溢出且 console 0 warning/error；Python 3.9/3.12 各 260、Ruff、27/27 verifier 与两份报告 JavaScript 通过 |
 
 ## 0. 执行摘要
 
@@ -102,7 +105,7 @@ LogicalOp / Tensor / Lowering + 公式成本
 - 只捕获项目自有 Tiny 语义代表 Block，并通过 Lowering 关联到目标配置中的代表实例；不捕获或执行 27B/700B 目标模型 Block；
 - 将 prefill 和 decode 作为不同 workload 分析；
 - 所有指标标注为 `精确`、`公式估算`、`实测` 或 `未知`；
-- M0–M3.8 交互验收使用自包含离线 HTML；同时输出有节点上限的 Model Explorer-compatible JSON，官方 consumer 仍按 DR-0003 保持 Partial。
+- M0–M3.10 交互验收使用自包含离线 HTML；同时输出有节点上限的 Model Explorer-compatible JSON，官方 consumer 仍按 DR-0003 保持 Partial。
 
 ## 1. 项目定位
 
@@ -1136,7 +1139,7 @@ stable semantic_id
 
 ## 14. CLI、API 与输出物
 
-### 14.1 M0–M3.8 已实现 CLI 与 M4 预留接口
+### 14.1 M0–M3.10 已实现 CLI 与 M4 预留接口
 
 ```bash
 # 仅配置，生成结构与静态成本；本地 fixture 可完全离线复现
@@ -1166,7 +1169,7 @@ llm-vis diff artifacts/qwen38-27b \
   --output artifacts/qwen38-27b/workload-diff.json
 ```
 
-当前 M0–M3.8 已实现 `inspect`、`capture`、`diff`、`schema` 与 `validate`。`inspect`/`capture` 自动生成 JSON、递归 GraphView、Markdown 与带父图上下文导航、自解释 Layer Disclosure 的自包含 HTML；`capture` 的 `--kind` 只选择项目自有 Tiny/meta 语义代表块，不存在任意完整模型 capture 开关。`serve` 和 `import-trace` 尚未实现，分别属于可选本地查看便利功能与 M4 范围，不能由上述命令推断为已交付。M4 计划中的 trace 入口仍是 `llm-vis import-trace --model-map ... --trace ... --format ...`，目前不是有效命令。
+当前 M0–M3.10 已实现 `view`、`inspect`、`capture`、`diff`、`schema` 与 `validate`。`view`/`inspect`/`capture` 自动生成 JSON、递归 GraphView、Markdown 与带父图上下文导航、自解释 Layer Disclosure/Explain 的自包含 HTML；`capture` 的 `--kind` 只选择项目自有 Tiny/meta 语义代表块，不存在任意完整模型 capture 开关。`serve` 和 `import-trace` 尚未实现，分别属于可选本地查看便利功能与 M4 范围，不能由上述命令推断为已交付。M4 计划中的 trace 入口仍是 `llm-vis import-trace --model-map ... --trace ... --format ...`，目前不是有效命令。
 
 ### 14.2 输出目录
 
@@ -1192,9 +1195,9 @@ artifacts/<analysis-id>/
 
 `graph-view.json` 是 M3.5 已完成的新增产物。它通过由完整 canonical Model Map 内容确定性计算的 `source_model_map_id=mmap_*` 引用同目录 `model-map.json`；节点证据同时保留 `model:art_*` 与 `model_map:mmap_*`，避免把 Model subject ID 冒充 artifact ID。报告内嵌数据与独立 JSON 使用同一投影，而 `model-explorer.json` 继续是次级兼容输出。
 
-### 14.3 API（M0–M3.8 实际边界与后续候选）
+### 14.3 API（M0–M3.10 实际边界与后续候选）
 
-M0–M3.8 已提供本地 Python API 与静态 artifact，不启动服务，也没有只读 HTTP API。若 M4/M5 证明多进程浏览或外部集成确有需要，再评估以下本地只读接口：
+M0–M3.10 已提供本地 Python API 与静态 artifact，不启动服务，也没有只读 HTTP API。若 M4/M5 证明多进程浏览或外部集成确有需要，再评估以下本地只读接口：
 
 - `POST /analyses`；
 - `GET /analyses/{id}`；
@@ -1356,7 +1359,7 @@ SemanticNode/LogicalOp/Metric/provenance 的权威事实层；
   Final Norm/LM Head/Logits，以及 `hidden → MTP → Draft Logits` conditional branch；
 - L1 展示代表性 Block：Norm、Attention/DSA、Residual、FFN 或 Router/
   Expert Pool/Shared Expert/Reduce，并显示具体输入输出端口；
-- 自包含离线 DAG 画布：左到右分层布局、节点核心信息、port-to-port 连线、
+- 自包含离线 DAG 画布：M3.10 起采用从上到下分层布局、节点核心信息、port-to-port 连线、
   edge label、pan/zoom/fit/minimap、折叠/展开、breadcrumb、上下游高亮；
 - 仅对真实存在的下钻 target 显示 `L1 ›`；角标单击、节点双击和 Enter 下钻，
   Space 只选择，叶节点不显示假入口；
@@ -1367,7 +1370,7 @@ SemanticNode/LogicalOp/Metric/provenance 的权威事实层；
   全局搜索与 Report status 位于紧凑顶栏；Definitions/Diagnostics 与六页 Inspector
   进入按需抽屉；64/78 层和 Supporting analysis 默认折叠，展开后不挤压主图；
 - Layer Strip、搜索、热点和画布双向定位；节点、端口和边联动现有六页
-  Inspector；图选择/搜索只更新 Inspector 待查看状态，不自动遮住路径高亮；
+  Inspector；M3.10 起真实节点单击自动打开结构化 Explain，搜索/恢复选择仍只更新待查看状态；
   Scenario 切换只更新指标，不改变稳定结构 ID；
 - 默认每层级不超过 200 个可见节点；64/78 层和 256 专家按 pattern/group
   折叠，禁止默认全量平铺。
@@ -1609,6 +1612,36 @@ One-Input 统一接受五类形式：
 
 明确不在 M3.9 范围内：承诺任意 Hugging Face JSON 都有完整语义 DAG、从 tokenizer/generation config 猜模型、执行 `trust_remote_code`、下载权重、构造完整 meta tree、执行目标模型或在无 trace 时生成实测性能数据。深度披露仍严格由 adapter/config 证据决定。
 
+### M3.10：Top-Down Explainable DAG
+
+> 实施状态：**完成（2026-08-31）**。本里程碑不创建新手/专家两套图，也不改变递归证据边界；它把同一 GraphView 收敛为 Netron 式从上到下阅读，并使每个节点的解释与下钻动作直接可发现。EXP-01～EXP-10 已由自动化、重生成的 Qwen/GLM acceptance 报告和真实浏览器共同验收。
+
+交互与证据契约：
+
+- 每个 GraphView 的 `metadata.layout_direction` 固定为 `DOWN`。主图使用顶部输入端口、底部输出端口和纵向正交连线；current minimap 与 Parent context 复用相同方向。同行分支围绕最宽拓扑行居中，避免单节点主干贴左；相邻 rank 在行间走线，跨 rank/back edge 通过按稳定 edge interval 分配的左右外侧 lane 绕过中间节点，Tensor 标签锚定在安全行间段。
+- 单击节点在 320 ms 去抖后自动打开 Explain 侧栏；mount 级 pending click 会在双击、角标、键盘、view 切换和销毁时统一取消，并在回调执行前核对原 view、node 与 DOM 连接状态。Explain 显示用途、简化语义公式、输入/输出 shape + dtype、coverage/evidence 边界和可进入的 child graph。搜索定位、selection 恢复与 Scenario 刷新只更新待查看内容，不主动弹出侧栏。
+- 双击复合节点必须取消待执行的单击，再进入可解析的 primary `drilldown_view_id`；双击 leaf/opaque 节点不切换 view，只显示解释。`Enter` 保持 primary 下钻，`Space`/叶节点 `Enter` 显示解释。
+- 可下钻卡片显示 `N nodes ↓`，其中 `N` 是 primary child view 中除 boundary 外的实际节点数。Qwen Hybrid Decoder 的 Explain 同时列出 Linear/Full 两个真实 child view，双击仍确定性进入 primary，alternate 只能经明确按钮选择；不得新增与 GraphView 漂移的伪 `subnodes`。
+- 简式公式来自受控 semantic primitive/component ontology，例如 GEMM `Y = X·W`、RMSNorm、Softmax、Attention 与 gated FFN。它是教学解释，不是 `Metric.formula` 成本 AST、GPU kernel 方程、runtime trace 或 latency。GLM DSA、Linear Attention opaque core 与未知 route 必须显示 `Unknown/opaque`，不能为补齐公式而推断内部实现。
+- 所有不可信 label/description 继续只通过 `textContent` 写入 DOM；M3.10 不引入远程脚本、图编辑、模型代码、权重读取或完整 forward。
+
+退出条件：
+
+| ID | 验收条件 | 当前状态 |
+|---|---|---|
+| EXP-01 | Qwen/GLM/Tiny 所有 GraphView 均声明 `layout_direction=DOWN`；主图各 rank 从上到下，input/output port 分别位于卡片顶部/底部。 | **PASS**：projection/golden 与画布自动化覆盖全部 view；Qwen/GLM 实图确认上入下出 |
+| EXP-02 | data/state/route/control 正交连线、箭头、Tensor 三行标签与 port hit target 在纵向布局中可读，Fit/pan/zoom 不回归。 | **PASS**：相邻行间走廊 + 跨 rank 稳定侧边 lane；Qwen 7 view/GLM 6 view 几何采样均为 0 条 edge/label 穿过非端点卡片 |
+| EXP-03 | current minimap 与 Parent context 使用同一纵向拓扑；母图稳定 `parent_node_id` 高亮、返回和 per-view viewport/selection 恢复不变。 | **PASS**：两类缩略图、三层下钻、Collapse 与恢复实测通过 |
+| EXP-04 | 真实单击节点自动打开结构化 Explain；双击取消单击并只对有效 child 下钻，leaf/opaque 双击不跳转。 | **PASS**：320 ms mount 级去抖、跨 view 取消、compound/leaf/opaque 与键盘路径通过 |
+| EXP-05 | Explain 为每个节点显示用途、简式公式或明确 Not applicable/Unknown、输入输出 shape/dtype 与 evidence boundary；Cost 页仍只显示成本/瓶颈公式。 | **PASS**：结构化 Explain 自动化与 Qwen Decoder、Softmax、GLM DSA 实页通过 |
+| EXP-06 | `N nodes ↓` 只出现在有效 child target 上，数量来自 child view；Qwen Decoder 列出 Linear/Full 两个真实 child，primary/alternate 可辨认。 | **PASS**：实际 child 数量、primary 双击与 alternate 按钮均已验证 |
+| EXP-07 | Qwen GEMM/RMSNorm/Softmax/Attention/FFN 公式可读；GLM DSA/route 不伪造内部或 runtime expert 选择。 | **PASS**：ontology 定向测试；Softmax 实页公式与 DSA opaque/TopK route 边界通过 |
+| EXP-08 | 单击、双击、child 按钮、Collapse、搜索、Scenario/heat 切换不改变稳定 view/node/port/edge identity；GraphView document 内容 ID 随正式 `DOWN` metadata 更新。 | **PASS**：稳定 identity 测试与重生成 golden 通过，仅内容寻址 document ID 按预期变化 |
+| EXP-09 | 1280px 桌面与约 700px 窄屏报告中主图、侧栏、下钻角标、顶部/底部端口和两类缩略图无关键遮挡，console 无 warning/error。 | **PASS**：1280px in-app 与 700×900 headless 浏览器实图通过；窄屏 `scrollWidth=700`、Inspector/child buttons 可见、console 0 warning/error |
+| EXP-10 | Qwen/GLM acceptance 报告与全套 schema/golden/verifier 通过，并继续保持零权重、零 remote code、零目标/完整模型 forward。 | **PASS**：Python 3.9/3.12 各 **260 passed**、Ruff、27/27 verifier、两页 JavaScript syntax 与 safety 回归通过 |
+
+明确不在 M3.10 范围内：自动把任意 compound Python 代码还原成算子图、把简式公式解释成精确 kernel 实现、引入图编辑/执行能力、渲染 10k raw-op 大图，以及改变 M3.9 One-Input 的安全边界。
+
 ### M4a：AMD Runtime 关联（3–4 周）
 
 只针对 M0 冻结的 reference stack：
@@ -1687,7 +1720,7 @@ M4a 是 Infra/AMD 专业能力的第一道分水岭；M4b 才提供硬件 counte
 | Tiny MoE synthetic config | 路由、expert pool、active params、动态 trace |
 | Tiny Mamba/SSM fixture | scan/recurrent state、非 KV 状态 |
 
-测试不会在 CI 下载或读取 27B/1.5TB 权重。固定 config/revision 与完全位于 meta/FakeTensor 上的项目自有 Tiny 语义代表块即可完成 M0–M3.9 结构、捕获、公式、GraphView、父图导航、layer pattern 披露与 One-Input 解析测试；M3.7/M3.8 只复用已生成 artifact 做导航/展示验收，M3.9 只在解析 config 后进入同一静态 DAG 生成链，同样不需要权重或目标模型 forward。当前没有真实性能结论，未来只有外部 AMD trace/counter artifact 才能提供实测证据。
+测试不会在 CI 下载或读取 27B/1.5TB 权重。固定 config/revision 与完全位于 meta/FakeTensor 上的项目自有 Tiny 语义代表块即可完成 M0–M3.10 结构、捕获、公式、GraphView、父图导航、layer pattern 披露、One-Input 解析与 Explain UI 测试；M3.7/M3.8/M3.10 只复用已生成 artifact 做导航/展示验收，M3.9 只在解析 config 后进入同一静态 DAG 生成链，同样不需要权重或目标模型 forward。当前没有真实性能结论，未来只有外部 AMD trace/counter artifact 才能提供实测证据。
 
 ### 17.2 测试类型
 
@@ -1923,7 +1956,7 @@ M4a 是 Infra/AMD 专业能力的第一道分水岭；M4b 才提供硬件 counte
 9. **完成**：故障注入验证 opaque fallback 和 Coverage；
 10. **完成**：Scenario、Linear/Attention/FFN/KV/state 基础成本公式；
 11. **完成**：Tiny/Qwen 成本 golden 与 GLM config-level resident/active/storage；
-12. **Blocked/M4**：外部 trace importer 在 AMD reference stack 冻结前不实施；不在 M0–M3.8 内运行 profiler。
+12. **Blocked/M4**：外部 trace importer 在 AMD reference stack 冻结前不实施；不在 M0–M3.10 内运行 profiler。
 
 ## 23. 关键决策记录
 
@@ -1931,9 +1964,9 @@ M4a 是 Infra/AMD 专业能力的第一道分水岭；M4b 才提供硬件 counte
 |---|---|---|---|
 | 首要模型入口 | Hugging Face/PyTorch | 最新模型通常有 config + Torch 结构代码 | M2 后评估其他框架 |
 | 是否依赖 GGUF | 否 | 目标是模型结构与执行，不绑定权重格式 | 仅作为未来 runtime adapter |
-| 是否下载权重 | M0–M3.8 与 M4 核心均否 | config-first/代表性 meta 足以生成结构，M3.7/M3.8 只读取现有 GraphView/Layer Strip，Runtime 只导入外部 trace | 若未来另做 capture helper，需独立安全/资源审计 |
-| 是否执行完整模型 | M0–M3.8 禁止；M4 核心仅导入外部 trace | 超大模型无法在可视化工作站可靠运行，且结构、导航与摘要分析不需要真实权重 | 若未来提供 capture helper，必须作为独立可选组件审计 |
-| 完整 meta tree | M0–M3.8 禁用，无 CLI opt-in | meta 参数不占真实权重存储，但海量 Python 对象仍会消耗宿主资源；M3.7/M3.8 不增加模型构造 | M5 后如需新增路径，先写新 DR |
+| 是否下载权重 | M0–M3.10 与 M4 核心均否 | config-first/代表性 meta 足以生成结构，M3.7–M3.10 只读取现有 GraphView/Layer Strip/config，Runtime 只导入外部 trace | 若未来另做 capture helper，需独立安全/资源审计 |
+| 是否执行完整模型 | M0–M3.10 禁止；M4 核心仅导入外部 trace | 超大模型无法在可视化工作站可靠运行，且结构、导航与摘要分析不需要真实权重 | 若未来提供 capture helper，必须作为独立可选组件审计 |
+| 完整 meta tree | M0–M3.10 禁用，无 CLI opt-in | meta 参数不占真实权重存储，但海量 Python 对象仍会消耗宿主资源；M3.7–M3.10 不增加模型构造 | M5 后如需新增路径，先写新 DR |
 | 大图策略 | 语义折叠与按需展开 | 平铺重复层无信息增益 | 持续测用户任务时间 |
 | MVP 动态图工具 | `torch.export` 单一主路径 | 控制 MVP 范围并获得规范化 ATen IR | TorchLens/hooks 延后到 M5 |
 | 前端 M0/M1 | 自包含离线 UI + Model Explorer-compatible JSON spike | 核心交互已离线验收；官方 consumer 仍 Partial | 补齐 DR-0003 consumer 证据后复审 |

@@ -171,7 +171,13 @@ DAG_CANVAS_CSS = r"""
   letter-spacing: .04em;
   pointer-events: none;
 }
-.llm-dag-port-label { fill: #b7c7de; font: 9px/1 ui-monospace, monospace; }
+.llm-dag-port-label {
+  fill: #b7c7de;
+  stroke: var(--dag-bg);
+  stroke-width: 3px;
+  paint-order: stroke;
+  font: 9px/1 ui-monospace, monospace;
+}
 .llm-dag-port { stroke: #07101e; stroke-width: 2; pointer-events:none; }
 .llm-dag-port-hit { fill: transparent; pointer-events: all; cursor: pointer; }
 .llm-dag-port[data-port-direction="input"] { fill: #8ab7f2; }
@@ -397,9 +403,11 @@ DAG_CANVAS_JS = r"""
   const NS = 'http://www.w3.org/2000/svg';
   const WIDTH = 224;
   const BASE_HEIGHT = 142;
-  const X_GAP = 116;
-  const Y_GAP = 42;
-  const PAD = 58;
+  const X_GAP = 56;
+  const Y_GAP = 118;
+  const PAD = 118;
+  const ROUTE_LANE_INSET = 34;
+  const ROUTE_LANE_GAP = 12;
   const instances = new Map();
   const svg = (tag, attrs = {}) => {
     const el = document.createElementNS(NS, tag);
@@ -522,37 +530,96 @@ DAG_CANVAS_JS = r"""
     const remaining = nodes.map(nodeId).filter(id => !visited.has(id)).sort();
     let cycleRank = Math.max(0, ...ranks.values());
     for (const id of remaining) ranks.set(id, cycleRank++);
-    const columns = new Map();
+    const rows = new Map();
     for (const node of nodes) {
       const rank = ranks.get(nodeId(node));
-      if (!columns.has(rank)) columns.set(rank, []);
-      columns.get(rank).push(node);
+      if (!rows.has(rank)) rows.set(rank, []);
+      rows.get(rank).push(node);
     }
-    const positions = new Map();
-    let maxX = PAD + WIDTH;
-    let maxY = PAD + BASE_HEIGHT;
-    for (const [rank, column] of [...columns.entries()].sort((a, b) => a[0] - b[0])) {
-      column.sort((a, b) => {
+    const orderedRows = [...rows.entries()].sort((a, b) => a[0] - b[0]);
+    const predecessors = new Map(nodes.map(node => [nodeId(node), []]));
+    for (const edge of edges) {
+      const source = String(edge.source_node_id);
+      const target = String(edge.target_node_id);
+      if (ranks.get(source) < ranks.get(target)) predecessors.get(target)?.push(source);
+    }
+    const orderById = new Map();
+    for (const [, row] of orderedRows) {
+      row.sort((a, b) => {
+        const predecessorOrder = node => {
+          const known = (predecessors.get(nodeId(node)) || [])
+            .map(id => orderById.get(id)).filter(value => Number.isFinite(value));
+          return known.length
+            ? known.reduce((total, value) => total + value, 0) / known.length : null;
+        };
+        const ao = predecessorOrder(a);
+        const bo = predecessorOrder(b);
+        if (ao !== null && bo !== null && ao !== bo) return ao - bo;
+        if (ao !== null && bo === null) return -1;
+        if (ao === null && bo !== null) return 1;
         const ak = `${a.label || ''}|${nodeId(a)}`;
         const bk = `${b.label || ''}|${nodeId(b)}`;
         return ak.localeCompare(bk);
       });
-      let columnY = PAD;
-      column.forEach(node => {
-        const ports = [...(node.ports || [])];
-        const inputs = ports.filter(port => portDirection(port, node, edges) === 'input');
-        const outputs = ports.filter(port => portDirection(port, node, edges) === 'output');
-        const portCount = Math.max(1, inputs.length, outputs.length);
-        const height = Math.max(BASE_HEIGHT, 112 + portCount * 17);
-        const x = PAD + rank * (WIDTH + X_GAP);
-        const y = columnY;
-        positions.set(nodeId(node), { x, y, width: WIDTH, height, node });
-        maxX = Math.max(maxX, x + WIDTH + PAD);
-        maxY = Math.max(maxY, y + height + PAD);
-        columnY += height + Y_GAP;
-      });
+      row.forEach((node, index) => orderById.set(nodeId(node), index));
     }
-    return { nodes, edges, positions, width: maxX, height: maxY };
+    const rowWidth = row => row.length * WIDTH + Math.max(0, row.length - 1) * X_GAP;
+    const contentWidth = Math.max(WIDTH, ...orderedRows.map(([, row]) => rowWidth(row)));
+    const positions = new Map();
+    let maxX = PAD * 2 + contentWidth;
+    let maxY = PAD + BASE_HEIGHT;
+    let rowY = PAD;
+    for (const [rank, row] of orderedRows) {
+      let rowX = PAD + (contentWidth - rowWidth(row)) / 2;
+      row.forEach(node => {
+        const height = BASE_HEIGHT;
+        const x = rowX;
+        const y = rowY;
+        positions.set(nodeId(node), { x, y, width: WIDTH, height, rank, node });
+        maxY = Math.max(maxY, y + height + PAD);
+        rowX += WIDTH + X_GAP;
+      });
+      rowY += BASE_HEIGHT + Y_GAP;
+    }
+    const contentLeft = PAD;
+    const contentRight = PAD + contentWidth;
+    const edgeRouteLanes = new Map();
+    const laneEnds = { left: [], right: [] };
+    const routedEdges = edges.map((edge, index) => {
+      const source = positions.get(String(edge.source_node_id));
+      const target = positions.get(String(edge.target_node_id));
+      if (!source || !target || target.rank - source.rank === 1) return null;
+      const sourceX = source.x + source.width / 2;
+      const targetX = target.x + target.width / 2;
+      const leftBase = contentLeft / 2;
+      const rightBase = contentRight + (maxX - contentRight) / 2;
+      return {
+        id: edgeId(edge, index), index,
+        start: Math.min(source.rank, target.rank),
+        end: Math.max(source.rank, target.rank),
+        leftCost: Math.abs(sourceX - leftBase) + Math.abs(targetX - leftBase),
+        rightCost: Math.abs(sourceX - rightBase) + Math.abs(targetX - rightBase)
+      };
+    }).filter(Boolean).sort((a, b) => a.start - b.start || a.end - b.end
+      || a.id.localeCompare(b.id));
+    const availableLane = (side, start) => {
+      const reusable = laneEnds[side].findIndex(end => end < start);
+      return reusable >= 0 ? reusable : laneEnds[side].length;
+    };
+    for (const item of routedEdges) {
+      const leftLane = availableLane('left', item.start);
+      const rightLane = availableLane('right', item.start);
+      const leftScore = item.leftCost + leftLane * 80;
+      const rightScore = item.rightCost + rightLane * 80;
+      const side = leftScore === rightScore
+        ? (item.index % 2 ? 'right' : 'left')
+        : (leftScore < rightScore ? 'left' : 'right');
+      const lane = side === 'left' ? leftLane : rightLane;
+      laneEnds[side][lane] = item.end;
+      edgeRouteLanes.set(item.id, { side, lane });
+    }
+    return { nodes, edges, positions, width: maxX, height: maxY,
+      direction: 'DOWN', contentLeft, contentRight, edgeRouteLanes };
   }
 
   function portDirection(port, node, edges) {
@@ -591,14 +658,36 @@ DAG_CANVAS_JS = r"""
     return lines.map(item => clip(item, 34));
   }
 
-  function buildPath(source, target) {
-    const middle = source.x + Math.max(44, (target.x - source.x) / 2);
-    if (target.x >= source.x + 40) {
-      return `M ${source.x} ${source.y} H ${middle} V ${target.y} H ${target.x}`;
+  function buildPath(source, target, activeLayout, routeHint = {}) {
+    const rankDelta = Number(target.rank) - Number(source.rank);
+    if (rankDelta === 1) {
+      const middle = (source.y + target.y) / 2;
+      return {
+        d: `M ${source.x} ${source.y} V ${middle} H ${target.x} V ${target.y}`,
+        labelX: (source.x + target.x) / 2,
+        labelY: middle
+      };
     }
-    const detour = Math.max(source.y, target.y) + 52;
-    return `M ${source.x} ${source.y} H ${source.x + 38} V ${detour}`
-      + ` H ${target.x - 38} V ${target.y} H ${target.x}`;
+    const lane = Math.max(0, Number(routeHint.lane) || 0);
+    const contentLeft = Number(activeLayout.contentLeft || PAD);
+    const contentRight = Number(activeLayout.contentRight || (activeLayout.width - PAD));
+    const offset = ROUTE_LANE_INSET + lane * ROUTE_LANE_GAP;
+    const leftChannel = Math.max(8, contentLeft - offset);
+    const rightChannel = Math.min(activeLayout.width - 8, contentRight + offset);
+    const leftCost = Math.abs(source.x - leftChannel) + Math.abs(target.x - leftChannel);
+    const rightCost = Math.abs(source.x - rightChannel) + Math.abs(target.x - rightChannel);
+    const side = routeHint.side || (leftCost <= rightCost ? 'left' : 'right');
+    const channel = side === 'left' ? leftChannel : rightChannel;
+    const sourceExit = source.y + Y_GAP / 2;
+    const targetEntry = target.y - Y_GAP / 2;
+    const labelFromTarget = lane % 2 === 1;
+    return {
+      d: `M ${source.x} ${source.y} V ${sourceExit} H ${channel}`
+        + ` V ${targetEntry} H ${target.x} V ${target.y}`,
+      labelX: ((labelFromTarget ? target.x : source.x) + channel) / 2,
+      labelY: labelFromTarget ? targetEntry : sourceExit,
+      side, lane
+    };
   }
 
   function mount(root, graphDocument, options = {}) {
@@ -638,6 +727,7 @@ DAG_CANVAS_JS = r"""
     let ty = 0;
     let drag = null;
     let selected = null;
+    let pendingNodeClick = null;
     const selectionByView = new Map();
     const viewportByView = new Map();
     let searchQuery = '';
@@ -654,8 +744,14 @@ DAG_CANVAS_JS = r"""
       status.textContent = currentView
         ? `${currentView.nodes?.length || 0} nodes · ${currentView.edges?.length || 0} edges`
           + ` · ${Math.round(scale * 100)}%`
+          + ' · top → bottom'
           + (drillable ? ` · ${drillable} expandable` : '')
         : 'No graph view';
+    }
+
+    function cancelPendingNodeClick() {
+      if (pendingNodeClick?.timer) window.clearTimeout(pendingNodeClick.timer);
+      pendingNodeClick = null;
     }
 
     function fit() {
@@ -770,7 +866,8 @@ DAG_CANVAS_JS = r"""
       return { upstream, downstream };
     }
 
-    function selectNode(node) {
+    function selectNode(node, interaction = {}) {
+      cancelPendingNodeClick();
       const id = nodeId(node);
       selected = { type: 'node', id };
       selectionByView.set(viewId(currentView), selected);
@@ -796,11 +893,13 @@ DAG_CANVAS_JS = r"""
         el.classList.remove('is-selected');
       });
       dispatchSelection('node', node, {
-        upstreamIds: [...relations.upstream], downstreamIds: [...relations.downstream]
+        upstreamIds: [...relations.upstream], downstreamIds: [...relations.downstream],
+        ...interaction
       });
     }
 
     function selectEdge(edge, id) {
+      cancelPendingNodeClick();
       selected = { type: 'edge', id };
       selectionByView.set(viewId(currentView), selected);
       root.querySelectorAll('.llm-dag-node, .llm-dag-port-group, .llm-dag-edge-group')
@@ -812,6 +911,7 @@ DAG_CANVAS_JS = r"""
     }
 
     function selectPort(port, node, direction) {
+      cancelPendingNodeClick();
       selected = { type: 'port', id: portId(port), nodeId: nodeId(node), direction };
       selectionByView.set(viewId(currentView), selected);
       root.querySelectorAll('.llm-dag-node, .llm-dag-port-group, .llm-dag-edge-group')
@@ -826,10 +926,11 @@ DAG_CANVAS_JS = r"""
 
     function portPoint(node, port, direction, index, count) {
       const pos = layout.positions.get(nodeId(node));
-      const spacing = Math.min(18, (pos.height - 54) / Math.max(count, 1));
+      const spacing = pos.width / (Math.max(count, 1) + 1);
       return {
-        x: direction === 'input' ? pos.x : pos.x + pos.width,
-        y: pos.y + 106 + index * spacing
+        x: pos.x + spacing * (index + 1),
+        y: direction === 'input' ? pos.y : pos.y + pos.height,
+        rank: pos.rank
       };
     }
 
@@ -838,19 +939,19 @@ DAG_CANVAS_JS = r"""
       const drilldownId = node.drilldown_view_id && String(node.drilldown_view_id);
       const canDrill = Boolean(drilldownId && viewsById.has(drilldownId));
       const targetView = canDrill ? viewsById.get(drilldownId) : null;
-      const operatorCount = targetView
-        ? ((targetView.cost_frontier_node_ids || []).length
-          || (targetView.nodes || []).filter(item => item.kind !== 'boundary').length) : 0;
-      const expandLabel = `${operatorCount || 'More'} ops ›`;
+      const childNodeCount = targetView
+        ? (targetView.nodes || []).filter(item => item.kind !== 'boundary').length : 0;
+      const expandLabel = `${childNodeCount || 'Open'} nodes ↓`;
       const label = node.label || nodeId(node);
       const baseAria = canDrill
-        ? `${label} expands to ${operatorCount || 'more'} operators. `
-          + 'Click the operator badge, double-click, or press Enter to open;'
-          + ' Space inspects.'
-        : `Inspect ${label}. Enter or Space selects.`;
+        ? `${label} expands to ${childNodeCount || 'more'} child nodes. `
+          + 'Single-click shows details. Double-click, click the operator badge, '
+          + 'or press Enter to open the child graph.'
+        : `Inspect ${label}. Single-click, Enter, or Space shows details.`;
       const baseTooltip = canDrill
-        ? `Expand ${label} to ${operatorCount || 'more'} operators — double-click or press Enter`
-        : `Inspect ${label}`;
+        ? `${label}: click for details · double-click to enter `
+          + `${childNodeCount || 'more'} child nodes`
+        : `${label}: click for details`;
       const group = svg('g', {
         class: `llm-dag-node${canDrill ? ' has-drilldown' : ''}`,
         tabindex: '0', role: 'button', 'aria-label': baseAria,
@@ -886,7 +987,7 @@ DAG_CANVAS_JS = r"""
       if (canDrill) {
         const badge = svg('g', {
           class: 'llm-dag-drill-badge',
-          transform: `translate(${pos.width - 70} -10)`,
+          transform: `translate(${pos.width - 82} ${pos.height - 27})`,
           'aria-hidden': 'true'
         });
         badge.append(svg('rect', {
@@ -900,6 +1001,7 @@ DAG_CANVAS_JS = r"""
         }));
         badge.addEventListener('click', event => {
           event.stopPropagation();
+          cancelPendingNodeClick();
           openView(drilldownId, { source: 'node-affordance', parentNodeId: nodeId(node) });
         });
         group.append(badge);
@@ -910,8 +1012,8 @@ DAG_CANVAS_JS = r"""
       for (const [direction, list] of [['input', inputs], ['output', outputs]]) {
         list.forEach((port, index) => {
           const point = portPoint(node, port, direction, index, list.length);
-          const cx = direction === 'input' ? 0 : pos.width;
-          const cy = point.y - pos.y;
+          const cx = point.x - pos.x;
+          const cy = direction === 'input' ? 0 : pos.height;
           const portGroup = svg('g', {
             class: 'llm-dag-port-group', tabindex: '0', role: 'button',
             'aria-label': `Inspect ${direction} port ${port.label || port.name || portId(port)}`,
@@ -923,6 +1025,7 @@ DAG_CANVAS_JS = r"""
           }));
           const inspectPort = event => {
             event.stopPropagation();
+            cancelPendingNodeClick();
             if (event.type === 'keydown') event.preventDefault();
             selectPort(port, node, direction);
           };
@@ -931,29 +1034,49 @@ DAG_CANVAS_JS = r"""
             if (event.key === 'Enter' || event.key === ' ') inspectPort(event);
           });
           group.append(portGroup);
-          const name = clip(port.label || port.name || portId(port), 15);
+          const portLabelSize = Math.max(5, Math.floor(24 / Math.max(1, list.length)));
+          const name = clip(port.label || port.name || portId(port), portLabelSize);
           group.append(text('text', name, {
-            class: 'llm-dag-port-label', x: direction === 'input' ? 10 : pos.width - 10,
-            y: cy + 3, 'text-anchor': direction === 'input' ? 'start' : 'end'
+            class: 'llm-dag-port-label', x: cx,
+            y: direction === 'input' ? -9 : pos.height + 15,
+            'text-anchor': 'middle'
           }));
         });
       }
       group.addEventListener('click', event => {
         event.stopPropagation();
-        selectNode(node);
+        cancelPendingNodeClick();
+        const scheduledViewId = viewId(currentView);
+        const scheduledNodeId = nodeId(node);
+        const timer = window.setTimeout(() => {
+          const pending = pendingNodeClick;
+          pendingNodeClick = null;
+          if (!pending || pending.viewId !== viewId(currentView)
+            || pending.nodeId !== scheduledNodeId || !group.isConnected) return;
+          selectNode(node, { source: 'single-click', reveal: true });
+        }, 320);
+        pendingNodeClick = {
+          timer, viewId: scheduledViewId, nodeId: scheduledNodeId
+        };
       });
       group.addEventListener('keydown', event => {
+        cancelPendingNodeClick();
         if (event.key === 'Enter' && canDrill) {
           event.preventDefault();
           openView(drilldownId, { source: 'keyboard', parentNodeId: nodeId(node) });
         } else if (event.key === 'Enter' || event.key === ' ') {
           event.preventDefault();
-          selectNode(node);
+          selectNode(node, { source: 'keyboard-inspect', reveal: true });
         }
       });
       group.addEventListener('dblclick', event => {
         event.stopPropagation();
-        if (canDrill) openView(drilldownId, { source: 'double-click', parentNodeId: nodeId(node) });
+        cancelPendingNodeClick();
+        if (canDrill) {
+          openView(drilldownId, { source: 'double-click', parentNodeId: nodeId(node) });
+        } else {
+          selectNode(node, { source: 'double-click-leaf', reveal: true });
+        }
       });
       nodeLayer.append(group);
     }
@@ -976,12 +1099,16 @@ DAG_CANVAS_JS = r"""
         const target = edgeEndpoint(targetNode, edge.target_port_id, 'input');
         const id = edgeId(edge, index);
         const kind = edgeKind(edge);
-        const path = buildPath(source, target);
+        const routeHint = layout.edgeRouteLanes.get(id) || {};
+        const route = buildPath(source, target, layout, routeHint);
+        const path = route.d;
         const group = svg('g', {
           class: 'llm-dag-edge-group', 'data-edge-id': id, tabindex: '0', role: 'button',
           'aria-label': `Inspect ${kind} edge ${edge.label || id}`,
           'data-source-node-id': nodeId(sourceNode),
-          'data-target-node-id': nodeId(targetNode)
+          'data-target-node-id': nodeId(targetNode),
+          'data-route-side': route.side || 'direct',
+          'data-route-lane': String(route.lane ?? '')
         });
         group.append(svg('path', {
           class: 'llm-dag-edge', d: path, 'data-edge-kind': kind,
@@ -1001,8 +1128,8 @@ DAG_CANVAS_JS = r"""
           }
         });
         group.append(hit);
-        const labelX = (source.x + target.x) / 2;
-        const labelY = (source.y + target.y) / 2;
+        const labelX = route.labelX;
+        const labelY = route.labelY;
         const tensorName = edge.tensor_name || edge.label || 'tensor';
         const shapeLabel = edge.shape_label || 'Unknown';
         const dtypeLabel = edge.dtype_label || 'dtype Unknown';
@@ -1025,14 +1152,20 @@ DAG_CANVAS_JS = r"""
       miniWorld.replaceChildren();
       if (!layout || !layout.width || !layout.height) return;
       minimap.setAttribute('viewBox', `0 0 ${layout.width} ${layout.height}`);
-      for (const edge of layout.edges) {
+      for (const [index, edge] of layout.edges.entries()) {
         const source = layout.positions.get(String(edge.source_node_id));
         const target = layout.positions.get(String(edge.target_node_id));
         if (!source || !target) continue;
+        const routeHint = layout.edgeRouteLanes.get(edgeId(edge, index)) || {};
+        const route = buildPath(
+          { x: source.x + source.width / 2, y: source.y + source.height,
+            rank: source.rank },
+          { x: target.x + target.width / 2, y: target.y, rank: target.rank },
+          layout, routeHint
+        );
         miniWorld.append(svg('path', {
           class: 'llm-dag-minimap-edge',
-          d: `M ${source.x + source.width} ${source.y + source.height / 2}`
-            + ` L ${target.x} ${target.y + target.height / 2}`
+          d: route.d
         }));
       }
       for (const pos of layout.positions.values()) {
@@ -1109,14 +1242,20 @@ DAG_CANVAS_JS = r"""
         `Immediate parent graph: ${parentLabel}. `
         + `Expanded node: ${expandedNode?.label || expandedNodeId}. `
         + 'Press Enter or Space to return.');
-      for (const edge of parentLayout.edges) {
+      for (const [index, edge] of parentLayout.edges.entries()) {
         const source = parentLayout.positions.get(String(edge.source_node_id));
         const target = parentLayout.positions.get(String(edge.target_node_id));
         if (!source || !target) continue;
+        const routeHint = parentLayout.edgeRouteLanes.get(edgeId(edge, index)) || {};
+        const route = buildPath(
+          { x: source.x + source.width / 2, y: source.y + source.height,
+            rank: source.rank },
+          { x: target.x + target.width / 2, y: target.y, rank: target.rank },
+          parentLayout, routeHint
+        );
         parentContextWorld.append(svg('path', {
           class: 'llm-dag-parent-edge',
-          d: `M ${source.x + source.width} ${source.y + source.height / 2}`
-            + ` L ${target.x} ${target.y + target.height / 2}`
+          d: route.d
         }));
       }
       for (const pos of parentLayout.positions.values()) {
@@ -1274,6 +1413,7 @@ DAG_CANVAS_JS = r"""
     }
 
     function openView(id, detail = {}) {
+      cancelPendingNodeClick();
       const next = viewsById.get(String(id));
       if (!next) return false;
       const previous = currentView;
@@ -1282,6 +1422,7 @@ DAG_CANVAS_JS = r"""
         if (selected) selectionByView.set(viewId(previous), selected);
       }
       currentView = next;
+      root.dataset.layoutDirection = 'DOWN';
       selected = selectionByView.get(viewId(next)) || null;
       const restoredSelection = selected ? { ...selected } : null;
       const restoredViewId = viewId(next);
@@ -1396,6 +1537,7 @@ DAG_CANVAS_JS = r"""
       zoom(event.deltaY < 0 ? 1.12 : 1 / 1.12, event.clientX, event.clientY);
     }, { passive: false });
     stage.addEventListener('pointerdown', event => {
+      cancelPendingNodeClick();
       if (event.target.closest(
         '.llm-dag-parent-context, .llm-dag-current-context, '
         + '.llm-dag-node, .llm-dag-edge-hit'
@@ -1430,6 +1572,7 @@ DAG_CANVAS_JS = r"""
       openView,
       setHeatmap,
       destroy() {
+        cancelPendingNodeClick();
         window.removeEventListener('resize', frameReadable);
         compactParentContext.removeEventListener('change', handleParentContextBreakpoint);
         instances.delete(root.id);
@@ -1519,7 +1662,8 @@ def render_dag_canvas(
         sort_keys=True,
     ).replace("</", "<\\/")
     return f"""<section class="llm-dag" id="{safe_element_id}" data-llm-vis-dag
-  data-dag-payload-id="{safe_payload_id}" data-readonly="true"{initial_attr}>
+  data-dag-payload-id="{safe_payload_id}" data-readonly="true"
+  data-layout-direction="DOWN"{initial_attr}>
   <div class="llm-dag-toolbar" role="toolbar" aria-label="DAG canvas controls">
     <div class="llm-dag-nav-controls" aria-label="Graph navigation controls">
       <button type="button" data-dag-action="back"
@@ -1533,6 +1677,7 @@ def render_dag_canvas(
       <button type="button" data-dag-action="zoom-out" aria-label="Zoom out">−</button>
       <button type="button" data-dag-action="zoom-in" aria-label="Zoom in">+</button>
       <button type="button" data-dag-action="fit">Fit</button>
+      <span class="llm-dag-readonly">Flow ↓</span>
       <span class="llm-dag-readonly">Read-only</span>
     </div>
   </div>

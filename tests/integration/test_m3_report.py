@@ -91,7 +91,9 @@ def test_m3_artifact_contains_hotspots_roofline_diff_and_offline_controls(
     assert '<option value="pressure">Pressure</option>' in html
     assert '<option value="compute">Compute</option>' in html
     assert '<option value="memory">Memory</option>' in html
-    assert "Nodes marked “N ops ›” expand in this canvas" in html
+    assert "Follow tensors from top to bottom" in html
+    assert "Single-click a node for its explanation and equation" in html
+    assert "double-click a node marked “N nodes ↓”" in html
     assert "data-initial-view-id=" in html
     assert 'data-dag-action="fit"' in html
     assert 'class="llm-dag-minimap"' in html
@@ -160,7 +162,14 @@ def test_m3_artifact_contains_hotspots_roofline_diff_and_offline_controls(
         "renderDiagnostics();renderLayerSummary();"
         "renderGraphEvidence(graphView.views[0]);setupScenarios()" in html
     )
-    assert "setInspector(graphSelectionContext(detail),{reveal:false})" in html
+    assert "setInspector(graphSelectionContext(detail),{reveal:detail?.reveal===true})" in html
+    assert "renderNodeExplanation" in html
+    assert "Simplified equation" in html
+    assert "What this node does" in html
+    assert "Inputs and outputs" in html
+    assert "Educational equation derived from the semantic node kind" in html
+    assert "Attention(Q,K,V) = softmax(QKᵀ / √d + mask) · V" in html
+    assert "FFN(x) = (SiLU(xW_gate) ⊙ xW_up) · W_down" in html
     assert "Structure index" in html
     for inspector_tab in (
         "explain",

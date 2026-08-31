@@ -68,6 +68,7 @@ def test_render_dag_canvas_embeds_payload_and_read_only_controls() -> None:
     assert 'id="qwen-dag"' in fragment
     assert 'data-initial-view-id="l0"' in fragment
     assert 'data-readonly="true"' in fragment
+    assert 'data-layout-direction="DOWN"' in fragment
     assert 'data-dag-action="back"' in fragment
     assert "← Collapse" in fragment
     assert 'data-dag-action="fit"' in fragment
@@ -89,6 +90,7 @@ def test_render_dag_canvas_embeds_payload_and_read_only_controls() -> None:
     assert 'class="llm-dag-parent-map" role="button" tabindex="0"' in fragment
     assert 'aria-keyshortcuts="Enter Space"' in fragment
     assert 'class="llm-dag-heat-legend"' in fragment
+    assert '<span class="llm-dag-readonly">Flow ↓</span>' in fragment
     assert "gray = Unknown / not attributable" in fragment
     assert 'role="group" aria-label="Interactive model dataflow graph"' in fragment
     assert '"drilldown_view_id":"l1-block"' in fragment
@@ -128,12 +130,18 @@ def test_assets_expose_offline_interaction_api_and_distinct_edge_patterns() -> N
     assert "dblclick" in DAG_CANVAS_JS
     assert "has-drilldown" in DAG_CANVAS_JS
     assert "llm-dag-drill-badge" in DAG_CANVAS_JS
-    assert "ops ›" in DAG_CANVAS_JS
-    assert "operatorCount" in DAG_CANVAS_JS
+    assert "nodes ↓" in DAG_CANVAS_JS
+    assert "childNodeCount" in DAG_CANVAS_JS
     assert "viewsById.has(drilldownId)" in DAG_CANVAS_JS
     assert "'aria-keyshortcuts': 'Enter'" in DAG_CANVAS_JS
     assert "source: 'node-affordance'" in DAG_CANVAS_JS
     assert "event.key === 'Enter' && canDrill" in DAG_CANVAS_JS
+    assert "source: 'single-click', reveal: true" in DAG_CANVAS_JS
+    assert "cancelPendingNodeClick()" in DAG_CANVAS_JS
+    assert "pending.viewId !== viewId(currentView)" in DAG_CANVAS_JS
+    assert "!group.isConnected" in DAG_CANVAS_JS
+    assert "}, 320);" in DAG_CANVAS_JS
+    assert "double-click-leaf" in DAG_CANVAS_JS
     assert "event.key === 'Enter' || event.key === ' '" in DAG_CANVAS_JS
     assert "selectionByView" in DAG_CANVAS_JS
     assert "viewportByView" in DAG_CANVAS_JS
@@ -166,6 +174,20 @@ def test_assets_expose_offline_interaction_api_and_distinct_edge_patterns() -> N
     )
     assert "drawParentContext" in DAG_CANVAS_JS
     assert "stableLayout(parentView)" in DAG_CANVAS_JS
+    assert "direction: 'DOWN'" in DAG_CANVAS_JS
+    assert "root.dataset.layoutDirection = 'DOWN'" in DAG_CANVAS_JS
+    assert "direction === 'input' ? pos.y : pos.y + pos.height" in DAG_CANVAS_JS
+    assert "V ${middle} H ${target.x} V ${target.y}" in DAG_CANVAS_JS
+    assert "rankDelta === 1" in DAG_CANVAS_JS
+    assert "activeLayout.contentLeft" in DAG_CANVAS_JS
+    assert "edgeRouteLanes" in DAG_CANVAS_JS
+    assert "availableLane" in DAG_CANVAS_JS
+    assert "const side = routeHint.side" in DAG_CANVAS_JS
+    assert "data-route-lane" in DAG_CANVAS_JS
+    assert "labelY: labelFromTarget ? targetEntry : sourceExit" in DAG_CANVAS_JS
+    assert DAG_CANVAS_JS.count("d: route.d") >= 2
+    assert "source.x + source.width / 2" in DAG_CANVAS_JS
+    assert "target.x + target.width / 2" in DAG_CANVAS_JS
     assert "is-expanded-parent" in DAG_CANVAS_JS
     assert "parentContextCollapsed" in DAG_CANVAS_JS
     assert "returnToParent('parent-context')" in DAG_CANVAS_JS

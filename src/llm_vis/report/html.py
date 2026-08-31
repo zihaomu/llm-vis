@@ -1,4 +1,4 @@
-"""Dependency-free offline HTML report for M0-M3.9 analysis artifacts."""
+"""Dependency-free offline HTML report for M0-M3.10 analysis artifacts."""
 
 from __future__ import annotations
 
@@ -18,6 +18,178 @@ _ATTENTION_LABELS = {
 }
 _MLP_LABELS = {"dense": "Dense FFN", "sparse": "MoE FFN"}
 _STATE_LABELS = {"recurrent_state": "recurrent state", "kv_cache": "KV cache"}
+
+_PRIMITIVE_EXPLANATIONS: Dict[str, tuple[str, str]] = {
+    "gemm": (
+        "Dense matrix projection. Each output feature is a weighted sum of input features.",
+        "Y = X · W (+ b)",
+    ),
+    "matmul": (
+        "Matrix multiplication between activation tensors, such as attention scores or values.",
+        "Y = A · B",
+    ),
+    "rms_norm": (
+        "Normalizes each token by its root-mean-square magnitude, then applies a learned scale.",
+        "RMSNorm(x) = γ ⊙ x / √(mean(x²) + ε)",
+    ),
+    "layer_norm": (
+        "Centers and scales each token using its feature mean and variance.",
+        "LayerNorm(x) = γ ⊙ (x − mean(x)) / √(var(x) + ε) + β",
+    ),
+    "softmax": (
+        "Turns scores into a normalized probability distribution along one axis.",
+        "softmax(x)ᵢ = exp(xᵢ − max(x)) / Σⱼ exp(xⱼ − max(x))",
+    ),
+    "top_k": (
+        "Keeps the k largest scores and their indices; it does not prove a runtime route here.",
+        "(values, indices) = TopK(x, k)",
+    ),
+    "silu": (
+        "Smooth elementwise activation used by gated feed-forward networks.",
+        "SiLU(x) = x · sigmoid(x)",
+    ),
+    "gelu": (
+        "Smooth elementwise activation that gates values by a Gaussian-shaped factor.",
+        "GELU(x) ≈ 0.5x(1 + tanh(√(2/π)(x + 0.044715x³)))",
+    ),
+    "add": ("Adds two tensors element by element.", "Y = A + B"),
+    "multiply": ("Multiplies two tensors element by element.", "Y = A ⊙ B"),
+    "scale": ("Multiplies every value by a scalar or broadcast scale.", "Y = α · X"),
+    "mask": (
+        "Applies an attention or validity mask before normalization.",
+        "Yᵢ = Xᵢ if visible, otherwise −∞",
+    ),
+    "reshape": ("Changes tensor shape without changing logical values.", "Y = reshape(X)"),
+    "transpose": ("Reorders tensor axes without changing logical values.", "Y = permute(X)"),
+    "broadcast": (
+        "Logically repeats compatible dimensions, for example KV heads across query heads.",
+        "Y = broadcast(X, target_shape)",
+    ),
+    "split": ("Splits one tensor into named slices or branches.", "(Y₁,…,Yₙ) = split(X)"),
+    "concat": ("Joins tensors along one dimension.", "Y = concat(X₁,…,Xₙ, axis)"),
+    "rope": (
+        "Rotates query or key feature pairs using position-dependent angles.",
+        "RoPE(x, p) = rotate_pairs(x, θ(p))",
+    ),
+    "gather": ("Selects rows or elements using indices.", "Y = X[index]"),
+    "scatter": ("Writes indexed values back into an output tensor.", "Y[index] = X"),
+    "reduce": ("Combines values along an axis, commonly by sum.", "Y = Σ_axis X"),
+    "convolution": (
+        "Applies a local learned filter over a sequence or spatial neighborhood.",
+        "Y[t] = Σₖ X[t−k] · W[k]",
+    ),
+    "state_read": ("Reads persistent cache or recurrent state.", "S = read(state)"),
+    "state_write": ("Writes an updated cache or recurrent state.", "state′ = write(S′)"),
+    "opaque": (
+        "The available config evidence does not justify exposing internal operators.",
+        "Unknown — opaque evidence boundary",
+    ),
+}
+
+_COMPOUND_EXPLANATIONS: Dict[str, tuple[str, str]] = {
+    "input": ("Introduces model inputs into this graph view.", "Y := input (no arithmetic)"),
+    "output": ("Exposes a graph result to the parent view or caller.", "output := X"),
+    "boundary": (
+        "Preserves a tensor contract across a parent/child graph boundary.",
+        "Y := X (boundary; no arithmetic)",
+    ),
+    "embedding": (
+        "Looks up one learned vector for each token id.",
+        "H[b,t,:] = E[token_id[b,t],:]",
+    ),
+    "decoder_pattern": (
+        "Represents the ordered decoder-layer sequence; instances are not weight-shared loops.",
+        "hₗ₊₁ = DecoderLayerₗ(hₗ, stateₗ)",
+    ),
+    "full_attention": (
+        "Builds content-based token mixing from query, key and value projections.",
+        "Attention(Q,K,V) = softmax(QKᵀ / √d + mask) · V",
+    ),
+    "linear_attention": (
+        "Updates recurrent attention state and reads it to mix the current token sequence.",
+        "Sₜ = update(Sₜ₋₁, xₜ); yₜ = read(Sₜ, xₜ)",
+    ),
+    "ffn": (
+        "Applies a gated feature expansion and projects it back to hidden size.",
+        "FFN(x) = (SiLU(xW_gate) ⊙ xW_up) · W_down",
+    ),
+    "residual": ("Adds a block branch back to its input.", "Y = X + branch(X)"),
+    "norm": (
+        "Normalizes token features before or after a model component.",
+        "Y = Norm(X)",
+    ),
+    "lm_head": (
+        "Projects hidden features to one score per vocabulary token.",
+        "logits = H · W_vocabᵀ",
+    ),
+    "state_boundary_in": (
+        "Reads the cache or recurrent state entering this view.",
+        "S = read(parent_state)",
+    ),
+    "state_boundary_out": (
+        "Returns the updated cache or recurrent state to the parent view.",
+        "parent_state′ = write(S′)",
+    ),
+    "dsa": (
+        "Attention region retained as opaque because config evidence does not prove its internals.",
+        "Unknown — DSA internals are not inferred",
+    ),
+    "expert_pool": (
+        "Static mixture-of-experts template; the report does not invent the runtime expert route.",
+        "Y = Σₑ wₑ · Expertₑ(X), e ∈ TopK(router(X))",
+    ),
+    "shared_expert": ("Expert branch applied to every token.", "Y = Expert_shared(X)"),
+    "moe_combine": (
+        "Combines routed expert outputs using router weights.",
+        "Y = Σₑ wₑ · Yₑ",
+    ),
+    "projector": ("Projects features into the language-model hidden space.", "Y = X · W"),
+    "mtp": ("Optional multi-token prediction branch shown from config evidence.", "Y = MTP(H)"),
+    "vision_tower": (
+        "Vision encoder represented only to the depth supported by configuration evidence.",
+        "Y = VisionEncoder(image)",
+    ),
+    "opaque": (
+        "The available config evidence does not justify exposing internal operators.",
+        "Unknown — opaque evidence boundary",
+    ),
+}
+
+
+def _graph_node_detail(node: Dict[str, Any]) -> Dict[str, Any]:
+    """Return novice-readable semantics without claiming an executed model graph."""
+
+    primitive = str(node.get("primitive_kind") or "")
+    kind = str(node.get("kind") or "")
+    if node.get("opaque") or primitive == "opaque" or kind == "opaque":
+        description, formula = _COMPOUND_EXPLANATIONS["opaque"]
+        formula_scope = "unknown"
+    elif primitive in _PRIMITIVE_EXPLANATIONS:
+        description, formula = _PRIMITIVE_EXPLANATIONS[primitive]
+        formula_scope = "conceptual operator equation"
+    elif kind in _COMPOUND_EXPLANATIONS:
+        description, formula = _COMPOUND_EXPLANATIONS[kind]
+        formula_scope = "conceptual component equation"
+    else:
+        description = "Passes data through this semantic model component."
+        formula = "Y = component(X)"
+        formula_scope = "conceptual component equation"
+    evidence_note = (
+        "Config evidence does not justify an internal equation; Unknown is not zero, "
+        "and no behavior is inferred. This is not a runtime trace, kernel equation, "
+        "or measured latency."
+        if formula_scope == "unknown"
+        else (
+            "Educational equation derived from the semantic node kind; "
+            "it is not a runtime trace, kernel equation, or measured latency."
+        )
+    )
+    return {
+        "description": description,
+        "formula": formula,
+        "formula_scope": formula_scope,
+        "evidence_note": evidence_note,
+    }
 
 
 def _layer_signature(item: Dict[str, Any]) -> tuple[str, ...]:
@@ -215,6 +387,7 @@ def _renderer_graph_document(document: GraphViewDocument) -> Dict[str, Any]:
     """Enrich the neutral flat graph contract for the dependency-free SVG renderer."""
 
     payload = document.model_dump(mode="json")
+    views_by_id = {view["id"]: view for view in payload["views"]}
     for view in payload["views"]:
         ports_by_id = {port["id"]: port for port in view["ports"]}
         for port in view["ports"]:
@@ -226,6 +399,27 @@ def _renderer_graph_document(document: GraphViewDocument) -> Dict[str, Any]:
             port_ids = [*node["input_port_ids"], *node["output_port_ids"]]
             node["ports"] = [ports_by_id[port_id] for port_id in port_ids]
             node["origin"] = "config"
+            detail = _graph_node_detail(node)
+            alternate_map = node.get("attributes", {}).get("drilldown_view_ids", {})
+            alternate_ids = (
+                list(alternate_map.values()) if isinstance(alternate_map, dict) else []
+            )
+            candidate_ids = [node.get("drilldown_view_id"), *alternate_ids]
+            child_view_ids = list(dict.fromkeys(item for item in candidate_ids if item))
+            detail["child_views"] = [
+                {
+                    "id": child_id,
+                    "label": views_by_id[child_id]["label"],
+                    "primary": child_id == node.get("drilldown_view_id"),
+                    "node_count": sum(
+                        item.get("kind") != "boundary"
+                        for item in views_by_id[child_id]["nodes"]
+                    ),
+                }
+                for child_id in child_view_ids
+                if child_id in views_by_id
+            ]
+            node["detail"] = detail
             node["coverage_status"] = (
                 "opaque"
                 if node["opaque"]
@@ -440,7 +634,24 @@ pre { margin:0; white-space:pre-wrap; overflow-wrap:anywhere; font:11px/1.45 ui-
 .navigator-group > summary span { color:var(--muted); font:10px/1.2 ui-monospace,monospace; }
 .navigator-group .list { padding-bottom:10px; }
 .workspace-drawer.inspector .drawer-body { display:flex; flex-direction:column; overflow:hidden; }
-.workspace-drawer.inspector pre { flex:1 1 auto; min-height:0; max-height:none; }
+.inspector-content { flex:1 1 auto; min-height:0; overflow:auto; }
+.inspector-json { min-height:100%; max-height:none; padding:10px; border:1px solid #253653; border-radius:8px; background:#091322; }
+.inspector-explain { display:grid; gap:12px; }
+.inspector-node-kind { display:flex; flex-wrap:wrap; gap:6px; }
+.inspector-node-kind span { border:1px solid #35547b; border-radius:999px; padding:3px 7px; color:#aacbfa; font:10px/1.2 ui-monospace,monospace; }
+.inspector-section { display:grid; gap:6px; padding:10px; border:1px solid #263754; border-radius:8px; background:#101b2e; }
+.inspector-section h3 { margin:0; color:#a9c4ea; font-size:11px; text-transform:uppercase; letter-spacing:.05em; }
+.inspector-section p { margin:0; color:#d5e0f0; font-size:12px; line-height:1.5; }
+.inspector-formula { display:block; padding:10px; border:1px solid #3b5680; border-radius:7px; background:#081323; color:#eaf3ff; font:12px/1.55 ui-monospace,SFMono-Regular,Menlo,monospace; overflow-wrap:anywhere; }
+.inspector-port-list { display:grid; gap:5px; }
+.inspector-port { display:grid; grid-template-columns:minmax(72px,1fr) auto; gap:8px; padding:6px 7px; border-radius:6px; background:#0b1526; color:#c8d8ec; font:10px/1.35 ui-monospace,monospace; }
+.inspector-port small { color:#8399ba; text-align:right; }
+.inspector-interaction { border-color:#3d6190; background:#12243d; }
+.inspector-child-list { display:grid; gap:6px; }
+.inspector-child { width:100%; display:flex; align-items:center; justify-content:space-between; gap:8px; padding:8px 9px; border:1px solid #40648f; border-radius:7px; background:#132844; color:#e3efff; text-align:left; cursor:pointer; }
+.inspector-child:hover,.inspector-child:focus-visible { border-color:#8abaff; background:#1a365a; }
+.inspector-child small { color:#93acd0; }
+.inspector-evidence { color:#8fa3c4!important; font-size:10px!important; }
 .drawer-scrim { position:fixed; z-index:20; inset:62px 0 0; width:100%; height:calc(100% - 62px); border:0; padding:0; background:rgba(2,7,15,.62); backdrop-filter:blur(2px); cursor:pointer; }
 .drawer-scrim[hidden] { display:none; }
 .inspector-tabs { display:grid; grid-template-columns:repeat(3,1fr); gap:5px; margin-bottom:9px; }
@@ -516,7 +727,7 @@ __DAG_ASSETS__
 <main>
   <section class="dag-panel" aria-labelledby="graph-heading">
     <div class="workspace-heading">
-      <div><div class="workspace-title"><h2 id="graph-heading">Model graph</h2><span class="level-pill">Recursive DAG</span></div><p class="dag-help">Nodes marked “N ops ›” expand in this canvas; Collapse returns to the parent. Select any item for Inspector.</p><p class="dag-evidence"><span class="badge safe">Target input: config.json only</span><span class="badge" id="source-evidence-badge"></span><span class="badge" title="Config SHA-256 __CONFIG_HASH_TITLE__">config __CONFIG_HASH_SHORT__</span><span class="badge" id="graph-evidence-badge"></span><span>no target weights · no model code · no full forward</span></p></div>
+      <div><div class="workspace-title"><h2 id="graph-heading">Model graph</h2><span class="level-pill">Top → bottom DAG</span></div><p class="dag-help">Follow tensors from top to bottom. Single-click a node for its explanation and equation; double-click a node marked “N nodes ↓” to enter its child graph. Collapse returns to the parent.</p><p class="dag-evidence"><span class="badge safe">Target input: config.json only</span><span class="badge" id="source-evidence-badge"></span><span class="badge" title="Config SHA-256 __CONFIG_HASH_TITLE__">config __CONFIG_HASH_SHORT__</span><span class="badge" id="graph-evidence-badge"></span><span>no target weights · no model code · no full forward</span></p></div>
       <div class="workspace-actions" aria-label="Workspace panels">
         <label class="heat-control"><span>Theory heat</span><select id="heatmap-mode" aria-label="Theoretical bottleneck heatmap"><option value="pressure">Pressure</option><option value="compute">Compute</option><option value="memory">Memory</option><option value="off">Off</option></select></label>
         <button class="workspace-action" type="button" data-drawer-target="navigator-drawer" aria-controls="navigator-drawer" aria-expanded="false">Browse</button>
@@ -545,7 +756,7 @@ __DAG_ASSETS__
     </aside>
     <aside class="workspace-drawer inspector" id="inspector-drawer" aria-hidden="true" aria-label="Selection inspector">
       <div class="drawer-header"><div class="drawer-heading"><span class="drawer-kicker">Selection</span><h2>Inspector</h2></div><button class="drawer-close" type="button" data-drawer-close aria-label="Close inspector">×</button></div>
-      <div class="drawer-body"><div class="inspector-tabs" role="tablist" aria-label="Inspector views"><button class="inspector-tab active" id="inspector-tab-explain" data-inspector-tab="explain" type="button" role="tab" aria-controls="inspector" aria-selected="true">Explain</button><button class="inspector-tab" id="inspector-tab-tensors" data-inspector-tab="tensors" type="button" role="tab" aria-controls="inspector" aria-selected="false">Tensors</button><button class="inspector-tab" id="inspector-tab-cost" data-inspector-tab="cost" type="button" role="tab" aria-controls="inspector" aria-selected="false">Cost</button><button class="inspector-tab" id="inspector-tab-runtime" data-inspector-tab="runtime" type="button" role="tab" aria-controls="inspector" aria-selected="false">Runtime</button><button class="inspector-tab" id="inspector-tab-provenance" data-inspector-tab="provenance" type="button" role="tab" aria-controls="inspector" aria-selected="false">Provenance</button><button class="inspector-tab" id="inspector-tab-coverage" data-inspector-tab="coverage" type="button" role="tab" aria-controls="inspector" aria-selected="false">Coverage</button></div><div class="inspector-title" id="inspector-title" aria-live="polite">Nothing selected</div><pre id="inspector" role="tabpanel" aria-labelledby="inspector-tab-explain">Select a graph node, port, edge, definition, layer, logical op, hotspot or diagnostic.</pre></div>
+      <div class="drawer-body"><div class="inspector-tabs" role="tablist" aria-label="Inspector views"><button class="inspector-tab active" id="inspector-tab-explain" data-inspector-tab="explain" type="button" role="tab" aria-controls="inspector" aria-selected="true">Explain</button><button class="inspector-tab" id="inspector-tab-tensors" data-inspector-tab="tensors" type="button" role="tab" aria-controls="inspector" aria-selected="false">Tensors</button><button class="inspector-tab" id="inspector-tab-cost" data-inspector-tab="cost" type="button" role="tab" aria-controls="inspector" aria-selected="false">Cost</button><button class="inspector-tab" id="inspector-tab-runtime" data-inspector-tab="runtime" type="button" role="tab" aria-controls="inspector" aria-selected="false">Runtime</button><button class="inspector-tab" id="inspector-tab-provenance" data-inspector-tab="provenance" type="button" role="tab" aria-controls="inspector" aria-selected="false">Provenance</button><button class="inspector-tab" id="inspector-tab-coverage" data-inspector-tab="coverage" type="button" role="tab" aria-controls="inspector" aria-selected="false">Coverage</button></div><div class="inspector-title" id="inspector-title" aria-live="polite">Nothing selected</div><div class="inspector-content" id="inspector" role="tabpanel" aria-labelledby="inspector-tab-explain">Select a graph node, port, edge, definition, layer, logical op, hotspot or diagnostic.</div></div>
     </aside>
   </section>
   <details class="analysis-shell" id="supporting-analysis">
@@ -606,9 +817,36 @@ function inspectorPayload(value,tab){
   if(tab==='coverage')return {selection_coverage:value.coverage_status??'config-only-or-not-applicable',inspection_scope:value.inspection_scope||null,metrics:metrics.map(item=>({name:item.name,value:item.value,origin:item.origin,coverage:item.coverage,coverage_status:item.coverage_status,assumptions:item.assumptions})),diagnostics,capture_scope:value.captures||[],unknown_is_zero:false};
   return value;
 }
+function appendInspectorSection(parent,title,className=''){
+  const section=document.createElement('section');section.className=`inspector-section ${className}`.trim();
+  const heading=document.createElement('h3');heading.textContent=title;section.append(heading);parent.append(section);return section;
+}
+function renderInspectorJson(panel,value){
+  const pre=document.createElement('pre');pre.className='inspector-json';pre.textContent=JSON.stringify(value,null,2);panel.append(pre);
+}
+function graphPortContract(port){
+  const shape=port.shape_known===false||!Array.isArray(port.shape)?'shape Unknown':`[${port.shape.join(',')}]`;
+  return `${shape} · ${port.dtype||'dtype Unknown'}`;
+}
+function renderNodeExplanation(panel,value){
+  const node=value.graphNode,detail=node?.detail||{},ports=value.ports||[];
+  if(!node){renderInspectorJson(panel,inspectorPayload(value,'explain'));return;}
+  const root=document.createElement('div');root.className='inspector-explain';
+  const meta=document.createElement('div');meta.className='inspector-node-kind';
+  for(const label of compact([node.primitive_kind||node.kind,node.decomposition_status,node.opaque?'opaque':null])){const badge=document.createElement('span');badge.textContent=label;meta.append(badge);}root.append(meta);
+  const purpose=appendInspectorSection(root,'What this node does');const purposeText=document.createElement('p');purposeText.textContent=detail.description||'Semantic graph node; no additional explanation is available.';purpose.append(purposeText);
+  const formula=appendInspectorSection(root,detail.formula_scope==='unknown'?'Formula status':'Simplified equation');const equation=document.createElement('code');equation.className='inspector-formula';equation.textContent=detail.formula||'Not applicable — this node does not perform arithmetic.';formula.append(equation);
+  const inputs=ports.filter(port=>port.direction==='input'),outputs=ports.filter(port=>port.direction==='output');
+  if(inputs.length||outputs.length){const io=appendInspectorSection(root,'Inputs and outputs');const list=document.createElement('div');list.className='inspector-port-list';for(const [direction,items] of [['IN',inputs],['OUT',outputs]])for(const port of items){const row=document.createElement('div');row.className='inspector-port';const name=document.createElement('span');name.textContent=`${direction} · ${port.name||port.key||port.id}`;const contract=document.createElement('small');contract.textContent=graphPortContract(port);row.append(name,contract);list.append(row);}io.append(list);}
+  const children=Array.isArray(detail.child_views)?detail.child_views:[];
+  const interaction=appendInspectorSection(root,'Interaction','inspector-interaction');const interactionText=document.createElement('p');interactionText.textContent=children.length?`This compound node has ${children.length} child graph${children.length===1?'':'s'}. Double-click enters the primary child; choose a child below when alternatives exist.`:'This is a leaf or opaque node. Double-click keeps the current graph and shows this explanation.';interaction.append(interactionText);
+  if(children.length){const childList=document.createElement('div');childList.className='inspector-child-list';for(const child of children){const button=document.createElement('button');button.type='button';button.className='inspector-child';const label=document.createElement('span');label.textContent=child.label||child.id;const role=document.createElement('small');role.textContent=`${child.primary?'Primary':'Alternate'} · ${child.node_count||'?'} nodes · open ↓`;button.append(label,role);button.onclick=()=>{if(window.LLMVisDAG?.openView('model-dag',child.id))closeWorkspaceDrawers({restoreFocus:false});};childList.append(button);}interaction.append(childList);}
+  const evidence=appendInspectorSection(root,'Evidence boundary');const evidenceText=document.createElement('p');evidenceText.className='inspector-evidence';evidenceText.textContent=detail.evidence_note||'Config-first semantic projection; not measured runtime.';evidence.append(evidenceText);
+  panel.append(root);
+}
 function renderInspector(){
   document.querySelectorAll('.inspector-tab').forEach(button=>{const active=button.dataset.inspectorTab===inspectorTab;button.classList.toggle('active',active);button.setAttribute('aria-selected',String(active));button.tabIndex=active?0:-1;});
-  const hasSelection=!inspectorSelection.message,label=hasSelection?inspectorLabel(inspectorSelection):'Nothing selected',panel=byId('inspector');byId('inspector-title').textContent=hasSelection?`${label} · ${inspectorTab}`:label;panel.setAttribute('aria-labelledby',`inspector-tab-${inspectorTab}`);panel.textContent=hasSelection?JSON.stringify(inspectorPayload(inspectorSelection,inspectorTab),null,2):inspectorSelection.message;
+  const hasSelection=!inspectorSelection.message,label=hasSelection?inspectorLabel(inspectorSelection):'Nothing selected',panel=byId('inspector');byId('inspector-title').textContent=hasSelection?`${label} · ${inspectorTab}`:label;panel.setAttribute('aria-labelledby',`inspector-tab-${inspectorTab}`);clear(panel);if(!hasSelection)panel.textContent=inspectorSelection.message;else if(inspectorTab==='explain')renderNodeExplanation(panel,inspectorSelection);else renderInspectorJson(panel,inspectorPayload(inspectorSelection,inspectorTab));
   document.querySelectorAll('[data-drawer-target="inspector-drawer"]').forEach(button=>{button.textContent=hasSelection?'Inspector •':'Inspector';button.title=hasSelection?`Selected: ${label}`:'Open selection inspector';});
 }
 const setInspector=(value,{reveal=false}={})=>{inspectorSelection=value||{status:'Unknown'};renderInspector();if(reveal)openWorkspaceDrawer('inspector-drawer');};
@@ -866,7 +1104,7 @@ function graphSelectionContext(detail){
 window.llmVisInspect=detail=>{
   lastGraphDetail=detail;
   if(detail?.view?.id)graphDetailByView.set(detail.view.id,detail);
-  setInspector(graphSelectionContext(detail),{reveal:false});
+  setInspector(graphSelectionContext(detail),{reveal:detail?.reveal===true});
 };
 function semanticContext(item){
   const instances=map.instances.filter(instance=>item.instance_ids.includes(instance.id));

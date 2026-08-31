@@ -16,6 +16,7 @@ from llm_vis.graph_view import (
     build_graph_view_document,
 )
 from llm_vis.ir import DType, Scenario
+from llm_vis.report.html import _renderer_graph_document
 
 FIXTURE_DIR = Path(__file__).parents[1] / "fixtures" / "configs"
 
@@ -169,3 +170,53 @@ def test_glm_topk_routes_indices_and_float32_weights_without_runtime_values() ->
     assert nodes["topk"].attributes["runtime_route_known"] is False
     assert nodes["topk"].attributes["selected_expert_ids"] is None
     assert nodes["topk"].attributes["routing_weight_values_known"] is False
+
+
+def test_report_explanations_cover_qwen_primitives_and_alternate_child_views() -> None:
+    _, document = _document(_load("qwen3_8_27b"))
+    payload = _renderer_graph_document(document)
+    views = {view["key"]: view for view in payload["views"]}
+
+    for view in payload["views"]:
+        for node in view["nodes"]:
+            assert node["detail"]["description"]
+            assert node["detail"]["formula"]
+            assert "not a runtime trace" in node["detail"]["evidence_note"]
+
+    l0_nodes = {node["key"]: node for node in views["l0"]["nodes"]}
+    decoder_children = l0_nodes["decoder_pattern"]["detail"]["child_views"]
+    assert len(decoder_children) == 2
+    assert sum(child["primary"] for child in decoder_children) == 1
+    assert {child["label"] for child in decoder_children} == {
+        "Gated DeltaNet Linear Attention representative",
+        "Full Attention (GQA) representative",
+    }
+    assert {child["node_count"] for child in decoder_children} == {10}
+
+    full_l1_nodes = {
+        node["key"]: node for node in views["l1_full_attention"]["nodes"]
+    }
+    assert full_l1_nodes["attention"]["detail"]["child_views"][0]["node_count"] == 28
+
+    attention_nodes = {node["key"]: node for node in views["op_full_attention"]["nodes"]}
+    assert attention_nodes["q_proj"]["detail"]["formula"] == "Y = X · W (+ b)"
+    assert attention_nodes["softmax"]["detail"]["formula"].startswith("softmax(x)ᵢ")
+    assert attention_nodes["q_norm"]["detail"]["formula"].startswith("RMSNorm(x)")
+
+
+def test_report_explanations_keep_glm_dsa_and_runtime_route_unknown() -> None:
+    _, document = _document(_load("glm_5_3_bf16"))
+    payload = _renderer_graph_document(document)
+    views = {view["key"]: view for view in payload["views"]}
+    sparse_nodes = {node["key"]: node for node in views["l1_sparse_dsa_moe"]["nodes"]}
+
+    dsa = sparse_nodes["attention"]
+    assert dsa["opaque"] is True
+    assert dsa["detail"]["formula_scope"] == "unknown"
+    assert dsa["detail"]["formula"] == "Unknown — opaque evidence boundary"
+    assert dsa["detail"]["child_views"] == []
+
+    topk = sparse_nodes["topk"]
+    assert topk["detail"]["formula"] == "(values, indices) = TopK(x, k)"
+    assert topk["attributes"]["runtime_route_known"] is False
+    assert topk["attributes"]["selected_expert_ids"] is None

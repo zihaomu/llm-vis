@@ -1,6 +1,6 @@
 {
   "adapter_name": "qwen3-5",
-  "id": "gdoc_96b4c124c0b2222f23045408",
+  "id": "gdoc_85b8f258250a1a3ac3371d04",
   "model_id": "Qwen/Qwen3.8-27B",
   "provenance": {
     "evidence": [
@@ -270,7 +270,7 @@
       "layer_index": null,
       "level": "L0",
       "metadata": {
-        "layout_direction": "RIGHT",
+        "layout_direction": "DOWN",
         "primary_flow": "acyclic",
         "semantic_zoom": "model"
       },
@@ -1741,7 +1741,7 @@
       "metadata": {
         "attention_kind": "linear_attention",
         "layer_strip_target": 0,
-        "layout_direction": "RIGHT",
+        "layout_direction": "DOWN",
         "mlp_kind": "dense",
         "primary_flow": "acyclic",
         "representative_instance_path": "model.text.layers.0"
@@ -3324,7 +3324,7 @@
       "layer_index": 0,
       "level": "operator",
       "metadata": {
-        "layout_direction": "RIGHT",
+        "layout_direction": "DOWN",
         "primary_flow": "acyclic",
         "selector_visible": false,
         "semantic_primitive_ontology": "v1",
@@ -5038,7 +5038,7 @@
       "layer_index": 0,
       "level": "operator",
       "metadata": {
-        "layout_direction": "RIGHT",
+        "layout_direction": "DOWN",
         "primary_flow": "acyclic",
         "selector_visible": false,
         "semantic_primitive_ontology": "v1",
@@ -6039,7 +6039,7 @@
       "metadata": {
         "attention_kind": "full_attention",
         "layer_strip_target": 3,
-        "layout_direction": "RIGHT",
+        "layout_direction": "DOWN",
         "mlp_kind": "dense",
         "primary_flow": "acyclic",
         "representative_instance_path": "model.text.layers.3"
@@ -8089,7 +8089,7 @@
       "layer_index": 3,
       "level": "operator",
       "metadata": {
-        "layout_direction": "RIGHT",
+        "layout_direction": "DOWN",
         "primary_flow": "acyclic",
         "selector_visible": false,
         "semantic_primitive_ontology": "v1",
@@ -11814,7 +11814,7 @@
       "layer_index": 3,
       "level": "operator",
       "metadata": {
-        "layout_direction": "RIGHT",
+        "layout_direction": "DOWN",
         "primary_flow": "acyclic",
         "selector_visible": false,
         "semantic_primitive_ontology": "v1",

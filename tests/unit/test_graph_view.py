@@ -85,6 +85,7 @@ def test_graph_view_is_deterministic_json_and_reference_complete(fixture_name: s
     views_by_id = {view.id: view for view in first.views}
     for view in first.views:
         assert view.metadata["primary_flow"] == "acyclic"
+        assert view.metadata["layout_direction"] == "DOWN"
         if view.parent_view_id is not None:
             assert view.parent_view_id in view_ids
             parent = views_by_id[view.parent_view_id]

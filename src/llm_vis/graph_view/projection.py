@@ -904,7 +904,7 @@ def _build_qwen_l0(index: _EvidenceIndex, view_ids: Mapping[str, str]) -> GraphV
         parent_node_id=None,
         breadcrumb=[result.model_id],
         metadata={
-            "layout_direction": "RIGHT",
+            "layout_direction": "DOWN",
             "primary_flow": "acyclic",
             "semantic_zoom": "model",
         },
@@ -1115,7 +1115,7 @@ def _build_glm_l0(index: _EvidenceIndex, view_ids: Mapping[str, str]) -> GraphVi
         parent_node_id=None,
         breadcrumb=[result.model_id],
         metadata={
-            "layout_direction": "RIGHT",
+            "layout_direction": "DOWN",
             "primary_flow": "acyclic",
             "semantic_zoom": "model",
         },
@@ -1234,7 +1234,7 @@ def _build_tiny_l0(index: _EvidenceIndex, view_ids: Mapping[str, str]) -> GraphV
         parent_node_id=None,
         breadcrumb=[result.model_id],
         metadata={
-            "layout_direction": "RIGHT",
+            "layout_direction": "DOWN",
             "primary_flow": "acyclic",
             "semantic_zoom": "model",
         },
@@ -1304,7 +1304,7 @@ def _build_generic_l0(index: _EvidenceIndex, view_ids: Mapping[str, str]) -> Gra
         parent_node_id=None,
         breadcrumb=[result.model_id],
         metadata={
-            "layout_direction": "RIGHT",
+            "layout_direction": "DOWN",
             "primary_flow": "acyclic",
             "semantic_zoom": "model",
             "evidence_scope": "config-only",
@@ -1848,7 +1848,7 @@ def _build_qwen_or_tiny_l1(
         breadcrumb=[index.result.model_id, "Decoder", entry.label + f"{entry.layer_index}"],
         layer_index=entry.layer_index,
         metadata={
-            "layout_direction": "RIGHT",
+            "layout_direction": "DOWN",
             "primary_flow": "acyclic",
             "representative_instance_path": entry.instance_path,
             "attention_kind": entry.attention_kind,
@@ -1911,7 +1911,7 @@ def _build_glm_l1(
         breadcrumb=[index.result.model_id, "DSA Decoder", entry.label + f"{entry.layer_index}"],
         layer_index=entry.layer_index,
         metadata={
-            "layout_direction": "RIGHT",
+            "layout_direction": "DOWN",
             "primary_flow": "acyclic",
             "representative_instance_path": entry.instance_path,
             "attention_kind": "dsa",
@@ -2438,7 +2438,7 @@ def _operator_builder(
         breadcrumb=[*parent_view.breadcrumb, parent_node.label, "Operators"],
         layer_index=parent_view.layer_index,
         metadata={
-            "layout_direction": "RIGHT",
+            "layout_direction": "DOWN",
             "primary_flow": "acyclic",
             "view_kind": "operator_decomposition",
             "selector_visible": False,

@@ -3,7 +3,7 @@
 - 状态：M0 可核验交互规格
 - 日期：2026-08-29
 - 最后更新：2026-08-31；最后完整浏览器验收：2026-08-30
-- 实现状态：M0–M3.7 自包含离线 UI 已实现并验收；M3.8 Decoder Pattern Summary 功能已实现、最终浏览器退出待手动确认；M3.9 One-Input CLI 与报告证据 UI 已实现并通过静态/自动化，真实 `file://` 页面待手工验收。同一中央 DAG 支持递归算子分解与直属母图上下文；graph-first 信息架构、按需 Browse/Inspector/精确 Layers/Supporting analysis 保持不变；官方 Model Explorer consumer 仍为 Partial，M4 timeline 未实现
+- 实现状态：M0–M3.7 与 M3.10 自包含离线 UI 已实现并验收；M3.8/M3.9 功能与自动化已通过、最终 `file://` 页面待手工确认。M3.10 已把同一中央 DAG 切换为从上到下阅读、单击结构化解释与去抖双击下钻；直属母图上下文、按需 Browse/Inspector/精确 Layers/Supporting analysis 保持不变。官方 Model Explorer consumer 仍为 Partial，M4 timeline 未实现
 
 ## 1. 目标
 
@@ -30,8 +30,13 @@
 │ ┌ Back · View · Breadcrumb ─────────────────────────────── −  +  Fit · Read-only ┐ │
 │ │                                                                               │ │
 │ │                         CENTRAL DAG CANVAS                                    │ │
-│ │ Input ──▶ Embedding ──▶ Decoder Pattern ──▶ Norm ──▶ Head ──▶ Logits         │ │
-│ │                    └─ state/route/control rails                               │ │
+│ │                                  Input                                        │ │
+│ │                                    ↓                                          │ │
+│ │                               Embedding                                       │ │
+│ │                                    ↓                                          │ │
+│ │                 state/route → Decoder Pattern → optional branches             │ │
+│ │                                    ↓                                          │ │
+│ │                              Norm → Head → Logits                              │ │
 │ │                                                     minimap                   │ │
 │ └───────────────────────────────────────────────────────────────────────────────┘ │
 ├─────────────────────────────────────────────────────────────────────────────────────┤
@@ -108,10 +113,14 @@ Top bar: [Scenario ▾] [Global search…] [Report status]
 Canvas:  [Back] [View ▾] [Breadcrumb]                         [−] [+] [Fit]
 Panels:  [Browse] [Inspector] [Analysis]                         Minimap
 
-┌ Node label · semantic kind ─ origin/coverage ─┐ L1 ›
-│ ◀ input port   core attributes   output port ▶ │── Tensor label ──▶
-│ ◀ state-in       instance/group    state-out ▶ │
-└── badge click / double click / Enter: drill down when available ──┘
+                 input ports
+                      ↓
+┌ Node label · semantic kind ─ origin/coverage ─┐
+│ core attributes                 N nodes ↓      │
+│ click: Explain · double-click/Enter: child DAG │
+└────────────────────────────────────────────────┘
+                      ↓
+                 output ports
 ```
 
 节点卡只放理解数据流必需的核心信息：`label`、`kind`、代表的 instance/group、主要 I/O、origin/evidence、coverage 与 opaque/conditional 状态。完整 config 字段、公式和诊断仍在 Inspector，不把节点卡做成长表单。
@@ -126,7 +135,7 @@ Panels:  [Browse] [Inspector] [Analysis]                         Minimap
 
 每条线必须连接明确的 `source_port_id → target_port_id`，固定以三行显示 kind/Tensor 名、紧凑 shape 和 dtype；不可证明的 shape/dtype 显示 `Unknown` 与原因，不猜测。Weight 边保留在 Model Map 事实层中，默认不进入主数据流画布。state rail 表达“本步读/写外部状态”，不用跨 token 回边破坏单步 DAG。不得为 MTP 伪造 decoder control Tensor；已验收的支路是 `decoder hidden → MTP → MTP Draft Logits`，conditional 作为节点属性保留。
 
-只有 `drilldown_view_id` 指向实际存在 view 的节点才显示右上角 `L1 ›` 角标。角标有至少 28×28 的触摸/点击区，单击角标直接进入详情；整张卡片单击仍只选择，双击或键盘 Enter 下钻，Space 只选择。节点的可访问名称和 `aria-keyshortcuts` 必须说明该差异，画布状态栏同时显示当前可下钻节点数。叶节点不显示角标且双击不跳转，避免让用户猜哪些节点可以打开。
+只有 `drilldown_view_id` 指向实际存在 view 的节点才显示 `N nodes ↓` 角标。角标有至少 28×28 的触摸/点击区，单击角标直接进入 primary child；M3.10 起整张卡片单击自动打开结构化 Explain，双击或键盘 Enter 下钻，叶节点的 Enter/Space 只解释。节点的可访问名称和 `aria-keyshortcuts` 必须说明该差异，画布状态栏同时显示当前可下钻节点数。叶节点不显示角标且双击不跳转，避免让用户猜哪些节点可以打开。
 
 必须可操作的动作为：拖拽平移、Ctrl/Cmd+滚轮或按钮缩放、Fit to view、minimap 定位、角标/节点双击/键盘 Enter 下钻、Back/breadcrumb 返回、搜索命中定位，以及选中节点后的上游/下游路径高亮。普通滚轮应继续滚动页面，避免画布形成滚动陷阱。一次只绘制当前 view；64/78 层和 256 个专家以 pattern/group 折叠，默认每级不超过 200 个可见节点。
 
@@ -134,11 +143,11 @@ Qwen 的最小可验收路径是 `Input → Token Embedding → Decoder Pattern 
 
 ### 4.2 M3.6 递归算子披露契约
 
-M3.6 不增加 Beginner/Expert 开关。新手和熟练用户看到同一份 DAG 与同一组稳定节点身份；区别只在于用户是否继续展开复合节点、是否打开 Inspector。复合节点右上角显示 `N ops ›`，其中 `N` 来自目标 view 的当前成本前沿/语义算子数，不再硬编码 `L1 ›`。
+M3.6 不增加 Beginner/Expert 开关。新手和熟练用户看到同一份 DAG 与同一组稳定节点身份；区别只在于用户是否继续展开复合节点、是否打开 Inspector。M3.10 将原 `N ops ›` 升级为 `N nodes ↓`，数量来自 primary child view 中除 boundary 外的真实节点数。
 
 ```text
 Block DAG
-  Full Attention [19 ops ›]
+  Full Attention [28 nodes ↓]
         │ double-click / Enter / badge
         ▼
 Full Attention operators
@@ -223,7 +232,16 @@ Legend 不能采用脱离模型语义的全局字母表：Qwen `L/A` 由 Attenti
 
 Inspector 不能用 `0` 代替缺失；也不能将 Formula 的 roofline lower bound放进 Runtime latency 字段。
 
-M3.5 画布的节点、端口和边都是可选对象。选中图对象时先更新 Inspector 的待查看状态与按钮标记，不自动用抽屉遮住主图或搜索结果；用户打开 Inspector 后，Explain 显示其 GraphView 语义和所关联的 Model Map subject，Tensors 显示所有 ports 及可用 TensorSpec。来自 Browse/Supporting analysis 的显式“查看详情”动作可以直接打开 Inspector。选中 port 或 edge 时，Tensors 优先定位其 `tensor_spec_id`。Provenance 显示 config JSON Pointer/adapter rule/capture source，Coverage 显示该对象的 coverage/opaque/Unknown 原因。Cost 和 Runtime 仅显示能通过 `subject_ids` 可追溯关联的现有 Metric，不为画布节点伪造数值。
+M3.5 画布的节点、端口和边都是可选对象。M3.10 起，真实鼠标/键盘节点选择自动打开 Explain；搜索定位、返回时恢复 selection、Scenario/heat 刷新只更新 Inspector 的待查看状态，不主动遮住主图。Explain 显示用途、教学简式公式、I/O 契约、child views 与证据边界；Tensors 显示所有 ports 及可用 TensorSpec。选中 port 或 edge 时仍只更新待查看状态，Tensors 优先定位其 `tensor_spec_id`。Provenance 显示 config JSON Pointer/adapter rule/capture source，Coverage 显示该对象的 coverage/opaque/Unknown 原因。Cost 和 Runtime 仅显示能通过 `subject_ids` 可追溯关联的现有 Metric，不为画布节点伪造数值。
+
+### 4.3 M3.10 从上到下与节点解释契约
+
+- GraphView `layout_direction=DOWN`；每个 rank 水平排列并围绕最宽行居中，输入端口在卡片顶部、输出端口在底部，主边整体从上到下。相邻 rank 使用行间正交走廊；跨 rank/back edge 使用画布左右外侧、按稳定 edge interval 分配的独立 lane，Tensor 标签锚定在无节点的行间段，禁止穿过其他卡片。
+- current minimap 与 Parent context 同样使用底部到顶部的节点间连线，不保留旧的右侧到左侧缩略线。
+- 单击卡片使用 320 ms 去抖后选择节点并打开 Explain；双击、角标、键盘和 view 切换先统一取消 mount 级 timer，再对有效 primary child 下钻。回调还会核对原 view、node 与 DOM 连接状态，leaf/opaque 双击不改变 view，只显示 Explain。
+- Explain 的 `Simplified equation` 由受控 semantic kind/primitive kind 映射生成，并明确标记为教学方程，不是 Cost 页的 FLOPs/bytes AST、kernel 实现或 measured runtime。
+- Qwen Hybrid Decoder 的 Explain 同时列出 Linear Attention 和 Full Attention 两个实际 child view；双击只进入稳定 primary，alternate 通过明确按钮进入。任何 child 列表都从可解析 GraphView 关系派生，不从 Model Map `children/child_ids` 猜测。
+- opaque 区域必须显示 `Unknown — opaque evidence boundary`；GLM DSA、actual expert route/IDs/weights 与 Linear delta core 不因解释 UI 而获得虚构公式。
 
 ## 8. Scenario 与 workload diff
 
@@ -353,6 +371,6 @@ M3.5 浏览器验收进一步确认：Qwen L0 为 11 node/19 port/10 edge，Line
 
 M3.6 浏览器验收确认：Qwen Full Attention 展开为 32 node/36 edge，包含 Q/K/V/O GEMM、Q/K/V reshape+transpose、4→24 GQA KV-head Broadcast、QKᵀ/P×V MatMul、Softmax、RMSNorm、RoPE、cache append、context transpose 与 output gate；FFN 展开为三个 GEMM、SiLU、Multiply；Linear Attention 的 4 条 recurrent-state 边接入 Conv/opaque delta core。Softmax 搜索与 prefill→decode 切换保持相同 node ID；端口选择在 `Collapse`→重新展开后恢复，随后选择 node 会清除 port 描边；operator views 不作为 View 下拉框常驻项，当前 child 只显示一个 `↳` 临时项。Cost Inspector 显示 FLOPs `complete/signed_remainder=0/inconsistent=false` 与 logical bytes `partial/signed_remainder>0/unknown_is_zero=false`；热图只显示当前 frontier（Pressure `4/28 known`，Compute `6/28 known`）。GLM Sparse view 为 14 node/19 edge，显示 Router GEMM、TopK indices、`[B,T,8] float32` routing weights→Combine、route/control、virtual Expert/Shared Expert；Expert child view 显示 Gather/Scatter 与三个 GEMM，且不产生 runtime route/weight value；DSA 没有下钻入口，GLM frontier 保持 `0/10 known`。跨 view Inspector 残留已修复；两页 console 均无 warning/error。27/27 checked-in 资产检查和 Python 3.9/3.12 各 192 项通过。
 
-M3.7 的直属母图、current minimap、per-view viewport/selection、结构 parent focus 和 700px 折叠路径已完成 CTX-01～CTX-10 浏览器验收。M3.8 功能与自动化已完成：Python 3.9/3.12 各 198、Ruff、27/27 verifier、golden current；重生成的 Qwen/GLM 报告分别内嵌 `[L×3 → A] ×16`/`D×3 → M×75`，JavaScript syntax 与 safety flags 通过。自动浏览器因 URL policy 拒绝重载本地 `file://` 页面，因此没有绕过策略；LAY-UI-01～06 的最终目视/交互状态保留为用户手动刷新退出项。M3.9 One-Input CLI、generic C0/opaque GraphView 和 Source/Evidence HTML 已有自动化证据；最终 `file://` 页面的实际展示仍保留为手工退出项，且不声称有浏览器启动页。
+M3.7 的直属母图、current minimap、per-view viewport/selection、结构 parent focus 和 700px 折叠路径已完成 CTX-01～CTX-10 浏览器验收。M3.8 功能与自动化已完成：Python 3.9/3.12 各 198、Ruff、27/27 verifier、golden current；重生成的 Qwen/GLM 报告分别内嵌 `[L×3 → A] ×16`/`D×3 → M×75`，JavaScript syntax 与 safety flags 通过。自动浏览器因 URL policy 拒绝重载本地 `file://` 页面，因此没有绕过策略；LAY-UI-01～06 的最终目视/交互状态保留为用户手动刷新退出项。M3.9 One-Input CLI、generic C0/opaque GraphView 和 Source/Evidence HTML 已有自动化证据；最终 `file://` 页面的实际展示仍保留为手工退出项，且不声称有浏览器启动页。M3.10 EXP-01～EXP-10 已完成：所有 view 从上到下，单击 Explain、去抖双击、真实 child 选择、Softmax 教学公式、DSA opaque 边界及 Parent/current minimap 经 Qwen/GLM 浏览器验证；跨 rank 边使用稳定左右 lane，Qwen 7 个与 GLM 6 个 view 的几何采样均为 0 条 edge/label 穿过非端点卡片；700×900 窄屏无横向溢出，console 0 warning/error；Python 3.9/3.12 各 260、Ruff、27/27 verifier 与两页 JavaScript syntax 通过。
 
 仍未完成的还有 M3.8 最终手动浏览器退出、M3.9 IMP-08 真实 `file://` 页面手工退出、本里程碑外的官方 Model Explorer consumer 真实加载/交互验收、面向 10k 原始 op 图的性能测试，以及 M4 trace timeline。官方 consumer 与超大 raw-op 图继续按 [DR-0003](decisions/DR-0003-model-explorer-bounded-spike.md) 标为 Partial；它们不应与已经通过的 M0–M3.7 自包含离线 DAG、已经通过自动化的 M3.8/M3.9 功能混为一谈。

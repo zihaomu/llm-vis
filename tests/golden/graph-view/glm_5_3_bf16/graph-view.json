@@ -1,6 +1,6 @@
 {
   "adapter_name": "glm-moe-dsa",
-  "id": "gdoc_656d1980e93029f0a92426f9",
+  "id": "gdoc_f83e8d31efc17ddb50014d74",
   "model_id": "zai-org/GLM-5.3-BF16",
   "provenance": {
     "evidence": [
@@ -229,7 +229,7 @@
       "layer_index": null,
       "level": "L0",
       "metadata": {
-        "layout_direction": "RIGHT",
+        "layout_direction": "DOWN",
         "primary_flow": "acyclic",
         "semantic_zoom": "model"
       },
@@ -1550,7 +1550,7 @@
         "attention_kind": "dsa",
         "dsa_internals": "opaque",
         "layer_strip_target": 0,
-        "layout_direction": "RIGHT",
+        "layout_direction": "DOWN",
         "mlp_kind": "dense",
         "primary_flow": "acyclic",
         "representative_instance_path": "model.layers.0"
@@ -2728,7 +2728,7 @@
       "layer_index": 0,
       "level": "operator",
       "metadata": {
-        "layout_direction": "RIGHT",
+        "layout_direction": "DOWN",
         "primary_flow": "acyclic",
         "selector_visible": false,
         "semantic_primitive_ontology": "v1",
@@ -3856,7 +3856,7 @@
         "attention_kind": "dsa",
         "dsa_internals": "opaque",
         "layer_strip_target": 3,
-        "layout_direction": "RIGHT",
+        "layout_direction": "DOWN",
         "mlp_kind": "sparse",
         "primary_flow": "acyclic",
         "representative_instance_path": "model.layers.3"
@@ -5677,7 +5677,7 @@
       "layer_index": 3,
       "level": "operator",
       "metadata": {
-        "layout_direction": "RIGHT",
+        "layout_direction": "DOWN",
         "primary_flow": "acyclic",
         "selector_visible": false,
         "semantic_primitive_ontology": "v1",
@@ -6929,7 +6929,7 @@
       "layer_index": 3,
       "level": "operator",
       "metadata": {
-        "layout_direction": "RIGHT",
+        "layout_direction": "DOWN",
         "primary_flow": "acyclic",
         "selector_visible": false,
         "semantic_primitive_ontology": "v1",
