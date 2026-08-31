@@ -46,6 +46,29 @@ def _edge_pairs(view: GraphView) -> set[tuple[str, str, GraphEdgeKind]]:
     }
 
 
+@pytest.mark.parametrize("fixture_name", ["tiny_dense", "qwen3_8_27b", "glm_5_3_bf16"])
+def test_projection_emits_resolvable_parent_node_anchor_for_every_child_view(
+    fixture_name: str,
+) -> None:
+    _, document = _document(_load(fixture_name))
+    views = {view.id: view for view in document.views}
+
+    for view in document.views:
+        if view.parent_view_id is None:
+            assert view.parent_node_id is None
+            continue
+        parent = views[view.parent_view_id]
+        assert view.parent_node_id in {node.id for node in parent.nodes}
+        if view.level.value == "operator":
+            assert view.parent_node_id == view.decomposes_node_id
+
+    if fixture_name == "qwen3_8_27b":
+        root = _view(document, "l0")
+        decoder = next(node for node in root.nodes if node.key == "decoder_pattern")
+        assert _view(document, "l1_linear_attention").parent_node_id == decoder.id
+        assert _view(document, "l1_full_attention").parent_node_id == decoder.id
+
+
 def test_qwen_full_attention_exposes_layout_and_gqa_shape_transitions() -> None:
     _, document = _document(_load("qwen3_8_27b"))
     view = _view(document, "op_full_attention")

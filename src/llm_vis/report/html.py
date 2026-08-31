@@ -1,15 +1,193 @@
-"""Dependency-free offline HTML report for M0-M3.6 analysis artifacts."""
+"""Dependency-free offline HTML report for M0-M3.8 analysis artifacts."""
 
 from __future__ import annotations
 
 import html
 import json
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 from llm_vis.analysis.service import AnalysisBundle
 from llm_vis.graph_view import GraphViewDocument
 from llm_vis.report.dag_canvas import render_dag_canvas, render_dag_canvas_assets
 from llm_vis.report.summaries import workload_diff_summaries
+
+_ATTENTION_LABELS = {
+    "linear_attention": "Linear Attention",
+    "full_attention": "Full Attention",
+    "dsa": "DSA Attention",
+}
+_MLP_LABELS = {"dense": "Dense FFN", "sparse": "MoE FFN"}
+_STATE_LABELS = {"recurrent_state": "recurrent state", "kv_cache": "KV cache"}
+
+
+def _layer_signature(item: Dict[str, Any]) -> tuple[str, ...]:
+    """Return the macro semantic identity used only for UI pattern folding."""
+
+    return tuple(
+        str(item.get(key, ""))
+        for key in (
+            "label",
+            "attention_kind",
+            "mlp_kind",
+            "state_kind",
+        )
+    )
+
+
+def _layer_runs(items: list[Dict[str, Any]]) -> list[Dict[str, Any]]:
+    runs: list[Dict[str, Any]] = []
+    for item in items:
+        if runs and runs[-1]["signature"] == _layer_signature(item):
+            runs[-1]["count"] += 1
+            continue
+        runs.append(
+            {
+                "signature": _layer_signature(item),
+                "label": str(item.get("label", "?")),
+                "count": 1,
+                "first_layer_index": int(item.get("layer_index", 0)),
+                "attention_kind": str(item.get("attention_kind", "unknown")),
+                "mlp_kind": str(item.get("mlp_kind", "unknown")),
+                "state_kind": str(item.get("state_kind", "unknown")),
+            }
+        )
+    for run in runs:
+        run.pop("signature")
+    return runs
+
+
+def _layer_run_text(run: Dict[str, Any]) -> str:
+    count = int(run["count"])
+    return str(run["label"]) if count == 1 else f"{run['label']}×{count}"
+
+
+def _layer_legend(layer_strip: list[Dict[str, Any]]) -> list[Dict[str, str]]:
+    legend: list[Dict[str, str]] = []
+    seen: set[tuple[str, ...]] = set()
+    attention_kinds = {str(item.get("attention_kind", "unknown")) for item in layer_strip}
+    mlp_kinds = {str(item.get("mlp_kind", "unknown")) for item in layer_strip}
+    for item in layer_strip:
+        signature = _layer_signature(item)
+        if signature in seen:
+            continue
+        seen.add(signature)
+        attention_kind = str(item.get("attention_kind", "unknown"))
+        mlp_kind = str(item.get("mlp_kind", "unknown"))
+        state_kind = str(item.get("state_kind", "unknown"))
+        attention = _ATTENTION_LABELS.get(
+            attention_kind, attention_kind.replace("_", " ").title()
+        )
+        mlp = _MLP_LABELS.get(mlp_kind, mlp_kind.replace("_", " ").title())
+        state = _STATE_LABELS.get(state_kind, state_kind.replace("_", " "))
+        label = str(item.get("label", "?"))
+        if len(mlp_kinds) > 1 and len(attention_kinds) == 1:
+            description = mlp
+        elif len(attention_kinds) > 1 and len(mlp_kinds) == 1:
+            description = f"{attention} · {state}"
+        else:
+            description = f"{mlp} · {attention} · {state}"
+        legend.append(
+            {
+                "label": label,
+                "description": description,
+                "attention_kind": attention_kind,
+                "mlp_kind": mlp_kind,
+                "state_kind": state_kind,
+            }
+        )
+    return legend
+
+
+def _layer_legend_context(layer_strip: list[Dict[str, Any]]) -> Optional[str]:
+    attention_kinds = {str(item.get("attention_kind", "unknown")) for item in layer_strip}
+    mlp_kinds = {str(item.get("mlp_kind", "unknown")) for item in layer_strip}
+    state_kinds = {str(item.get("state_kind", "unknown")) for item in layer_strip}
+    if len(mlp_kinds) <= 1 or len(attention_kinds) != 1 or len(state_kinds) != 1:
+        return None
+    attention_kind = next(iter(attention_kinds))
+    state_kind = next(iter(state_kinds))
+    attention = _ATTENTION_LABELS.get(
+        attention_kind, attention_kind.replace("_", " ").title()
+    )
+    state = _STATE_LABELS.get(state_kind, state_kind.replace("_", " "))
+    return f"all layers · {attention} · {state}"
+
+
+def _layer_pattern_payload(layer_strip: list[Dict[str, Any]]) -> Dict[str, Any]:
+    """Build a truthful compact pattern without replacing exact layer instances."""
+
+    total = len(layer_strip)
+    if not total:
+        return {
+            "summary": "No text decoder layers",
+            "total_layers": 0,
+            "period_length": 0,
+            "repeat_count": 0,
+            "segments": [],
+            "tail_segments": [],
+            "legend": [],
+            "legend_context": None,
+            "anomaly_count": 0,
+        }
+
+    signatures = [_layer_signature(item) for item in layer_strip]
+    period_length = total
+    repeat_count = 1
+    tail_length = 0
+    for candidate in range(1, total // 2 + 1):
+        matches_candidate = all(
+            signature == signatures[index % candidate]
+            for index, signature in enumerate(signatures)
+        )
+        if matches_candidate:
+            candidate_repeats, candidate_tail = divmod(total, candidate)
+            if candidate_repeats >= 2:
+                period_length = candidate
+                repeat_count = candidate_repeats
+                tail_length = candidate_tail
+                break
+
+    repeat_unit = layer_strip[:period_length]
+    tail = layer_strip[period_length * repeat_count :] if tail_length else []
+    segments = _layer_runs(repeat_unit)
+    tail_segments = _layer_runs(tail)
+    anomaly_count = sum(bool(item.get("anomaly")) for item in layer_strip)
+
+    if len(segments) > 6:
+        if repeat_count > 1:
+            summary = f"Mixed {period_length}-layer pattern ×{repeat_count}"
+            if tail_length:
+                summary = f"{summary} + {tail_length}-layer tail"
+        else:
+            summary = f"Mixed sequence · {total} layers · {len(segments)} runs"
+        display_segments: list[Dict[str, Any]] = []
+    else:
+        core = " → ".join(_layer_run_text(run) for run in segments)
+        if repeat_count > 1 and len(segments) == 1 and not tail_segments:
+            summary = f"{segments[0]['label']}×{total}"
+        elif repeat_count > 1:
+            summary = f"[{core}] ×{repeat_count}"
+        else:
+            summary = core
+        if tail_segments:
+            tail_text = " → ".join(_layer_run_text(run) for run in tail_segments)
+            summary = f"{summary} → {tail_text} tail"
+        display_segments = segments
+    if anomaly_count:
+        suffix = "deviation" if anomaly_count == 1 else "deviations"
+        summary = f"{summary} · {anomaly_count} {suffix}"
+
+    return {
+        "summary": summary,
+        "total_layers": total,
+        "period_length": period_length,
+        "repeat_count": repeat_count,
+        "segments": display_segments,
+        "tail_segments": tail_segments,
+        "legend": _layer_legend(layer_strip),
+        "legend_context": _layer_legend_context(layer_strip),
+        "anomaly_count": anomaly_count,
+    }
 
 
 def _capture_summary(bundle: AnalysisBundle) -> str:
@@ -109,11 +287,13 @@ def render_html(
         element_id="model-dag",
         initial_view_id=graph_view.views[0].id,
     )
+    layer_strip = list(bundle.layer_strip)
     payload = {
         "manifest": bundle.manifest(),
         "modelMap": bundle.model_map.model_dump(mode="json"),
         "graphView": graph_payload,
-        "layerStrip": list(bundle.layer_strip),
+        "layerStrip": layer_strip,
+        "layerPattern": _layer_pattern_payload(layer_strip),
         "captures": [dict(item) for item in bundle.captures],
         "hotspots": [dict(item) for item in bundle.hotspot_summaries],
         "roofline": [dict(item) for item in bundle.roofline_summaries],
@@ -187,13 +367,28 @@ section { min-width:0; background:var(--panel); border:1px solid var(--line); bo
 .heat-control { display:flex; align-items:center; gap:6px; color:var(--muted); font-size:11px; white-space:nowrap; }
 .heat-control select { min-height:32px; padding:5px 8px; font-size:11px; }
 .workspace-action:hover,.drawer-close:hover { border-color:#4f6f9a; background:#162742; }
-.workspace-action:focus-visible,.drawer-close:focus-visible,.status-menu summary:focus-visible,.inspector-tab:focus-visible,.layer:focus-visible { outline:2px solid #9bc7ff; outline-offset:2px; }
+.workspace-action:focus-visible,.drawer-close:focus-visible,.status-menu summary:focus-visible,.inspector-tab:focus-visible,.layer-panel > summary:focus-visible,.layer:focus-visible { outline:2px solid #9bc7ff; outline-offset:2px; }
 .layer-panel { margin-bottom:8px; border:1px solid var(--line); border-radius:8px; background:#0e1728; }
-.layer-panel > summary { display:flex; align-items:center; gap:8px; padding:8px 10px; color:#afbfda; font-size:11px; cursor:pointer; user-select:none; }
-.layer-panel > summary::before { content:'›'; color:#7187a8; font-size:16px; transform-origin:center; transition:transform .15s ease; }
-.layer-panel[open] > summary::before { transform:rotate(90deg); }
-.layer-count { color:#7187a8; }
-.layer-panel .strip { border-top:1px solid var(--line); padding:8px 10px; }
+.layer-panel > summary { display:flex; align-items:center; flex-wrap:wrap; gap:7px 10px; padding:8px 10px; color:#afbfda; font-size:11px; cursor:pointer; user-select:none; list-style:none; }
+.layer-panel > summary::-webkit-details-marker { display:none; }
+.layer-chevron { color:#7187a8; font-size:16px; line-height:1; transform-origin:center; transition:transform .15s ease; }
+.layer-panel[open] .layer-chevron { transform:rotate(90deg); }
+.layer-summary-main,.layer-legend,.layer-legend-item { display:flex; align-items:center; gap:7px; }
+.layer-summary-main { flex:0 1 auto; min-width:0; }
+.layer-panel-title { color:#d2deef; font-weight:700; white-space:nowrap; }
+.layer-pattern-summary { max-width:360px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; border:1px solid #35547b; border-radius:999px; background:#14243b; color:#e9f2ff; padding:3px 8px; font:11px/1.2 ui-monospace,monospace; }
+.layer-count { color:#8296b7; white-space:nowrap; }
+.layer-legend { flex:1 1 360px; flex-wrap:wrap; min-width:220px; }
+.layer-legend-item { gap:5px; color:#9fb1cc; white-space:nowrap; }
+.layer-legend-context { color:#7187a8; white-space:nowrap; }
+.layer-key { display:grid; place-items:center; width:20px; height:20px; border-radius:5px; background:#285d9d; color:#fff; font:700 10px/1 ui-monospace,monospace; }
+.layer-key[data-state="recurrent_state"] { background:#7045a5; }
+.layer-key[data-mlp="sparse"] { outline:2px solid var(--amber); outline-offset:-2px; }
+.layer-summary-note { margin-left:auto; color:#7187a8; font-size:10px; white-space:nowrap; }
+.layer-summary-note[data-anomalies="true"] { color:var(--red); }
+.layer-detail-body { border-top:1px solid var(--line); padding:8px 10px 10px; }
+.layer-detail-help { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:7px; color:#8296b7; font-size:10px; }
+.layer-detail-key { color:#7187a8; text-align:right; }
 .structure-index .list { max-height:320px; }
 .split { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; }
 .strip { display:flex; flex-wrap:nowrap; gap:4px; overflow-x:auto; overscroll-behavior-inline:contain; padding-bottom:2px; }
@@ -280,11 +475,26 @@ pre { margin:0; white-space:pre-wrap; overflow-wrap:anywhere; font:11px/1.45 ui-
   .workspace-actions { display:grid; grid-template-columns:1fr 1fr 1fr; }
   .heat-control { grid-column:1/-1; justify-content:space-between; }
   .workspace-action { padding-inline:6px; }
+  .layer-panel > summary { align-items:flex-start; }
+  .layer-summary-main { flex-wrap:wrap; }
+  .layer-pattern-summary { max-width:70vw; }
+  .layer-legend { flex-basis:calc(100% - 28px); margin-left:26px; }
+  .layer-summary-note { flex:0 1 calc(100% - 26px); margin-left:26px; white-space:normal; }
+  .layer-detail-help { align-items:flex-start; flex-direction:column; }
+  .layer-detail-key { text-align:left; }
   .dag-panel .llm-dag-stage { height:68vh; min-height:430px; }
   .split { grid-template-columns:1fr; }
   .scenario-card { grid-template-columns:repeat(2,1fr); }
   .capture-card { grid-template-columns:1fr 1fr; }
   .analysis-shell > summary { align-items:flex-start; flex-direction:column; }
+}
+@media(max-width:480px) {
+  .layer-panel > summary { gap:5px 7px; padding:7px 8px; }
+  .layer-summary-main { gap:5px; }
+  .layer-legend { gap:5px 7px; margin-left:22px; min-width:0; }
+  .layer-legend-item { gap:4px; }
+  .layer-key { width:18px; height:18px; }
+  .layer-summary-note { flex-basis:calc(100% - 22px); margin-left:22px; font-size:9px; }
 }
 </style>
 __DAG_ASSETS__
@@ -309,7 +519,18 @@ __DAG_ASSETS__
         <button class="workspace-action" id="analysis-toggle" type="button">Analysis</button>
       </div>
     </div>
-    <details class="layer-panel"><summary>Layers <span class="layer-count" id="layer-count"></span></summary><div class="strip" id="strip" role="group" aria-label="Layer map"></div></details>
+    <details class="layer-panel" id="layer-panel">
+      <summary>
+        <span class="layer-chevron" aria-hidden="true">›</span>
+        <span class="layer-summary-main"><span class="layer-panel-title">Text decoder layers</span><span class="layer-pattern-summary" id="layer-pattern-summary"></span><span class="layer-count" id="layer-count"></span></span>
+        <span class="layer-legend" id="layer-legend" role="list" aria-label="Layer symbol legend"></span>
+        <span class="layer-summary-note" id="layer-summary-note"></span>
+      </summary>
+      <div class="layer-detail-body">
+        <div class="layer-detail-help"><span id="layer-detail-label">Exact layer positions</span><span class="layer-detail-key">green inner = bounded capture · amber inner = opaque · amber outer = MoE · red outer = anomaly</span></div>
+        <div class="strip" id="strip" role="group" aria-label="Exact text decoder layers"></div>
+      </div>
+    </details>
     __DAG_CANVAS__
 
     <button class="drawer-scrim" id="drawer-scrim" type="button" aria-label="Close side panel" hidden></button>
@@ -691,19 +912,35 @@ function renderDiagnostics(){const root=byId('diagnostics');clear(root);map.diag
 function graphViewForLayer(layer){return graphView.views.find(view=>view.layer_index===layer.layer_index)||graphView.views.find(view=>view.level==='L1'&&view.metadata?.attention_kind===layer.attention_kind&&view.metadata?.mlp_kind===layer.mlp_kind);}
 function graphTargetForSubject(subjectId){for(const view of graphView.views){const node=view.nodes.find(candidate=>(candidate.subject_ids||[]).includes(subjectId));if(node)return {view,node};}return null;}
 function locateGraphSubject(subjectId){const target=graphTargetForSubject(subjectId);if(!target)return null;window.LLMVisDAG?.openView('model-dag',target.view.id);window.LLMVisDAG?.focusNode('model-dag',target.node.id);return {view_id:target.view.id,view_key:target.view.key,node_id:target.node.id,node_key:target.node.key};}
+function layerInspection(item){
+  const instance=map.instances.find(value=>value.module_path===item.instance_path),semantics=map.semantic_nodes.filter(node=>node.instance_ids.includes(instance?.id));
+  const lowerings=loweringsFor(semantics.map(node=>node.id)),graph=graphForLowerings(lowerings),captures=uniqueById([...capturesForLowerings(lowerings),...capturesForLayer(item.layer_index)]);
+  const opaque=captures.some(capture=>capture.status!=='captured'),coverageStatus=lowerings.length?'captured':(opaque?'opaque':'config');
+  const subjectIds=[instance?.id,...semantics.map(node=>node.id)].filter(Boolean),diagnostics=diagnosticsFor(subjectIds),tensors=uniqueById([...tensorsFor(subjectIds),...graph.tensors]);
+  const targetView=graphViewForLayer(item);
+  return {targetView,context:{layer:item,graphView:targetView?{id:targetView.id,key:targetView.key,level:targetView.level,label:targetView.label,metadata:targetView.metadata}:null,instance,semantic_nodes:semantics,lowerings,ops:graph.ops,tensors,metrics:metricsFor(subjectIds),diagnostics,captures,coverage_status:coverageStatus,sourceArtifacts:sourceArtifactsFor(captures,tensors)}};
+}
+function openLayer(item){const selection=layerInspection(item);if(selection.targetView)window.LLMVisDAG?.openView('model-dag',selection.targetView.id);inspect(selection.context);}
+function renderLayerSummary(){
+  const pattern=data.layerPattern||{summary:`${data.layerStrip.length} layers`,total_layers:data.layerStrip.length,legend:[],legend_context:null,anomaly_count:0};
+  const patternSummary=byId('layer-pattern-summary');patternSummary.textContent=pattern.summary;patternSummary.title=pattern.summary;
+  byId('layer-count').textContent=`${pattern.total_layers} exact layers`;
+  byId('layer-detail-label').textContent=`All ${pattern.total_layers} exact positions · select a layer to inspect it`;
+  const note=byId('layer-summary-note'),anomalyCount=Number(pattern.anomaly_count||0);note.dataset.anomalies=String(anomalyCount>0);note.textContent=anomalyCount?`${anomalyCount} pattern deviations · repeat ≠ loop / shared weights`:'one-way DAG · repeat ≠ loop / shared weights';note.setAttribute('aria-label',anomalyCount?`${anomalyCount} pattern deviations; repeat notation is still not a cycle and does not imply weight sharing`:'one-way DAG; repeat notation is not a cycle and does not imply weight sharing');
+  const legend=byId('layer-legend');clear(legend);
+  for(const item of pattern.legend||[]){const entry=document.createElement('span');entry.className='layer-legend-item';entry.setAttribute('role','listitem');entry.setAttribute('aria-label',`${item.label}: ${item.description}`);const key=document.createElement('span');key.className='layer-key';key.dataset.state=item.state_kind;key.dataset.mlp=item.mlp_kind;key.textContent=item.label;key.setAttribute('aria-hidden','true');const description=document.createElement('span');description.textContent=item.description;entry.append(key,description);legend.append(entry);}
+  if(pattern.legend_context){const context=document.createElement('span');context.className='layer-legend-context';context.setAttribute('role','listitem');context.textContent=pattern.legend_context;legend.append(context);}
+  const panel=byId('layer-panel');panel.addEventListener('toggle',()=>{if(panel.open)renderStrip();});if(panel.open)renderStrip();
+}
 function renderStrip(){
-  const root=byId('strip');clear(root);
-  byId('layer-count').textContent=`${data.layerStrip.length} layers`;
+  const root=byId('strip');if(root.dataset.rendered==='true')return;clear(root);
   for(const item of data.layerStrip){
-    const instance=map.instances.find(value=>value.module_path===item.instance_path),semantics=map.semantic_nodes.filter(node=>node.instance_ids.includes(instance?.id));
-    const lowerings=loweringsFor(semantics.map(node=>node.id)),graph=graphForLowerings(lowerings),captures=uniqueById([...capturesForLowerings(lowerings),...capturesForLayer(item.layer_index)]);
-    const opaque=captures.some(capture=>capture.status!=='captured'),coverageStatus=lowerings.length?'captured':(opaque?'opaque':'config');
-    const subjectIds=[instance?.id,...semantics.map(node=>node.id)].filter(Boolean),diagnostics=diagnosticsFor(subjectIds),tensors=uniqueById([...tensorsFor(subjectIds),...graph.tensors]);
-    const targetView=graphViewForLayer(item),el=document.createElement('button');el.type='button';el.className='layer';el.dataset.state=item.state_kind;el.dataset.mlp=item.mlp_kind;el.dataset.coverage=coverageStatus;el.dataset.anomaly=String(Boolean(item.anomaly));if(targetView)el.dataset.graphViewId=targetView.id;el.textContent=item.label;
-    el.title=`layer ${item.layer_index} · ${item.attention_kind} · ${item.state_kind} · expected ${item.expected_pattern} · ${coverageStatus}${item.anomaly?` · anomaly: ${item.reason}`:''}`;
+    const selection=layerInspection(item),targetView=selection.targetView,coverageStatus=selection.context.coverage_status,el=document.createElement('button');el.type='button';el.className='layer';el.dataset.layerIndex=String(item.layer_index);el.dataset.state=item.state_kind;el.dataset.mlp=item.mlp_kind;el.dataset.coverage=coverageStatus;el.dataset.anomaly=String(Boolean(item.anomaly));if(targetView)el.dataset.graphViewId=targetView.id;el.textContent=item.label;
+    el.title=`layer ${item.layer_index} · ${item.attention_kind} · ${item.mlp_kind} · ${item.state_kind} · expected ${item.expected_pattern} · ${coverageStatus}${item.anomaly?` · anomaly: ${item.reason}`:''}`;
     el.setAttribute('aria-label',el.title);
-    el.onclick=()=>{if(targetView)window.LLMVisDAG?.openView('model-dag',targetView.id);inspect({layer:item,graphView:targetView?{id:targetView.id,key:targetView.key,level:targetView.level,label:targetView.label,metadata:targetView.metadata}:null,instance,semantic_nodes:semantics,lowerings,ops:graph.ops,tensors,metrics:metricsFor(subjectIds),diagnostics,captures,coverage_status:coverageStatus,sourceArtifacts:sourceArtifactsFor(captures,tensors)});};root.append(el);
+    el.onclick=()=>openLayer(item);root.append(el);
   }
+  root.dataset.rendered='true';
 }
 function scenarioFields(scenario){return [['phase',scenario.phase],['batch',scenario.batch],['new tokens',scenario.new_tokens],['past tokens',scenario.past_tokens],['activation',scenario.activation_dtype],['weights',scenario.weight_format],['KV dtype',scenario.kv_dtype],['backend',scenario.backend],['hardware',scenario.hardware]];}
 function renderScenarioCard(scenario){const root=byId('scenario-card');clear(root);if(!scenario){empty(root,'No workload selected.');return;}for(const [label,value] of scenarioFields(scenario)){const box=document.createElement('div');box.className='scenario-field';const key=document.createElement('span');key.textContent=label;const val=document.createElement('strong');val.textContent=fmt(value);box.append(key,val);root.append(box);}}
@@ -734,7 +971,7 @@ byId('model-dag').addEventListener('llm-vis:dag-view-change',event=>{
 byId('search').addEventListener('input',event=>{const query=event.target.value;renderDefinitions(query);renderSemantics(query);renderLogical(query);window.LLMVisDAG?.search('model-dag',query);});
 document.querySelectorAll('.inspector-tab').forEach(button=>{button.onclick=()=>{inspectorTab=button.dataset.inspectorTab;renderInspector();};button.onkeydown=event=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;event.preventDefault();const tabs=[...document.querySelectorAll('.inspector-tab')],index=tabs.indexOf(button),next=event.key==='Home'?0:event.key==='End'?tabs.length-1:(index+(event.key==='ArrowRight'?1:-1)+tabs.length)%tabs.length;tabs[next].click();tabs[next].focus();};});
 document.querySelectorAll('.capture-card').forEach((element,index)=>{element.onclick=()=>inspect(captureContext(data.captures[index]));});
-renderDefinitions();renderSemantics();renderLogical();renderDiagnostics();renderStrip();setupScenarios();renderInspector();
+renderDefinitions();renderSemantics();renderLogical();renderDiagnostics();renderLayerSummary();setupScenarios();renderInspector();
 </script>
 </body>
 </html>

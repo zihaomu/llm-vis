@@ -3,7 +3,7 @@
 - 状态：M0 可核验交互规格
 - 日期：2026-08-29
 - 最后验收：2026-08-30
-- 实现状态：M0–M3.6 自包含离线 UI 已实现并验收；同一中央 DAG 支持递归算子分解。graph-first 信息架构、按需 Browse/Inspector/Layers/Supporting analysis 保持不变；官方 Model Explorer consumer 仍为 Partial，M4 timeline 未实现
+- 实现状态：M0–M3.7 自包含离线 UI 已实现并验收；M3.8 Decoder Pattern Summary 实施中。同一中央 DAG 支持递归算子分解与直属母图上下文；graph-first 信息架构、按需 Browse/Inspector/精确 Layers/Supporting analysis 保持不变；官方 Model Explorer consumer 仍为 Partial，M4 timeline 未实现
 
 ## 1. 目标
 
@@ -25,7 +25,8 @@
 ┌ LLM-Vis / Model · rev ───────── [Scenario ▾] [Search graph/layer/ID] [Report status] ┐
 ├─────────────────────────────────────────────────────────────────────────────────────┤
 │ Model graph · L0→L1              [Theory heat ▾] [Browse] [Inspector] [Analysis] │
-│ › Layers · 64/78（默认折叠；展开后单行横向滚动）                              │
+│ › Text decoder layers · [L×3 → A] ×16 · 64 exact layers · L/A 图例 · 非循环│
+│   （精确 64/78 层默认隐藏；首次展开后单行横向滚动）                           │
 │ ┌ Back · View · Breadcrumb ─────────────────────────────── −  +  Fit · Read-only ┐ │
 │ │                                                                               │ │
 │ │                         CENTRAL DAG CANVAS                                    │ │
@@ -169,6 +170,18 @@ Full Attention operators
 
 ## 6. Layer Strip
 
+默认关闭态本身必须可读，不再只显示 `Layers · 64`：
+
+```text
+› Text decoder layers  [L×3 → A] ×16  64 exact layers
+  L Linear Attention · recurrent state   A Full Attention · KV cache
+  one-way DAG · repeat ≠ loop / shared weights
+```
+
+这里的 `×16` 是结构摘要，不是回边。紧凑可见文案使用 `repeat ≠ loop / shared weights`，完整无障碍说明为 `repeat notation is not a cycle and does not imply weight sharing`。页面不得画 `layer.63 → layer.0`，也不得暗示 64 层共享权重。Qwen 摘要必须严格来自完整有序 `layerStrip`；GLM 使用 `D×3 → M×75`，Tiny 使用 `D×4`。如果实际结构 tuple 包含 tail/偏差，摘要按实际序列回退；如果结构仍重复但 `anomaly=true`，摘要必须附加 `N deviation(s)`，不能静默显示成无偏差周期。
+
+用户首次展开后，页面惰性创建全部精确层按钮：
+
 ```text
 Layer       0  1  2  3  4  5  6  7 ... 63
 Attention   L  L  L  A  L  L  L  A ...  A
@@ -177,7 +190,9 @@ MLP         D  D  D  D  D  D  D  D ...  D
 Coverage    ●  ●  ●  ●  ●  ●  ●  ● ...  ●
 ```
 
-Legend：`L` Linear Attention，`A` Full Attention，`S` recurrent state，`K` KV cache，`D` Dense，`M` MoE。Coverage 使用独立符号：complete、partial、opaque、unknown。Layer Strip 默认折叠，展开后只占一行并横向滚动，不再把 64/78 层换行铺满首屏；每个短标签都有完整的 `aria-label`。M0–M3.6 自包含 HTML 点击 layer 会更新 Inspector，并保留原始 layer index、Instance、captured/config/opaque 与异常状态；同一点击同步到对应 L1 GraphView，更新 breadcrumb 并保持六页 Inspector 的实例上下文。该联动已在 Qwen/GLM 浏览器验收中通过。
+Legend 不能采用脱离模型语义的全局字母表：Qwen `L/A` 由 Attention/state 解释，GLM `D/M` 由 Dense/MoE FFN、DSA Attention 和 KV cache 共同解释；文字必须始终可见，颜色只作辅助。Coverage 使用独立符号：complete、partial、opaque、unknown。精确 Layer Strip 默认折叠，展开后只占一行并横向滚动，不再把 64/78 层换行铺满首屏；每个短标签都有包含 layer index、Attention、MLP、state、expected pattern、coverage/anomaly 的完整 `aria-label`。
+
+首次展开前 `.layer` 数为 0，展开后为 64/78；关闭再打开不得重复创建。点击 layer 继续更新 Inspector，保留原始 layer index、Instance、captured/config/opaque 与异常状态，并同步到对应代表 L1 GraphView。单纯展开/关闭层栏不得改变当前 GraphView、breadcrumb、selection、viewport 或 Scenario。
 
 ## 7. Inspector
 
@@ -277,6 +292,17 @@ M3.5 的独立退出任务如下，Qwen/GLM 已在 2026-08-30 完成实际浏览
 | DAG-12 | 查找并打开可下钻节点 | Qwen L0 恰有 1 个、GLM L0 恰有 2 个 `L1 ›`；角标点击、双击、Enter 可下钻，Space 只选择，叶节点无角标 | PASS |
 | DAG-13 | 切换 Pressure/Compute/Memory 与 Scenario | Qwen 仅可归因节点着色并保留选择/路径；legend 显示 synthetic provenance 与非实测声明；GLM 全部 Unknown 且不补 0；console 为空 | PASS |
 
+M3.8 Layer Disclosure 使用以下浏览器退出任务；完整事实与边界见主计划 LAY-01～LAY-10：
+
+| ID | 操作 | 通过条件 | M3.8 状态 |
+|---|---|---|---|
+| LAY-UI-01 | 初始打开 Qwen | 关闭态显示 `[L×3 → A] ×16`、`64 exact layers`、L/A 文字图例和非循环说明；DOM 中尚无 `.layer` | 静态契约 PASS；待浏览器 |
+| LAY-UI-02 | 键盘展开 Layers | 恰生成 64 个可聚焦按钮，索引 `0..63`、标签 `LLLA ×16`，逐层条单行横向滚动 | 实现/数据 PASS；待浏览器 |
+| LAY-UI-03 | 点击 layer 0、3、63 | 分别进入 Linear/Full/Full 代表 L1；Inspector 保留精确实际 layer index/Instance | 待验收 |
+| LAY-UI-04 | 关闭、重开 Layers | 仍为 64 个按钮且当前 view/selection/viewport/Scenario 不变，不重复生成 | 待验收 |
+| LAY-UI-05 | 初始打开 GLM/Tiny | 分别显示 `D×3 → M×75`/`D×4` 与模型相关图例，不出现 Qwen 专用文案 | 自动化/报告 PASS；待浏览器 |
+| LAY-UI-06 | 640px 窄屏查看并操作 | 摘要、图例与非循环说明可换行，中央 DAG 不被横向撑开，summary/button 均可键盘操作 | CSS/原生交互契约 PASS；待浏览器 |
+
 M3.6 直接采用以下退出编号：
 
 | ID | 操作 | 通过条件 | M3.6 状态 |
@@ -300,4 +326,6 @@ M3.5 浏览器验收进一步确认：Qwen L0 为 11 node/19 port/10 edge，Line
 
 M3.6 浏览器验收确认：Qwen Full Attention 展开为 32 node/36 edge，包含 Q/K/V/O GEMM、Q/K/V reshape+transpose、4→24 GQA KV-head Broadcast、QKᵀ/P×V MatMul、Softmax、RMSNorm、RoPE、cache append、context transpose 与 output gate；FFN 展开为三个 GEMM、SiLU、Multiply；Linear Attention 的 4 条 recurrent-state 边接入 Conv/opaque delta core。Softmax 搜索与 prefill→decode 切换保持相同 node ID；端口选择在 `Collapse`→重新展开后恢复，随后选择 node 会清除 port 描边；operator views 不作为 View 下拉框常驻项，当前 child 只显示一个 `↳` 临时项。Cost Inspector 显示 FLOPs `complete/signed_remainder=0/inconsistent=false` 与 logical bytes `partial/signed_remainder>0/unknown_is_zero=false`；热图只显示当前 frontier（Pressure `4/28 known`，Compute `6/28 known`）。GLM Sparse view 为 14 node/19 edge，显示 Router GEMM、TopK indices、`[B,T,8] float32` routing weights→Combine、route/control、virtual Expert/Shared Expert；Expert child view 显示 Gather/Scatter 与三个 GEMM，且不产生 runtime route/weight value；DSA 没有下钻入口，GLM frontier 保持 `0/10 known`。跨 view Inspector 残留已修复；两页 console 均无 warning/error。27/27 checked-in 资产检查和 Python 3.9/3.12 各 192 项通过。
 
-仍未完成的只有本里程碑外的官方 Model Explorer consumer 真实加载/交互验收、面向 10k 原始 op 图的性能测试，以及 M4 trace timeline。官方 consumer 与超大 raw-op 图继续按 [DR-0003](decisions/DR-0003-model-explorer-bounded-spike.md) 标为 Partial；它们不应与已经通过的 M0–M3.6 自包含离线 DAG 混为一谈。
+M3.7 的直属母图、current minimap、per-view viewport/selection、结构 parent focus 和 700px 折叠路径已完成 CTX-01～CTX-10 浏览器验收。M3.8 功能与自动化已完成：Python 3.9/3.12 各 198、Ruff、27/27 verifier、golden current；重生成的 Qwen/GLM 报告分别内嵌 `[L×3 → A] ×16`/`D×3 → M×75`，JavaScript syntax 与 safety flags 通过。自动浏览器因 URL policy 拒绝重载本地 `file://` 页面，因此没有绕过策略；LAY-UI-01～06 的最终目视/交互状态保留为用户手动刷新退出项。
+
+仍未完成的还有 M3.8 最终手动浏览器退出、本里程碑外的官方 Model Explorer consumer 真实加载/交互验收、面向 10k 原始 op 图的性能测试，以及 M4 trace timeline。官方 consumer 与超大 raw-op 图继续按 [DR-0003](decisions/DR-0003-model-explorer-bounded-spike.md) 标为 Partial；它们不应与已经通过的 M0–M3.7 自包含离线 DAG 或已经通过自动化的 M3.8 功能混为一谈。

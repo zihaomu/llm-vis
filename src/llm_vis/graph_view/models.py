@@ -304,6 +304,7 @@ class GraphView(GraphViewBaseModel):
     level: GraphViewLevel
     label: str = Field(min_length=1)
     parent_view_id: Optional[str] = Field(default=None, min_length=1)
+    parent_node_id: Optional[str] = Field(default=None, min_length=1)
     decomposes_node_id: Optional[str] = Field(default=None, min_length=1)
     breadcrumb: List[str] = Field(default_factory=list)
     layer_index: Optional[int] = Field(default=None, ge=0)
@@ -346,6 +347,8 @@ class GraphView(GraphViewBaseModel):
             raise ValueError("root_group_id must reference a graph group")
         if self.decomposes_node_id is not None and self.parent_view_id is None:
             raise ValueError("decomposition view requires parent_view_id")
+        if self.parent_node_id is not None and self.parent_view_id is None:
+            raise ValueError("parent_node_id requires parent_view_id")
         if len(self.cost_frontier_node_ids) != len(set(self.cost_frontier_node_ids)):
             raise ValueError("cost_frontier_node_ids must be unique")
         if set(self.cost_frontier_node_ids) - node_ids:
@@ -558,13 +561,26 @@ class GraphViewDocument(GraphViewBaseModel):
         known = set(view_ids)
         views_by_id = {view.id: view for view in self.views}
         for view in self.views:
+            if view.parent_view_id is None:
+                if view.parent_node_id is not None:
+                    raise ValueError("root graph view cannot declare parent_node_id")
+            elif view.parent_node_id is None:
+                raise ValueError("non-root graph view requires parent_node_id")
             if view.level == GraphViewLevel.OPERATOR and view.decomposes_node_id is None:
                 raise ValueError("operator view must identify the decomposed source node")
+            if (
+                view.level == GraphViewLevel.OPERATOR
+                and view.parent_node_id != view.decomposes_node_id
+            ):
+                raise ValueError("operator view parent_node_id must equal decomposes_node_id")
             if view.parent_view_id is not None:
                 if view.parent_view_id not in known:
                     raise ValueError(f"view {view.key!r} references a missing parent")
                 if view.parent_view_id == view.id:
                     raise ValueError("graph view cannot be its own parent")
+                parent = views_by_id[view.parent_view_id]
+                if view.parent_node_id not in {node.id for node in parent.nodes}:
+                    raise ValueError("parent_node_id must belong to parent view")
             for node in view.nodes:
                 if node.drilldown_view_id is not None:
                     if node.drilldown_view_id not in known:
@@ -574,6 +590,8 @@ class GraphViewDocument(GraphViewBaseModel):
                     target = views_by_id[node.drilldown_view_id]
                     if target.parent_view_id != view.id:
                         raise ValueError("drilldown target must be a direct child view")
+                    if target.parent_node_id != node.id:
+                        raise ValueError("drilldown target must identify its parent node")
                     if (
                         target.level == GraphViewLevel.OPERATOR
                         and target.decomposes_node_id != node.id

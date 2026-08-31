@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 import json
+from copy import deepcopy
 from pathlib import Path
 
 from llm_vis.analysis import inspect_model
 from llm_vis.ir import Scenario
 from llm_vis.performance import HardwareProfile, HardwareProvenance
 from llm_vis.report import write_analysis
+from llm_vis.report.html import _layer_pattern_payload
 
 FIXTURE_DIR = Path(__file__).parents[1] / "fixtures" / "configs"
 
@@ -93,6 +95,16 @@ def test_m3_artifact_contains_hotspots_roofline_diff_and_offline_controls(
     assert "data-initial-view-id=" in html
     assert 'data-dag-action="fit"' in html
     assert 'class="llm-dag-minimap"' in html
+    assert 'aria-label="Current view minimap"' in html
+    assert 'class="llm-dag-current-title">Current view</div>' in html
+    assert 'aria-label="Parent context navigator"' in html
+    assert 'data-dag-action="parent-context-back"' in html
+    assert 'data-dag-action="toggle-parent-context"' in html
+    assert "immediateParentContext" in html
+    assert "is-expanded-parent" in html
+    assert 'class="llm-dag-parent-map" role="button" tabindex="0"' in html
+    assert "returnToParent('parent-context-map')" in html
+    assert "window.matchMedia('(max-width: 720px)')" in html
     assert "window.llmVisInspect" in html
     assert "window.LLMVisDAG?.search('model-dag',query)" in html
     assert "graphMetricsFor" in html
@@ -125,7 +137,18 @@ def test_m3_artifact_contains_hotspots_roofline_diff_and_offline_controls(
     assert 'data-drawer-target="inspector-drawer"' in html
     assert 'aria-controls="inspector-drawer" aria-expanded="false"' in html
     assert 'id="supporting-analysis"' in html
+    assert '<details class="layer-panel" id="layer-panel">' in html
+    assert 'id="layer-pattern-summary"' in html
     assert 'id="layer-count"' in html
+    assert 'id="layer-legend"' in html
+    assert 'id="layer-summary-note"' in html
+    assert 'aria-label="Exact text decoder layers"' in html
+    assert '"layerPattern": {' in html
+    assert '"summary": "D×4"' in html
+    assert "repeat notation is not a cycle and does not imply weight sharing" in html
+    assert "panel.addEventListener('toggle',()=>{if(panel.open)renderStrip();})" in html
+    assert "if(root.dataset.rendered==='true')return" in html
+    assert "renderDiagnostics();renderLayerSummary();setupScenarios()" in html
     assert "setInspector(graphSelectionContext(detail),{reveal:false})" in html
     assert "Structure index" in html
     for inspector_tab in (
@@ -160,6 +183,85 @@ def test_m3_artifact_contains_hotspots_roofline_diff_and_offline_controls(
     html_without_svg_namespace = html.replace("http://www.w3.org/2000/svg", "")
     assert "http://" not in html_without_svg_namespace
     assert "https://" not in html_without_svg_namespace
+
+
+def test_layer_pattern_summary_is_derived_from_exact_qwen_glm_and_tiny_strips() -> None:
+    qwen_bundle = inspect_model(str(FIXTURE_DIR / "qwen3_8_27b.json"))
+    qwen_strip = [dict(item) for item in qwen_bundle.layer_strip]
+    qwen_strip_before = deepcopy(qwen_strip)
+    assert [item["layer_index"] for item in qwen_strip] == list(range(64))
+    assert len({item["instance_path"] for item in qwen_strip}) == 64
+    assert "".join(item["label"] for item in qwen_strip) == "LLLA" * 16
+
+    qwen = _layer_pattern_payload(qwen_strip)
+
+    assert qwen["summary"] == "[L×3 → A] ×16"
+    assert qwen_strip == qwen_strip_before
+    assert qwen["total_layers"] == 64
+    assert qwen["period_length"] == 4
+    assert qwen["repeat_count"] == 16
+    assert [(item["label"], item["count"]) for item in qwen["segments"]] == [
+        ("L", 3),
+        ("A", 1),
+    ]
+    assert [item["description"] for item in qwen["legend"]] == [
+        "Linear Attention · recurrent state",
+        "Full Attention · KV cache",
+    ]
+    assert qwen["legend_context"] is None
+
+    glm_bundle = inspect_model(str(FIXTURE_DIR / "glm_5_3_bf16.json"))
+    glm = _layer_pattern_payload(list(glm_bundle.layer_strip))
+
+    assert glm["summary"] == "D×3 → M×75"
+    assert glm["total_layers"] == 78
+    assert glm["repeat_count"] == 1
+    assert [item["description"] for item in glm["legend"]] == [
+        "Dense FFN",
+        "MoE FFN",
+    ]
+    assert glm["legend_context"] == "all layers · DSA Attention · KV cache"
+
+    tiny_bundle = inspect_model(str(FIXTURE_DIR / "tiny_dense.json"))
+    tiny = _layer_pattern_payload(list(tiny_bundle.layer_strip))
+    assert tiny["summary"] == "D×4"
+    assert tiny["total_layers"] == 4
+
+    anomaly_only_strip = deepcopy(qwen_strip)
+    anomaly_only_strip[4].update(
+        {"anomaly": True, "reason": "test-only expected-pattern deviation"}
+    )
+    anomaly_only = _layer_pattern_payload(anomaly_only_strip)
+    assert anomaly_only["summary"] == "[L×3 → A] ×16 · 1 deviation"
+    assert anomaly_only["anomaly_count"] == 1
+
+    deviating_strip = deepcopy(qwen_strip)
+    deviating_strip[4].update(
+        {
+            "label": "A",
+            "attention_kind": "full_attention",
+            "state_kind": "kv_cache",
+            "anomaly": True,
+            "reason": "test-only deviation",
+        }
+    )
+    deviating = _layer_pattern_payload(deviating_strip)
+    assert deviating["summary"] != "[L×3 → A] ×16 · 1 deviation"
+    assert deviating["summary"].endswith("· 1 deviation")
+    assert deviating["anomaly_count"] == 1
+
+    tail_strip = deepcopy(qwen_strip)
+    for layer_index, source in enumerate(qwen_strip[:2], start=64):
+        tail_item = dict(source)
+        tail_item["layer_index"] = layer_index
+        tail_item["instance_path"] = f"model.text.layers.{layer_index}"
+        tail_strip.append(tail_item)
+    with_tail = _layer_pattern_payload(tail_strip)
+    assert with_tail["summary"] == "[L×3 → A] ×16 → L×2 tail"
+    assert with_tail["repeat_count"] == 16
+    assert [(item["label"], item["count"]) for item in with_tail["tail_segments"]] == [
+        ("L", 2)
+    ]
 
 
 def test_glm_unknown_cost_is_visible_and_never_serialized_as_zero(tmp_path: Path) -> None:

@@ -240,20 +240,113 @@ DAG_CANVAS_CSS = r"""
 }
 .llm-dag-heat-coverage { margin-left: auto; white-space: nowrap; }
 .llm-dag-heat-unknown { white-space: nowrap; }
-.llm-dag-minimap {
+.llm-dag-current-context {
   position: absolute;
+  z-index: 2;
   right: 12px;
   bottom: 12px;
   width: 190px;
-  height: 112px;
+  overflow: hidden;
   border: 1px solid #49617f;
   border-radius: 7px;
   background: rgba(7, 14, 25, .92);
   box-shadow: 0 5px 18px rgba(0, 0, 0, .35);
 }
+.llm-dag-current-title {
+  min-height: 28px;
+  padding: 8px 9px 6px;
+  border-bottom: 1px solid #31415d;
+  color: var(--dag-text);
+  font: 700 10px/1.2 ui-sans-serif, system-ui, sans-serif;
+}
+.llm-dag-minimap { display: block; width: 100%; height: 112px; }
 .llm-dag-minimap-node { fill: #4f719e; }
 .llm-dag-minimap-edge { fill: none; stroke: #536887; stroke-width: 1; }
 .llm-dag-minimap-viewport { fill: rgba(112, 173, 255, .09); stroke: #84b8ff; }
+.llm-dag-parent-context {
+  position: absolute;
+  z-index: 3;
+  left: 12px;
+  bottom: 12px;
+  width: 210px;
+  overflow: hidden;
+  border: 1px solid #49617f;
+  border-radius: 7px;
+  background: rgba(7, 14, 25, .94);
+  box-shadow: 0 5px 18px rgba(0, 0, 0, .35);
+}
+.llm-dag-parent-context[hidden] { display: none; }
+.llm-dag-parent-context-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 30px;
+  padding: 5px 7px;
+  border-bottom: 1px solid #31415d;
+  color: var(--dag-text);
+  font: 700 10px/1.2 ui-sans-serif, system-ui, sans-serif;
+}
+.llm-dag-parent-context button {
+  color: var(--dag-text);
+  background: #111f35;
+  border: 1px solid #354967;
+  border-radius: 5px;
+  min-height: 24px;
+  padding: 3px 6px;
+  font: 10px/1.2 ui-sans-serif, system-ui, sans-serif;
+  cursor: pointer;
+}
+.llm-dag-parent-context button:hover { border-color: var(--dag-accent); }
+.llm-dag-parent-context button:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 1px;
+}
+.llm-dag-parent-context-body { padding: 6px; }
+.llm-dag-parent-context.is-collapsed .llm-dag-parent-context-header {
+  border-bottom: 0;
+}
+.llm-dag-parent-context-back {
+  width: 100%;
+  margin-bottom: 5px;
+  overflow: hidden;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.llm-dag-parent-map {
+  display: block;
+  width: 100%;
+  height: 92px;
+  border: 1px solid #293b55;
+  border-radius: 5px;
+  background: #091322;
+  cursor: pointer;
+}
+.llm-dag-parent-map:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: -3px;
+}
+.llm-dag-parent-edge { fill: none; stroke: #536887; stroke-width: 2; }
+.llm-dag-parent-node {
+  fill: #355275;
+  stroke: #617a9d;
+  stroke-width: 2;
+}
+.llm-dag-parent-node.is-expanded-parent {
+  fill: #8a6322;
+  stroke: #ffd172;
+  stroke-width: 6;
+}
+.llm-dag-parent-summary {
+  margin-top: 5px;
+  overflow: hidden;
+  color: #c7d5ea;
+  font: 9px/1.25 ui-monospace, monospace;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.llm-dag.has-parent-context .llm-dag-status { left: 232px; }
 .llm-dag-status {
   position: absolute;
   left: 11px;
@@ -283,10 +376,15 @@ DAG_CANVAS_CSS = r"""
   .llm-dag-view-controls { flex: 1 1 100%; margin-left: 0; }
   .llm-dag-search { flex: 1 1 auto; width: auto; }
   .llm-dag-stage { height: 66vh; }
-  .llm-dag-minimap { width: 140px; height: 88px; }
+  .llm-dag-current-context { width: 140px; }
+  .llm-dag-minimap { height: 88px; }
+  .llm-dag-parent-context { width: 170px; }
+  .llm-dag-parent-map { height: 76px; }
+  .llm-dag.has-parent-context .llm-dag-status { left: 192px; }
 }
 @media (max-width: 480px) {
-  .llm-dag-minimap { display: none; }
+  .llm-dag-current-context { display: none; }
+  .llm-dag.has-parent-context .llm-dag-status { display: none; }
 }
 """
 
@@ -516,6 +614,13 @@ DAG_CANVAS_JS = r"""
     const minimap = root.querySelector('.llm-dag-minimap');
     const miniWorld = root.querySelector('.llm-dag-minimap-world');
     const miniViewport = root.querySelector('.llm-dag-minimap-viewport');
+    const parentContext = root.querySelector('.llm-dag-parent-context');
+    const parentContextBody = root.querySelector('.llm-dag-parent-context-body');
+    const parentContextMap = root.querySelector('.llm-dag-parent-map');
+    const parentContextWorld = root.querySelector('.llm-dag-parent-world');
+    const parentContextBack = root.querySelector('.llm-dag-parent-context-back');
+    const parentContextToggle = root.querySelector('.llm-dag-parent-context-toggle');
+    const parentContextSummary = root.querySelector('.llm-dag-parent-summary');
     const selector = root.querySelector('.llm-dag-view-select');
     const breadcrumb = root.querySelector('.llm-dag-breadcrumb');
     const back = root.querySelector('[data-dag-action="back"]');
@@ -537,6 +642,8 @@ DAG_CANVAS_JS = r"""
     const viewportByView = new Map();
     let searchQuery = '';
     let heatmap = { mode: 'off', nodes: {} };
+    const compactParentContext = window.matchMedia('(max-width: 720px)');
+    let parentContextCollapsed = compactParentContext.matches;
 
     function applyTransform() {
       world.setAttribute('transform', `translate(${tx} ${ty}) scale(${scale})`);
@@ -619,7 +726,14 @@ DAG_CANVAS_JS = r"""
         button.className = 'llm-dag-crumb';
         button.textContent = view.label || view.name || viewId(view);
         button.title = `Open ${button.textContent}`;
-        button.addEventListener('click', () => openView(viewId(view)));
+        button.addEventListener('click', () => {
+          const targetViewId = viewId(view);
+          if (targetViewId === String(currentView?.parent_view_id || '')) {
+            returnToParent('breadcrumb');
+          } else {
+            openView(targetViewId, { source: 'breadcrumb' });
+          }
+        });
         breadcrumb.append(button);
       });
       back.disabled = !currentView || !currentView.parent_view_id;
@@ -932,6 +1046,92 @@ DAG_CANVAS_JS = r"""
       updateMinimapViewport();
     }
 
+    function immediateParentContext(view) {
+      const parentView = viewsById.get(String(view?.parent_view_id || ''));
+      if (!parentView) return null;
+      const reverseParentNode = (parentView.nodes || []).find(
+        node => String(node.drilldown_view_id || '') === viewId(view)
+      );
+      const expandedNodeId = view?.parent_node_id
+        ? String(view.parent_node_id)
+        : view?.decomposes_node_id
+          ? String(view.decomposes_node_id)
+          : reverseParentNode ? nodeId(reverseParentNode) : null;
+      const expandedNode = expandedNodeId
+        ? (parentView.nodes || []).find(node => nodeId(node) === expandedNodeId)
+        : null;
+      return expandedNode ? { parentView, expandedNodeId, expandedNode } : null;
+    }
+
+    function returnToParent(source) {
+      const context = immediateParentContext(currentView);
+      const parentViewId = context
+        ? viewId(context.parentView) : String(currentView?.parent_view_id || '');
+      if (!parentViewId) return false;
+      return openView(parentViewId, {
+        source,
+        focusNodeId: context?.expandedNodeId || null
+      });
+    }
+
+    function syncParentContextVisibility() {
+      parentContext.classList.toggle('is-collapsed', parentContextCollapsed);
+      parentContextBody.hidden = parentContextCollapsed;
+      parentContextToggle.textContent = parentContextCollapsed ? 'Show map' : 'Hide map';
+      parentContextToggle.setAttribute('aria-expanded', String(!parentContextCollapsed));
+    }
+
+    function drawParentContext() {
+      parentContextWorld.replaceChildren();
+      const context = immediateParentContext(currentView);
+      if (!context) {
+        parentContext.hidden = true;
+        root.classList.remove('has-parent-context');
+        delete parentContext.dataset.parentViewId;
+        delete parentContext.dataset.expandedNodeId;
+        return;
+      }
+      const { parentView, expandedNodeId, expandedNode } = context;
+      const parentLayout = stableLayout(parentView);
+      const parentLabel = parentView.label || parentView.name || viewId(parentView);
+      parentContext.hidden = false;
+      root.classList.add('has-parent-context');
+      parentContext.dataset.parentViewId = viewId(parentView);
+      parentContext.dataset.expandedNodeId = expandedNodeId;
+      parentContextBack.textContent = `← ${parentLabel}`;
+      parentContextBack.title = `Return to ${parentLabel}`;
+      parentContextSummary.textContent = expandedNode
+        ? `Expanded: ${expandedNode.label || expandedNodeId}`
+        : `Expanded node: ${expandedNodeId}`;
+      parentContextMap.setAttribute('viewBox',
+        `0 0 ${parentLayout.width} ${parentLayout.height}`);
+      parentContextMap.setAttribute('aria-label',
+        `Immediate parent graph: ${parentLabel}. `
+        + `Expanded node: ${expandedNode?.label || expandedNodeId}. `
+        + 'Press Enter or Space to return.');
+      for (const edge of parentLayout.edges) {
+        const source = parentLayout.positions.get(String(edge.source_node_id));
+        const target = parentLayout.positions.get(String(edge.target_node_id));
+        if (!source || !target) continue;
+        parentContextWorld.append(svg('path', {
+          class: 'llm-dag-parent-edge',
+          d: `M ${source.x + source.width} ${source.y + source.height / 2}`
+            + ` L ${target.x} ${target.y + target.height / 2}`
+        }));
+      }
+      for (const pos of parentLayout.positions.values()) {
+        const id = nodeId(pos.node);
+        const group = svg('g', { 'data-node-id': id });
+        group.append(text('title', pos.node.label || id));
+        group.append(svg('rect', {
+          class: `llm-dag-parent-node${id === expandedNodeId ? ' is-expanded-parent' : ''}`,
+          x: pos.x, y: pos.y, width: pos.width, height: pos.height, rx: 5
+        }));
+        parentContextWorld.append(group);
+      }
+      syncParentContextVisibility();
+    }
+
     function updateMinimapViewport() {
       if (!layout || !layout.width || !layout.height) return;
       const box = stage.getBoundingClientRect();
@@ -1051,6 +1251,15 @@ DAG_CANVAS_JS = r"""
       return true;
     }
 
+    function focusRenderedNode(id) {
+      const node = root.querySelector(
+        `.llm-dag-node[data-node-id="${CSS.escape(String(id))}"]`
+      );
+      if (!node) return false;
+      node.focus({ preventScroll: true });
+      return true;
+    }
+
     function syncViewSelector(view) {
       selector.querySelectorAll('option[data-current-only]').forEach(option => option.remove());
       const id = viewId(view);
@@ -1085,6 +1294,7 @@ DAG_CANVAS_JS = r"""
       empty.hidden = layout.nodes.length > 0;
       renderBreadcrumb();
       drawMinimap();
+      drawParentContext();
       heatmap = { mode: 'off', nodes: {}, title: '', basis: '', coverageLabel: '' };
       applyHeatmap();
       applySearch(searchQuery);
@@ -1120,6 +1330,13 @@ DAG_CANVAS_JS = r"""
           });
         }
       }
+      const requestedFocusNodeId = detail.focusNodeId
+        ? String(detail.focusNodeId) : null;
+      if (requestedFocusNodeId) requestAnimationFrame(() => {
+        if (viewId(currentView) === restoredViewId) {
+          focusRenderedNode(requestedFocusNodeId);
+        }
+      });
       const eventDetail = {
         view: next, viewId: viewId(next), fromViewId: previous ? viewId(previous) : null,
         ...detail
@@ -1146,17 +1363,43 @@ DAG_CANVAS_JS = r"""
         else if (action === 'zoom-in') zoom(1.2);
         else if (action === 'zoom-out') zoom(1 / 1.2);
         else if (action === 'back' && currentView?.parent_view_id) {
-          openView(String(currentView.parent_view_id), { source: 'back' });
+          returnToParent('back');
+        } else if (action === 'parent-context-back' && currentView?.parent_view_id) {
+          returnToParent('parent-context');
+        } else if (action === 'toggle-parent-context') {
+          parentContextCollapsed = !parentContextCollapsed;
+          syncParentContextVisibility();
         }
       });
     });
+    parentContextMap.addEventListener('click', () => returnToParent('parent-context-map'));
+    parentContextMap.addEventListener('keydown', event => {
+      if (event.key !== 'Enter' && event.key !== ' ') return;
+      event.preventDefault();
+      returnToParent('parent-context-map');
+    });
+    parentContext.addEventListener('keydown', event => {
+      if (event.key !== 'Escape' || parentContextCollapsed) return;
+      event.preventDefault();
+      parentContextCollapsed = true;
+      syncParentContextVisibility();
+      parentContextToggle.focus({ preventScroll: true });
+    });
+    const handleParentContextBreakpoint = event => {
+      parentContextCollapsed = event.matches;
+      if (!parentContext.hidden) syncParentContextVisibility();
+    };
+    compactParentContext.addEventListener('change', handleParentContextBreakpoint);
     stage.addEventListener('wheel', event => {
       if (!event.ctrlKey && !event.metaKey) return;
       event.preventDefault();
       zoom(event.deltaY < 0 ? 1.12 : 1 / 1.12, event.clientX, event.clientY);
     }, { passive: false });
     stage.addEventListener('pointerdown', event => {
-      if (event.target.closest('.llm-dag-node, .llm-dag-edge-hit')) return;
+      if (event.target.closest(
+        '.llm-dag-parent-context, .llm-dag-current-context, '
+        + '.llm-dag-node, .llm-dag-edge-hit'
+      )) return;
       stage.setPointerCapture(event.pointerId);
       stage.classList.add('is-panning');
       drag = { x: event.clientX, y: event.clientY, tx, ty };
@@ -1188,6 +1431,7 @@ DAG_CANVAS_JS = r"""
       setHeatmap,
       destroy() {
         window.removeEventListener('resize', frameReadable);
+        compactParentContext.removeEventListener('change', handleParentContextBreakpoint);
         instances.delete(root.id);
         root.dataset.dagMounted = 'false';
       }
@@ -1316,10 +1560,31 @@ def render_dag_canvas(
         <g class="llm-dag-nodes"></g>
       </g>
     </svg>
-    <svg class="llm-dag-minimap" aria-label="Graph minimap">
-      <g class="llm-dag-minimap-world"></g>
-      <rect class="llm-dag-minimap-viewport" x="0" y="0" width="0" height="0"/>
-    </svg>
+    <aside class="llm-dag-parent-context" aria-label="Parent context navigator" hidden>
+      <div class="llm-dag-parent-context-header">
+        <strong>Parent context</strong>
+        <button type="button" class="llm-dag-parent-context-toggle"
+          data-dag-action="toggle-parent-context"
+          aria-controls="{safe_element_id}-parent-context-body"
+          aria-expanded="true">Hide map</button>
+      </div>
+      <div class="llm-dag-parent-context-body" id="{safe_element_id}-parent-context-body">
+        <button type="button" class="llm-dag-parent-context-back"
+          data-dag-action="parent-context-back">← Parent graph</button>
+        <svg class="llm-dag-parent-map" role="button" tabindex="0"
+          aria-keyshortcuts="Enter Space" aria-label="Immediate parent graph overview">
+          <g class="llm-dag-parent-world"></g>
+        </svg>
+        <div class="llm-dag-parent-summary"></div>
+      </div>
+    </aside>
+    <div class="llm-dag-current-context" aria-label="Current view overview">
+      <div class="llm-dag-current-title">Current view</div>
+      <svg class="llm-dag-minimap" aria-label="Current view minimap">
+        <g class="llm-dag-minimap-world"></g>
+        <rect class="llm-dag-minimap-viewport" x="0" y="0" width="0" height="0"/>
+      </svg>
+    </div>
     <div class="llm-dag-status" aria-live="polite"></div>
     <div class="llm-dag-empty" hidden>No nodes in this view.</div>
   </div>

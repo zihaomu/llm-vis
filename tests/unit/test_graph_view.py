@@ -82,10 +82,17 @@ def test_graph_view_is_deterministic_json_and_reference_complete(fixture_name: s
     }
     tensor_ids = {tensor.id for tensor in model_map.tensors}
     view_ids = {view.id for view in first.views}
+    views_by_id = {view.id: view for view in first.views}
     for view in first.views:
         assert view.metadata["primary_flow"] == "acyclic"
         if view.parent_view_id is not None:
             assert view.parent_view_id in view_ids
+            parent = views_by_id[view.parent_view_id]
+            assert view.parent_node_id in {node.id for node in parent.nodes}
+        else:
+            assert view.parent_node_id is None
+        if view.level.value == "operator":
+            assert view.parent_node_id == view.decomposes_node_id
         for node in view.nodes:
             assert set(node.subject_ids) <= model_map_subject_ids
             if node.drilldown_view_id is not None:
@@ -150,6 +157,8 @@ def test_qwen_l0_and_representative_l1_paths() -> None:
     full = _view(document, "l1_full_attention")
     assert linear.parent_view_id == l0.id and linear.layer_index == 0
     assert full.parent_view_id == l0.id and full.layer_index == 3
+    assert linear.parent_node_id == decoder.id
+    assert full.parent_node_id == decoder.id
     assert linear.metadata["layer_strip_target"] == 0
     assert full.metadata["layer_strip_target"] == 3
     assert next(node for node in linear.nodes if node.key == "attention").kind == "linear_attention"
@@ -225,6 +234,7 @@ def test_op01_qwen_full_attention_decomposes_to_semantic_primitives() -> None:
     assert attention.decomposition_status == GraphDecompositionStatus.AVAILABLE
     assert attention.drilldown_view_id == operators.id
     assert operators.parent_view_id == parent.id
+    assert operators.parent_node_id == attention.id
     assert operators.decomposes_node_id == attention.id
 
     nodes = {node.key: node for node in operators.nodes}
@@ -500,6 +510,7 @@ def test_tiny_l0_drills_into_dense_l1_and_carries_zero_execution_provenance(
     decoder = next(node for node in document.views[0].nodes if node.key == "decoder_pattern")
     assert decoder.drilldown_view_id == document.views[1].id
     assert document.views[1].parent_view_id == document.views[0].id
+    assert document.views[1].parent_node_id == decoder.id
     assert document.views[1].layer_index == 0
     assert document.provenance.weights_loaded is False
     assert document.provenance.target_model_constructed is False
@@ -670,7 +681,42 @@ def test_graph_view_document_rejects_parent_hierarchy_cycle() -> None:
     l0 = next(view for view in payload["views"] if view["key"] == "l0")
     operator = next(view for view in payload["views"] if view["key"] == "op_full_attention")
     l0["parent_view_id"] = operator["id"]
+    l0["parent_node_id"] = operator["nodes"][0]["id"]
     with pytest.raises(ValidationError, match="hierarchy must be acyclic"):
+        GraphViewDocument.model_validate(payload)
+
+
+def test_non_root_graph_view_requires_resolvable_parent_node_id() -> None:
+    _, _, document = _build("qwen3_8_27b")
+    payload = document.model_dump(mode="json")
+    child = next(view for view in payload["views"] if view["key"] == "l1_full_attention")
+    child["parent_node_id"] = None
+    with pytest.raises(ValidationError, match="non-root graph view requires parent_node_id"):
+        GraphViewDocument.model_validate(payload)
+
+    payload = document.model_dump(mode="json")
+    child = next(view for view in payload["views"] if view["key"] == "l1_full_attention")
+    child["parent_node_id"] = "gnode_missing_parent_anchor"
+    with pytest.raises(ValidationError, match="parent_node_id must belong to parent view"):
+        GraphViewDocument.model_validate(payload)
+
+
+def test_operator_parent_node_id_must_equal_decomposes_node_id() -> None:
+    _, _, document = _build("qwen3_8_27b")
+    payload = document.model_dump(mode="json")
+    operator_index = next(
+        index for index, view in enumerate(payload["views"]) if view["key"] == "op_full_attention"
+    )
+    operator = payload["views"].pop(operator_index)
+    parent = next(view for view in payload["views"] if view["id"] == operator["parent_view_id"])
+    operator["parent_node_id"] = next(
+        node["id"] for node in parent["nodes"] if node["key"] == "ffn"
+    )
+    payload["views"].insert(0, operator)
+    with pytest.raises(
+        ValidationError,
+        match="operator view parent_node_id must equal decomposes_node_id",
+    ):
         GraphViewDocument.model_validate(payload)
 
 

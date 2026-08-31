@@ -1,6 +1,6 @@
 {
   "adapter_name": "qwen3-5",
-  "id": "gdoc_827ad9ee9e2acbf773d062b2",
+  "id": "gdoc_96b4c124c0b2222f23045408",
   "model_id": "Qwen/Qwen3.8-27B",
   "provenance": {
     "evidence": [
@@ -938,6 +938,7 @@
           ]
         }
       ],
+      "parent_node_id": null,
       "parent_view_id": null,
       "ports": [
         {
@@ -2149,6 +2150,7 @@
           ]
         }
       ],
+      "parent_node_id": "gnode_00b8f3ba35dc9c214ee1a696",
       "parent_view_id": "gvw_77c66254e94983e9f4035153",
       "ports": [
         {
@@ -3950,6 +3952,7 @@
           ]
         }
       ],
+      "parent_node_id": "gnode_474fcfa51ab321f8926dca88",
       "parent_view_id": "gvw_4a9e3a65dec921e38b794271",
       "ports": [
         {
@@ -5369,6 +5372,7 @@
           ]
         }
       ],
+      "parent_node_id": "gnode_06ef22e99927da8be550f40a",
       "parent_view_id": "gvw_4a9e3a65dec921e38b794271",
       "ports": [
         {
@@ -6444,6 +6448,7 @@
           ]
         }
       ],
+      "parent_node_id": "gnode_00b8f3ba35dc9c214ee1a696",
       "parent_view_id": "gvw_77c66254e94983e9f4035153",
       "ports": [
         {
@@ -9717,6 +9722,7 @@
           ]
         }
       ],
+      "parent_node_id": "gnode_42cf0ad35fe03558bf749df5",
       "parent_view_id": "gvw_d83528c3647786d02c448431",
       "ports": [
         {
@@ -12142,6 +12148,7 @@
           ]
         }
       ],
+      "parent_node_id": "gnode_c31a0d90f1a0c6533b6976c9",
       "parent_view_id": "gvw_d83528c3647786d02c448431",
       "ports": [
         {

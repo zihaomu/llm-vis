@@ -8,24 +8,26 @@
 
 ## 实施状态（实时维护）
 
-> 最后更新：2026-08-30  
-> 当前阶段：**M0–M3.6 已完成；M4a 因 AMD reference stack 未冻结而保持 Blocked**
+> 最后更新：2026-08-31
+> 当前阶段：**M0–M3.7 已完成；M3.8 Decoder Pattern Summary 实施中；M4a 因 AMD reference stack 未冻结而保持 Blocked**
 > 状态规则：只有对应机器退出清单全部通过后才标记为完成；代码存在但尚未验收时保持“实施中”。
 
 | 里程碑 | 状态 | 当前证据 | 下一退出检查 |
 |---|---|---|---|
-| M0 | **完成** | IR/schema、三模型 structure golden、9 份 M0 Decision Record、UI wireframe、measurement protocol、离线报告与 bounded-spike 书面结论齐全；全仓现累计 11 份 DR | 历史 M0–M3 静态退出资产 20/20；当前含 M3.6 累计 27/27；官方 Model Explorer consumer 仍按 DR-0003 标为 Partial |
+| M0 | **完成** | IR/schema、三模型 structure golden、9 份 M0 Decision Record、UI wireframe、measurement protocol、离线报告与 bounded-spike 书面结论齐全；全仓现累计 11 份 DR | 历史 M0–M3 静态退出资产 20/20；M3.8 不新增 schema/IR，当前仍为 27/27 checked-in 静态资产检查；官方 Model Explorer consumer 仍按 DR-0003 标为 Partial |
 | M1 | **完成** | Tiny/Qwen/GLM config-first adapter、离线 resolver、稳定 ID/canonical key 与未物化虚拟 Tensor/Edge inventory；Qwen 886/1014、GLM 700/778，真实 buffer/缺失 shape 保持 Unknown | 保持结构 golden、schema 与离线安全回归 |
 | M2 | **完成** | 三种项目自有 Tiny 语义代表块在 meta/FakeTensor 上严格 export；6 类 op-pattern、decoder attention 逐区域 captured/config-only、异常层标记、LogicalOp/Tensor/Lowering 与 opaque 注入均通过 | GLM DSA/MoE 动态捕获仍按既定边界延后 M5 |
 | M3 | **完成** | BF16/FP16/冻结 INT4、可由 artifact Symbol 绑定离线复算的公式、decoder-only aggregate scope、热点、显式 HardwareProfile roofline、workload diff 与六页 Inspector 均通过 | 理论值继续与 Runtime measured 字段隔离；无 trace 时 Runtime 保持 Unknown |
 | M3.5 | **完成** | renderer-neutral GraphView/schema、Qwen/GLM L0→L1 config 语义 DAG、`L1 ›` 可发现下钻、端口级连线、state rail、Scenario 理论热力层、可读缩放/minimap、搜索/路径高亮和六页 Inspector 已贯通；UI 已收敛为中央主图 + 按需 Browse/Inspector/Layers/Analysis | 24/24 机器退出项、Python 3.9/3.12 各 150 项、Qwen/GLM 真实浏览器 DAG-01–DAG-13 PASS；继续保持零目标模型执行，热力层明确非实测 latency |
 | M3.6 | **完成** | DR-0011、semantic primitive ontology v1、跨 view boundary binding、cost reconciliation、visible frontier；Qwen 4 个、GLM 3 个 operator views；OP-01～OP-10 自动化与真实浏览器验收通过 | 27/27 机器退出项、Python 3.9/3.12 各 192 项、Qwen/GLM 页面 console 0 warning/error；继续保持零目标模型执行 |
+| M3.7 | **完成** | 每个非 root GraphView 已有稳定 `parent_node_id`；左下直属母图、源节点高亮、单层 parent + breadcrumb、per-view viewport/selection 恢复、结构父节点 focus 与 `≤720px` 折叠路径已完成 | Python 3.9/3.12 isolated 全套各 197 passed、Ruff、27/27 verifier；Qwen/GLM acceptance 报告已重生成并通过 JavaScript syntax/safety 检查，UI agent 完成三层、700px 与浏览器交互验收 |
+| M3.8 | **实施中（功能与自动化完成）** | 完整 `layerStrip` 派生可见重复摘要与文字图例；Qwen/GLM/Tiny 定向、tail/anomaly 防伪、惰性精确层契约已实现；Python 3.9/3.12 各 198、Ruff、27/27 verifier、Qwen/GLM HTML JavaScript/safety 通过 | 自动浏览器因本地 `file://` URL policy 无法重载；用户手动刷新现有 Qwen/GLM 标签页完成 LAY UI 退出后标为完成 |
 
 ### 已冻结的执行边界
 
-- M0–M3.6 默认 **零权重、零完整模型 `forward()`**，任何结构分析都不得依赖完整模型推理；
+- M0–M3.8 默认 **零权重、零完整模型 `forward()`**，任何结构分析、导航或展示增强都不得依赖完整模型推理；
 - 已知架构由 config adapter 直接生成惰性 Definition/Instance、代表模板和虚拟 Expert Pool；
-- 完整 meta module tree 在 M0–M3.6 禁用且没有 CLI opt-in；仅对项目自有 Tiny 语义代表 Block 使用 meta/FakeTensor；
+- 完整 meta module tree 在 M0–M3.8 禁用且没有 CLI opt-in；仅对项目自有 Tiny 语义代表 Block 使用 meta/FakeTensor；
 - `torch.export` 只允许捕获 Tiny fixture 或缩小后的代表性 Block，不得因捕获失败退回完整模型执行；失败区域必须成为 opaque node 与 Diagnostic；
 - M4 Runtime 的核心工作流固定为导入外部目标环境产生的 trace，LLM-Vis 核心程序不负责启动完整模型；
 - 没有 trace 时，Runtime latency、Kernel、HBM counter 等指标保持 `Unknown`，不得从静态结构伪造；
@@ -56,6 +58,10 @@
 | 2026-08-30 | 完成 M3.5 下钻可发现性与理论瓶颈热力层 | 仅有效下钻目标显示 `L1 ›`，角标点击/双击/Enter/Space 契约通过；新增 Pressure/Compute/Memory/Off，按当前 Scenario/view 从完整 Metric 做显式组件归属，legend/Inspector 保留公式、coverage、HardwareProfile synthetic provenance 与非 latency 声明；Qwen Attention/FFN 可归因，GLM 全图 Unknown 不补 0；DAG-12/13 浏览器验收通过 |
 | 2026-08-30 | 正式启动 M3.6 Recursive Operator Decomposition | 接受 DR-0011；冻结 semantic primitive ontology v1、父子端口无损映射、成本守恒/未归因与 visible frontier；首批实现 Qwen Full/Linear Attention、Dense FFN、KV/recurrent state，以及 GLM 静态 Router/TopK/Expert 与 opaque DSA；继续零权重、零目标模型 forward |
 | 2026-08-30 | 完成 M3.6 OP-01～OP-10 退出验收 | GraphView schema/golden 与 27/27 verifier 通过；Python 3.9/3.12 各 192 项；Qwen Full Attention 显式补齐 reshape/transpose、4→24 GQA Broadcast、无 gate 分支和 signed cost reconciliation；GLM 保留 float32 routing weights 但不生成 route value；state/shape/navigation 负向契约、端口恢复与真实 Qwen/GLM 页面通过，两页 console 均为空 |
+| 2026-08-30 | 冻结 M3.7 Parent Context Navigation 计划 | 直属母图缩略图只提供当前下钻位置的上下文与返回入口；当前视图 minimap 继续只负责本图视口导航；冻结单层母图 + 全路径 breadcrumb、父子视口恢复、稳定身份、显隐/窄屏与 Qwen/GLM 零执行验收 |
+| 2026-08-30 | 完成 M3.7 Parent Context Navigation 与 CTX-01～CTX-10 | GraphView/schema/golden 补齐 `parent_node_id`；桌面左下直属母图与右下 current minimap 分工完成，返回恢复 viewport/selection 并聚焦结构父节点，`≤720px` 默认折叠；Python 3.9/3.12 isolated 全套各 197 passed、Ruff、27/27 verifier 通过，Qwen/GLM acceptance 报告重生成且 JavaScript syntax/safety flags 通过，UI agent 完成三层/700px/浏览器交互 |
+| 2026-08-30 | 正式启动 M3.8 Decoder Pattern Summary & Exact Layer Disclosure | 默认层栏只显示从完整 `layerStrip` 无损派生的重复/阶段摘要、文字图例与“非循环/非权重共享”说明；64/78 个精确层位置首次展开时才生成，逐层 L1 导航与 Inspector 身份保持不变；不修改 GraphView/schema/IR，不运行目标模型 |
+| 2026-08-31 | 完成 M3.8 功能、自动化与 Qwen/GLM 报告重生成 | Python 3.9/3.12 全套各 198 passed，Ruff、27/27 verifier、golden current；Qwen/GLM 内嵌 pattern 分别为 `[L×3 → A] ×16`/`D×3 → M×75`，两页 JavaScript syntax 与 safety flags 通过。自动浏览器拒绝重载本地 `file://` URL，未绕过策略，最终 LAY UI 交互保留为手动刷新退出项 |
 
 ## 0. 执行摘要
 
@@ -93,7 +99,7 @@ LogicalOp / Tensor / Lowering + 公式成本
 - 只捕获项目自有 Tiny 语义代表 Block，并通过 Lowering 关联到目标配置中的代表实例；不捕获或执行 27B/700B 目标模型 Block；
 - 将 prefill 和 decode 作为不同 workload 分析；
 - 所有指标标注为 `精确`、`公式估算`、`实测` 或 `未知`；
-- M0–M3.6 交互验收使用自包含离线 HTML；同时输出有节点上限的 Model Explorer-compatible JSON，官方 consumer 仍按 DR-0003 保持 Partial。
+- M0–M3.8 交互验收使用自包含离线 HTML；同时输出有节点上限的 Model Explorer-compatible JSON，官方 consumer 仍按 DR-0003 保持 Partial。
 
 ## 1. 项目定位
 
@@ -355,7 +361,11 @@ Expert Pool 提供三种模式：
 
 ### 5.6 Hybrid Attention 与状态轨道
 
-用 Layer Type Strip 展示不同层类型：
+Layer Type Strip 使用“**压缩摘要 + 精确位置**”两级披露，而不是把层栈画成闭环。摘要中的重复括号只压缩相同结构模式；模型前向仍是从低层号到高层号的单向 DAG，每个 `layer_index`/`instance_path` 都是独立实例，重复符号不表示 `layer.63 → layer.0`、循环执行或权重共享。
+
+默认可见摘要直接从完整有序 `layerStrip` 推导。例如 Qwen 显示 `[L×3 → A] ×16 · 64 exact layers`，GLM 显示 `D×3 → M×75 · 78 exact layers`，Tiny Dense 显示 `D×4`。不得解析 L0 节点标题、adapter metadata 或硬编码模型名来生成摘要；存在结构 tail/偏差时按实际序列回退，anomaly-only 必须追加 deviation 数。
+
+用户展开后才创建并显示全部精确层位置：
 
 ```text
 Layer     0  1  2  3  4  5  6  7 ...
@@ -364,7 +374,7 @@ KV Cache           █           █
 Rec. State █  █  █     █  █  █
 ```
 
-其中 `A` 表示 Full Attention，`L` 表示 Linear Attention。MLA、Sliding Window、SSM、Dense FFN 和 MoE 使用不同类型标记，但颜色只编码一个主维度，避免视觉混淆。
+其中 `A` 表示 Full Attention，`L` 表示 Linear Attention。摘要关闭时仍必须显示文字图例，不能要求用户靠颜色或 hover 猜测；Qwen 的 `L/A` 表示 Attention 类型，GLM 的 `D/M` 表示 Dense/MoE FFN 类型，含义必须由每项 `attention_kind/mlp_kind/state_kind` 组合生成。MLA、Sliding Window、SSM、Dense FFN 和 MoE 使用不同类型标记，但颜色只编码一个主维度，避免视觉混淆。展开后的每个按钮继续保留精确 layer index、Instance、coverage/anomaly、代表 L1 导航和 Inspector 上下文。
 
 ### 5.7 Inspector
 
@@ -1120,7 +1130,7 @@ stable semantic_id
 
 ## 14. CLI、API 与输出物
 
-### 14.1 M0–M3.6 已实现 CLI 与 M4 预留接口
+### 14.1 M0–M3.8 已实现 CLI 与 M4 预留接口
 
 ```bash
 # 仅配置，生成结构与静态成本；本地 fixture 可完全离线复现
@@ -1150,7 +1160,7 @@ llm-vis diff artifacts/qwen38-27b \
   --output artifacts/qwen38-27b/workload-diff.json
 ```
 
-当前 M0–M3.6 已实现 `inspect`、`capture`、`diff`、`schema` 与 `validate`。`inspect`/`capture` 自动生成 JSON、递归 GraphView、Markdown 与自包含 HTML；`capture` 的 `--kind` 只选择项目自有 Tiny/meta 语义代表块，不存在任意完整模型 capture 开关。`serve` 和 `import-trace` 尚未实现，分别属于可选本地查看便利功能与 M4 范围，不能由上述命令推断为已交付。M4 计划中的 trace 入口仍是 `llm-vis import-trace --model-map ... --trace ... --format ...`，目前不是有效命令。
+当前 M0–M3.8 已实现 `inspect`、`capture`、`diff`、`schema` 与 `validate`。`inspect`/`capture` 自动生成 JSON、递归 GraphView、Markdown 与带父图上下文导航、自解释 Layer Disclosure 的自包含 HTML；`capture` 的 `--kind` 只选择项目自有 Tiny/meta 语义代表块，不存在任意完整模型 capture 开关。`serve` 和 `import-trace` 尚未实现，分别属于可选本地查看便利功能与 M4 范围，不能由上述命令推断为已交付。M4 计划中的 trace 入口仍是 `llm-vis import-trace --model-map ... --trace ... --format ...`，目前不是有效命令。
 
 ### 14.2 输出目录
 
@@ -1176,9 +1186,9 @@ artifacts/<analysis-id>/
 
 `graph-view.json` 是 M3.5 已完成的新增产物。它通过由完整 canonical Model Map 内容确定性计算的 `source_model_map_id=mmap_*` 引用同目录 `model-map.json`；节点证据同时保留 `model:art_*` 与 `model_map:mmap_*`，避免把 Model subject ID 冒充 artifact ID。报告内嵌数据与独立 JSON 使用同一投影，而 `model-explorer.json` 继续是次级兼容输出。
 
-### 14.3 API（M0–M3.6 实际边界与后续候选）
+### 14.3 API（M0–M3.8 实际边界与后续候选）
 
-M0–M3.6 已提供本地 Python API 与静态 artifact，不启动服务，也没有只读 HTTP API。若 M4/M5 证明多进程浏览或外部集成确有需要，再评估以下本地只读接口：
+M0–M3.8 已提供本地 Python API 与静态 artifact，不启动服务，也没有只读 HTTP API。若 M4/M5 证明多进程浏览或外部集成确有需要，再评估以下本地只读接口：
 
 - `POST /analyses`；
 - `GET /analyses/{id}`；
@@ -1447,6 +1457,110 @@ M3.6 不创建“新手图”和“专家图”，也不把递归深度包装成
 
 退出证据：`verify_milestones --milestone M3.6` 为 27/27 PASS；Python 3.9 与 3.12 各 192 passed；Qwen/GLM 自包含报告完成 OP-01～OP-10 真实交互，console 均无 warning/error。Qwen/GLM operator view 数分别为 4/3，整个过程没有读取权重、构造目标模型或执行完整 forward。
 
+### M3.7：Parent Context Navigation（父图上下文导航）
+
+> 实施状态：**完成（2026-08-30）**。M3.7 是 M3.6 同一递归证据 DAG 的导航增强；除为每个非 root GraphView 补充稳定 `parent_node_id` 导航锚点外，不新增另一份“概览图”、新的模型语义层级或运行时事实。CTX-01～CTX-10 已由自动化、重生成的 Qwen/GLM acceptance 报告和真实浏览器交互共同验收。
+
+当用户进入 L1 或 operator view 时，中央画布只显示当前局部图，容易失去“我从母图的哪个节点进入”的空间上下文。M3.7 在主画布内增加一个可折叠的**直属母图缩略图**：它显示当前 view 的直接 parent，并持续高亮打开当前 child 的源复合节点。它是定位与返回入口，不承担当前图的平移/缩放，也不复制 Inspector、热图或完整边标签。
+
+设计原则：
+
+1. **同一图、同一身份**：缩略图从当前 artifact 中已有的 parent `GraphView` 派生，复用原始 view/node/edge ID；不得克隆、重编号或生成第二套导航身份。
+2. **Focus + Context**：中央画布始终是唯一可编辑交互焦点；母图只提供一跳上下文，避免在当前图旁再嵌套一棵越来越小、不可读的祖先图。
+3. **单层图形、全路径文字**：图形预览最多显示直属 parent；完整祖先链由 breadcrumb 表达。进入第三层及更深层级时仍只有一个母图缩略图。
+4. **职责可解释**：母图缩略图回答“我从哪里进入、如何返回”；当前视图 minimap 回答“我正在这张大图的哪个视口”；breadcrumb 回答“我位于哪条层级路径”。三者不得互相代替。
+5. **结构锚点不是用户选择**：所有非 root GraphView 必须用稳定 `parent_node_id` 指向直接 parent 中打开它的源复合节点；operator view 的 `parent_node_id` 必须等于 `decomposes_node_id`。该字段决定母图永久高亮，与用户可随时变化的 selection 分开存储，不能用“上次选中节点”反推结构锚点。
+6. **纯导航、零执行**：功能只消费已生成的 GraphView 与前端会话状态，不读取权重、不构造 Qwen/GLM 模型、不执行 forward，也不改变成本或 Runtime 真实性边界。
+
+GraphView 导航锚点契约：
+
+- root view 的 `parent_view_id` 与 `parent_node_id` 都为空；所有非 root view 两者都必须存在；
+- `parent_node_id` 必须引用直接 `parent_view_id` 中的节点；若父节点以单值 `drilldown_view_id` 显式声明 primary child，该 primary child 的 `parent_node_id` 必须反向指回该父节点；
+- Qwen Hybrid Decoder 等一个父节点具有多个合法 child 时，alternate child 由显式 `attributes.drilldown_view_ids` 注册并可共享同一 `parent_node_id`，不要求每个 alternate child 都等于父节点单值 primary `drilldown_view_id`；
+- operator view 继续保留 `decomposes_node_id` 表达语义分解对象，并强制 `parent_node_id == decomposes_node_id`；L1 等非 operator child 只需 `parent_node_id`；
+- `parent_node_id` 参与确定性 artifact/schema/golden 与引用完整性验证，Scenario、搜索、下钻次数、viewport 和用户 selection 都不得改变它；
+- 缺失、跨 parent 引用、显式 primary drilldown 反向不一致或 operator 双锚点不等均为 artifact validation error。前端面对未通过验证的旧/损坏 artifact 时只显示 unavailable，不按 label、kind 或相对位置猜测。
+
+三个导航组件的固定分工：
+
+| 组件 | 展示对象 | 主要交互 | 明确不负责 |
+|---|---|---|---|
+| 直属母图缩略图 | 当前 view 的直接 parent，源复合节点高亮，其余拓扑弱化 | 点击高亮节点或 `Back to parent` 返回 parent；可展开/收起 | 不控制当前图 viewport，不显示当前图视口框，不参与热图排名，不替代主图选择 |
+| 当前视图 minimap | 中央画布正在显示的 current view 与其可见视口框 | 随主画布 pan/zoom 更新视口框，帮助定位当前 viewport | 不新增点击/拖拽导航，不展示 parent，不负责跨 view 返回，不改变 breadcrumb |
+| Breadcrumb | 从 L0 到 current view 的完整稳定 view 路径 | 返回直接 parent 或任一已有 ancestor，并恢复目标 view 状态 | 不绘制祖先拓扑，不创建额外 GraphView，不承载节点级 Inspector |
+
+实现范围：
+
+- 桌面布局中，直属母图缩略图位于主画布左下；当前视图 minimap 位于主画布右下。两个组件有不同标题、图标、边框和帮助文案，不能仅靠颜色区分。
+- 缩略图使用简化只读 renderer：保留 parent 的节点相对拓扑与主要 data/route/control/state 连线，不显示 port、Tensor 三行标签、成本数字或热力颜色；源复合节点使用高对比描边，卡片下方用 `Expanded: <node label>` 明示锚点，其余节点降低视觉权重。
+- 导航前按稳定 `view_id` 分别保存每个已访问 view 的 `{pan, zoom}` 与 selection。`Collapse`、Back、母图高亮节点和 breadcrumb 返回时优先恢复目标 view 的 viewport/selection，并把 DOM keyboard focus 放到结构锚点 `parent_node_id`；没有 viewport 快照时使用确定性 Fit。即使恢复的用户 selection 指向 parent 中另一个节点，母图缩略图仍只高亮结构锚点。
+- 返回后再次进入同一 child 时恢复该 child 上次的 viewport/selection；若保存的对象 ID 已不存在，则只丢弃无效 selection，不按 label 迁移身份。
+- 根视图没有 parent 时不渲染空卡片；用户可显式收起母图缩略图，收起状态在本次报告会话和跨 view 导航中保持。搜索、Scenario、heat mode、Browse/Inspector 显隐不得强制重新打开或关闭它。
+- 在 `≤720 CSS px` 的窄屏中，左下 `Parent context` 默认折叠为紧凑卡片；`Show map` 可在原位展开，Esc 或 `Hide map` 再次折叠，不永久占用中央图宽度。功能可由键盘到达，不依赖 hover；700px 浏览器路径已实测。
+- Qwen 浏览器路径覆盖 `L0 → Full Attention L1 → Full Attention operators`，Linear/Full parent anchor 由投影测试共同覆盖；GLM 重生成报告覆盖 `L0 → Sparse DSA+MoE L1 → routed/shared Expert child` 的静态锚点契约。GLM 缩略图只高亮静态源节点，不显示或推断实际 expert route。
+- 所有资源继续内嵌于自包含 HTML；断网打开行为、现有 minimap、搜索、热图、Inspector、端口选择与 console-clean 契约必须回归。
+
+明确不在 M3.7 范围内：多层祖先缩略图堆叠、同时编辑父子图、在缩略图中展开节点、跨 artifact 导航、浏览器历史深链接、运行时 trace 预览、实际 route 动画，以及任何新的模型捕获或成本公式。
+
+退出条件：
+
+| ID | 验收条件 | 当前状态 |
+|---|---|---|
+| CTX-01 | 每个非 root view 都有引用直接 parent 节点的稳定 `parent_node_id`；显式 primary `drilldown_view_id` 反向一致，Qwen alternate child 可共享父锚点，operator view 满足 `parent_node_id == decomposes_node_id`；根视图无空卡。 | **PASS**：schema/model validation、Qwen/GLM golden、缺失/跨 parent/operator 错锚点负测及 Qwen Linear/Full 共享 Decoder 锚点测试通过 |
+| CTX-02 | 左下母图缩略图与右下 current minimap 严格分工；母图点击只返回 parent，minimap 只随主画布 pan/zoom 更新当前视口框，不宣称新增拖拽能力。 | **PASS**：renderer/CSS/JavaScript 契约与真实浏览器交互通过 |
+| CTX-03 | 通过 `Collapse`、Back、母图入口或 breadcrumb 返回 parent 时恢复离开前的 viewport/selection，并将 keyboard focus 放到结构父节点；无 viewport 快照时确定性 Fit。 | **PASS**：per-view state、parent return 原语与结构节点 focus 的自动化/浏览器验收通过 |
+| CTX-04 | 三层及更深路径仍只绘制一层直属 parent，breadcrumb 保留完整 L0→L1→operator 路径并能返回已有 ancestor，不出现递归缩略图套娃。 | **PASS**：UI agent 完成三层下钻/返回，页面始终只有一个直属母图卡 |
+| CTX-05 | 多次下钻/返回、搜索定位、Scenario/heat mode 切换和再次进入 child 不改变 view/node/port/edge ID 或 `parent_node_id`；结构锚点与用户 selection 独立。 | **PASS**：确定性 GraphView、per-view selection/viewport 与 Scenario 导航回归通过 |
+| CTX-06 | 母图缩略图可显式收起且状态跨 view 保持；根视图、损坏 parent mapping 与 leaf/opaque 节点均有确定行为，不伪造源节点。 | **PASS**：root 隐藏、child 显示、Show/Hide、Esc 与 validation 负测通过 |
+| CTX-07 | 桌面左下母图不与右下 minimap 混用；`≤720px` 默认折叠，键盘可展开/收起且不挤压中央画布。 | **PASS**：UI agent 在 700px 浏览器完成窄屏显隐与键盘交互 |
+| CTX-08 | Qwen 的 L0→Full/Linear L1→operator 路径中，母图高亮、返回与父/子 viewport 恢复均通过；alternate child 使用同一 Decoder 结构锚点而不破坏 primary drilldown。 | **PASS**：Qwen acceptance 报告重生成，三层浏览器路径与 Linear/Full parent anchor 自动化通过 |
+| CTX-09 | GLM 的 L0→Sparse DSA+MoE L1→symbolic routed/shared Expert child 保留静态母图上下文；不得据此生成实际 expert route、expert ID 或 routing-weight value。 | **PASS**：GLM acceptance 报告重生成；DSA 仍 opaque，实际 route/value 继续为 Unknown，未伪造运行路径 |
+| CTX-10 | 生成与验收继续断言 `weights_loaded=false`、`target/full_model_constructed=false`、`target/full_forward_executed=false`、`remote_code_executed=false`，并在自包含报告中通过。 | **PASS**：Qwen/GLM 报告 safety flags 与内嵌 JavaScript syntax 检查通过 |
+
+退出证据（2026-08-30）：Python 3.9 与 3.12 isolated 全套均为 **197 passed**，Ruff 通过，`verify_milestones --milestone all` 为 **27/27 PASS**；Qwen/GLM acceptance 报告已重新生成，内嵌 JavaScript syntax 与 safety flags 通过。UI agent 完成三层导航、700px 响应式及真实浏览器返回/显隐/focus 交互。27/27 仍是 checked-in 静态资产检查数，viewport、focus 与响应式结论来自自动化和浏览器任务，不由单个 verifier 代替。
+
+### M3.8：Decoder Pattern Summary & Exact Layer Disclosure
+
+> 实施状态：**功能与自动化完成，浏览器退出待手动确认（2026-08-31）**。M3.8 只改变 Layer Strip 的信息披露方式，不新增模型事实、GraphView 层级或运行路径。完整 `layerStrip` 仍是唯一有序事实源；报告内的 `layerPattern` 只是可丢弃、可重建的 UI 投影。
+
+旧界面把 64/78 个字母方块放在默认折叠区，但折叠标题只写层数，展开后又要求用户自行猜测 `L/A/D/M`。M3.8 将默认状态改为一条紧凑且自解释的层栏：始终显示重复/阶段摘要、精确实例总数、文字图例和“单向顺序、不是循环或权重共享”的说明；完整逐层按钮仍按需展开。
+
+设计与数据契约：
+
+1. **同一事实，两种密度**：摘要和逐层条都读取完整有序 `AnalysisBundle.layer_strip`；摘要不得替代或缩减 `layer-strip.json`，每个精确 `layer_index`、`instance_path` 与异常状态继续保留。
+2. **只折叠真实重复**：以摘要可见的 `label + attention_kind + mlp_kind + state_kind` 语义 tuple 比较最短实际重复单元；Definition 差异继续留在精确层 Inspector，不由宏观摘要冒充。只有整个实际序列（可含可验证 tail）匹配时才显示 `×N`；`anomaly=true` 必须在摘要与红色说明中附加 deviation 数。不得借用 adapter metadata 或 L0 标题伪装成无偏差正常周期。
+3. **重复不是环**：摘要可使用括号、乘号和左到右箭头，但不得绘制回到起点的闭合边、`layer.last → layer.0` 边或任何暗示 recurrent execution/weight sharing 的符号。模型主图和 Layer Strip 都保持一向 DAG 语义。
+4. **标签按模型语义解释**：Qwen `L/A` 分别由 Linear/Full Attention 与 recurrent/KV state 得出；GLM `D/M` 分别由 Dense/MoE FFN 得出，同时显式写 DSA Attention 与 KV cache。不能建立全模型共享的单字母硬编码 ontology。
+5. **精确位置惰性披露**：默认 DOM 不创建 64/78 个层按钮；用户第一次展开 native `details` 后创建一次，关闭再打开不得重复。64/78 个按钮的开销很小，此处惰性生成的目的主要是保持默认信息密度，而不是声称解决 10k raw-op 性能问题。
+6. **逐层能力不回退**：每个按钮继续显示唯一 `aria-label`，保留 layer index、Attention/MLP/state、expected pattern、coverage/anomaly；点击仍进入匹配的代表 L1 GraphView，并把该精确 Instance 送入 Inspector。
+7. **渲染层局部增强**：`layerPattern` 只嵌入自包含 HTML payload，不进入 Model Map IR、GraphView schema 或独立 artifact schema；未来只有出现跨 renderer 的 pattern grammar 需求时才评估正式 companion IR。
+8. **零执行**：模式压缩只处理已生成的配置事实，不读取权重、不构造目标模型、不执行 forward、compile 或 profiler。
+
+首批固定展示：
+
+| 模型 | 默认摘要 | 可见文字图例 | 展开后精确位置 |
+|---|---|---|---|
+| Qwen3.8-27B | `[L×3 → A] ×16 · 64 exact layers` | `L Linear Attention · recurrent state`；`A Full Attention · KV cache` | `layer.0 … layer.63`，完整 `LLLA ×16` |
+| GLM-5.3-BF16 | `D×3 → M×75 · 78 exact layers` | `D Dense FFN`；`M MoE FFN`；公共上下文 `all layers · DSA Attention · KV cache` | `layer.0 … layer.77`，前 3 Dense、后 75 MoE |
+| Tiny Dense | `D×4 · 4 exact layers` | `D Dense FFN · Full Attention · KV cache` | `layer.0 … layer.3` |
+
+退出条件：
+
+| ID | 验收条件 | 当前状态 |
+|---|---|---|
+| LAY-01 | Qwen 默认关闭的层栏仍显示精确 `[L×3 → A] ×16`、`64 exact layers`，不需要先展开 64 个方块。 | **自动化/生成报告 PASS；待浏览器目视** |
+| LAY-02 | 关闭态可见文字图例明确解释 `L/A`；颜色只作辅助，图例不依赖 hover。 | **静态契约 PASS；待浏览器目视** |
+| LAY-03 | 初始 `.layer` 数为 0；首次展开后恰为 64，关闭/再次展开仍为 64，不重复创建。 | **惰性/幂等代码契约 PASS；待浏览器交互** |
+| LAY-04 | Qwen 精确层索引为 `0..63`、Instance path 唯一、标签为 `LLLA ×16`；摘要不改变任何精确身份。 | **自动化 PASS；待浏览器交互** |
+| LAY-05 | 点击 Qwen layer 0/3/63 分别进入正确 Linear/Full 代表 L1，并在 Inspector 保留实际 layer 0/3/63。 | **实现保持，待浏览器退出** |
+| LAY-06 | 层栏展开/关闭不改变当前 GraphView、breadcrumb、selection、viewport、Scenario 或 stable ID；键盘可操作 native summary 与层按钮。 | **待浏览器退出** |
+| LAY-07 | GLM 显示 `D×3 → M×75` 且 D/M 图例按 MLP 语义解释；Tiny 显示 `D×4`，任何模型都不硬编码 Qwen 文案。 | **自动化/生成报告 PASS；待浏览器目视** |
+| LAY-08 | tail、显式 deviation/anomaly 或非标准周期从实际完整 strip 推导；结构 tuple 不匹配时不得显示正常周期，anomaly-only 也必须在摘要附加 deviation 数。 | **自动化 PASS：含 anomaly-only、语义偏差与 tail 定向测试** |
+| LAY-09 | 摘要使用一向箭头/乘号而无闭环；窄屏可换行、不遮挡中央 DAG，逐层条仍单行横向滚动。 | **已实现，待浏览器退出** |
+| LAY-10 | Qwen/GLM acceptance 继续满足零权重、零目标/完整模型构造、零完整 forward、零 remote code；M3.8 不新增 schema/IR 迁移。 | **PASS：两份重生成报告 safety/JavaScript/schema 边界通过** |
+
+明确不在 M3.8 范围内：把 64 层各自投影为独立 GraphView、绘制循环执行图、层间权重共享推断、vision/MTP 层混入 text decoder count、跨 renderer LayerPattern schema、raw-op 大图性能优化，以及任何新的运行时测量。
+
 ### M4a：AMD Runtime 关联（3–4 周）
 
 只针对 M0 冻结的 reference stack：
@@ -1490,7 +1604,7 @@ M3.6 不创建“新手图”和“专家图”，也不把递归深度包装成
 
 ### 16.1 MVP 边界
 
-公开 MVP 是 M0–M3.6 的端到端纵切：Tiny Dense + Qwen3.8/GLM-5.3 已知 adapter + `torch.export` 单一 Tiny 捕获后端 + 基础 prefill/decode 成本 + renderer-neutral recursive GraphView、自包含离线 DAG 前端及 Model Explorer-compatible JSON spike。GLM-5.3 在 MVP 只承担超大 MoE 的 config-level 宏观结构、递归静态 MoE/opaque DSA 语义 DAG 与可证明静态成本验收，动态捕获延后到 M5。
+当前公开 MVP 是已完成的 M0–M3.7 端到端纵切加已实现、待最终浏览器退出的 M3.8 Layer Disclosure：Tiny Dense + Qwen3.8/GLM-5.3 已知 adapter + `torch.export` 单一 Tiny 捕获后端 + 基础 prefill/decode 成本 + renderer-neutral recursive GraphView、自包含离线 DAG 前端、直属父图上下文导航、自解释 decoder pattern 摘要及 Model Explorer-compatible JSON spike。GLM-5.3 在 MVP 只承担超大 MoE 的 config-level 宏观结构、递归静态 MoE/opaque DSA 语义 DAG、静态父图上下文与可证明静态成本验收，动态捕获延后到 M5。
 
 M4a 是 Infra/AMD 专业能力的第一道分水岭；M4b 才提供硬件 counter 级证据。没有精确 op-to-kernel 关联时，产品是结构与理论成本工具，不能称为完整性能诊断器。
 
@@ -1504,6 +1618,8 @@ M4a 是 Infra/AMD 专业能力的第一道分水岭；M4b 才提供硬件 counte
 | M3 | 公式 property test；固定 Scenario golden；prefill/decode 热点报告可复现；Unknown 不参与数值求和 | **PASS** |
 | M3.5 | GraphView schema/golden、L0→L1 端口 DAG、state rail、离线交互与 DAG-01～DAG-13 浏览器任务 | **PASS** |
 | M3.6 | DR-0011；Qwen/GLM recursive GraphView golden；boundary/cost/frontier validator；OP-01～OP-10 自动化与浏览器任务 | **PASS** |
+| M3.7 | `parent_node_id`/primary+alternate child、per-view viewport/selection 与 parent focus 单测；Qwen/GLM CTX-01～CTX-10；桌面/700px 响应式与键盘浏览器验收；零执行 provenance 回归 | **PASS**：Python 3.9/3.12 各 197、Ruff、27/27 verifier、报告 JavaScript/safety 与 UI agent 通过 |
+| M3.8 | 完整 Layer Strip pattern/tail/anomaly 推导、Qwen/GLM/Tiny 摘要与文字图例、报告静态惰性/幂等代码契约及零执行回归；真实 DOM、逐层导航、窄屏和键盘另作浏览器退出 | **Python/静态契约 PASS / 浏览器待确认**：Python 3.9/3.12 各 198、Ruff、27/27 verifier、Qwen/GLM HTML JavaScript/safety 通过；`file://` 自动重载被浏览器 URL policy 拒绝，待用户手动刷新完成 LAY UI 退出 |
 | M4a | marker→correlation→dispatch 映射测试；eager/compile 覆盖率按固定分母达标；无重复时间归属 | **Blocked：AMD reference stack 未冻结** |
 | M4b | 固定 Top-20 Kernel counter 导入；replay 路径哈希一致；counter wall time 不进入 latency | Blocked by M4a |
 | M5 | GLM 动态 fixture、第二 backend、cross-revision canonical matching、sandbox/禁用策略测试通过 | 未开始 |
@@ -1522,7 +1638,7 @@ M4a 是 Infra/AMD 专业能力的第一道分水岭；M4b 才提供硬件 counte
 | Tiny MoE synthetic config | 路由、expert pool、active params、动态 trace |
 | Tiny Mamba/SSM fixture | scan/recurrent state、非 KV 状态 |
 
-测试不会在 CI 下载或读取 27B/1.5TB 权重。固定 config/revision 与完全位于 meta/FakeTensor 上的项目自有 Tiny 语义代表块即可完成 M0–M3.6 结构、捕获、公式与 GraphView 测试；当前没有真实性能结论，未来只有外部 AMD trace/counter artifact 才能提供实测证据。
+测试不会在 CI 下载或读取 27B/1.5TB 权重。固定 config/revision 与完全位于 meta/FakeTensor 上的项目自有 Tiny 语义代表块即可完成 M0–M3.8 结构、捕获、公式、GraphView、父图导航与 layer pattern 披露测试；M3.7/M3.8 只复用这些已生成 artifact 做导航、展示与浏览器验收，同样不需要权重或目标模型 forward。当前没有真实性能结论，未来只有外部 AMD trace/counter artifact 才能提供实测证据。
 
 ### 17.2 测试类型
 
@@ -1716,6 +1832,12 @@ M4a 是 Infra/AMD 专业能力的第一道分水岭；M4b 才提供硬件 counte
 - [x] M3.6 recursive GraphView、semantic primitive ontology 与 boundary binding；
 - [x] M3.6 Qwen Attention/FFN 与 GLM static MoE/opaque DSA 投影；
 - [x] M3.6 OP-01～OP-10 全量、golden/schema/verifier 与真实浏览器退出；
+- [x] M3.7 直属母图缩略图、源复合节点高亮及与 current-view minimap 的职责分离；
+- [x] M3.7 per-view viewport/selection 恢复、结构 parent focus、单层 parent + 全路径 breadcrumb；
+- [x] M3.7 Qwen/GLM CTX-01～CTX-10、显隐/`≤720px`/键盘与零执行浏览器退出；
+- [x] M3.8 完整 strip 派生重复/阶段摘要、模型相关文字图例与非循环说明；
+- [x] M3.8 精确层按钮首次展开惰性生成，逐层 Instance/L1/Inspector 导航保持；
+- [ ] M3.8 Qwen/GLM LAY 浏览器退出（自动 `file://` 重载受 URL policy 限制，待手动刷新确认）；
 - [x] Layer Type Strip；
 - [x] Definition/Instance/Tensor/Metric/Diagnostic Inspector；
 - [x] workload switch；
@@ -1747,7 +1869,7 @@ M4a 是 Infra/AMD 专业能力的第一道分水岭；M4b 才提供硬件 counte
 9. **完成**：故障注入验证 opaque fallback 和 Coverage；
 10. **完成**：Scenario、Linear/Attention/FFN/KV/state 基础成本公式；
 11. **完成**：Tiny/Qwen 成本 golden 与 GLM config-level resident/active/storage；
-12. **Blocked/M4**：外部 trace importer 在 AMD reference stack 冻结前不实施；不在 M0–M3.6 内运行 profiler。
+12. **Blocked/M4**：外部 trace importer 在 AMD reference stack 冻结前不实施；不在 M0–M3.8 内运行 profiler。
 
 ## 23. 关键决策记录
 
@@ -1755,9 +1877,9 @@ M4a 是 Infra/AMD 专业能力的第一道分水岭；M4b 才提供硬件 counte
 |---|---|---|---|
 | 首要模型入口 | Hugging Face/PyTorch | 最新模型通常有 config + Torch 结构代码 | M2 后评估其他框架 |
 | 是否依赖 GGUF | 否 | 目标是模型结构与执行，不绑定权重格式 | 仅作为未来 runtime adapter |
-| 是否下载权重 | M0–M3.6 与 M4 核心均否 | config-first/代表性 meta 足以生成结构，Runtime 只导入外部 trace | 若未来另做 capture helper，需独立安全/资源审计 |
-| 是否执行完整模型 | M0–M3.6 禁止；M4 核心仅导入外部 trace | 超大模型无法在可视化工作站可靠运行，且结构分析不需要真实权重 | 若未来提供 capture helper，必须作为独立可选组件审计 |
-| 完整 meta tree | M0–M3.6 禁用，无 CLI opt-in | meta 参数不占真实权重存储，但海量 Python 对象仍会消耗宿主资源 | M5 后如需新增路径，先写新 DR |
+| 是否下载权重 | M0–M3.8 与 M4 核心均否 | config-first/代表性 meta 足以生成结构，M3.7/M3.8 只读取现有 GraphView/Layer Strip，Runtime 只导入外部 trace | 若未来另做 capture helper，需独立安全/资源审计 |
+| 是否执行完整模型 | M0–M3.8 禁止；M4 核心仅导入外部 trace | 超大模型无法在可视化工作站可靠运行，且结构、导航与摘要分析不需要真实权重 | 若未来提供 capture helper，必须作为独立可选组件审计 |
+| 完整 meta tree | M0–M3.8 禁用，无 CLI opt-in | meta 参数不占真实权重存储，但海量 Python 对象仍会消耗宿主资源；M3.7/M3.8 不增加模型构造 | M5 后如需新增路径，先写新 DR |
 | 大图策略 | 语义折叠与按需展开 | 平铺重复层无信息增益 | 持续测用户任务时间 |
 | MVP 动态图工具 | `torch.export` 单一主路径 | 控制 MVP 范围并获得规范化 ATen IR | TorchLens/hooks 延后到 M5 |
 | 前端 M0/M1 | 自包含离线 UI + Model Explorer-compatible JSON spike | 核心交互已离线验收；官方 consumer 仍 Partial | 补齐 DR-0003 consumer 证据后复审 |

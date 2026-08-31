@@ -228,6 +228,7 @@ class _ViewBuilder:
         level: GraphViewLevel,
         label: str,
         parent_view_id: Optional[str],
+        parent_node_id: Optional[str],
         breadcrumb: Sequence[str],
         layer_index: Optional[int] = None,
         metadata: Optional[Mapping[str, Any]] = None,
@@ -237,6 +238,7 @@ class _ViewBuilder:
         self.level = level
         self.label = label
         self.parent_view_id = parent_view_id
+        self.parent_node_id = parent_node_id
         self.breadcrumb = list(breadcrumb)
         self.layer_index = layer_index
         self.metadata = dict(metadata or {})
@@ -399,6 +401,7 @@ class _ViewBuilder:
             level=self.level,
             label=self.label,
             parent_view_id=self.parent_view_id,
+            parent_node_id=self.parent_node_id,
             decomposes_node_id=decomposes_node_id,
             breadcrumb=self.breadcrumb,
             layer_index=self.layer_index,
@@ -896,6 +899,7 @@ def _build_qwen_l0(index: _EvidenceIndex, view_ids: Mapping[str, str]) -> GraphV
         level=GraphViewLevel.MODEL,
         label="Qwen model DAG",
         parent_view_id=None,
+        parent_node_id=None,
         breadcrumb=[result.model_id],
         metadata={
             "layout_direction": "RIGHT",
@@ -1106,6 +1110,7 @@ def _build_glm_l0(index: _EvidenceIndex, view_ids: Mapping[str, str]) -> GraphVi
         level=GraphViewLevel.MODEL,
         label="GLM model DAG",
         parent_view_id=None,
+        parent_node_id=None,
         breadcrumb=[result.model_id],
         metadata={
             "layout_direction": "RIGHT",
@@ -1224,6 +1229,7 @@ def _build_tiny_l0(index: _EvidenceIndex, view_ids: Mapping[str, str]) -> GraphV
         level=GraphViewLevel.MODEL,
         label="Dense model DAG",
         parent_view_id=None,
+        parent_node_id=None,
         breadcrumb=[result.model_id],
         metadata={
             "layout_direction": "RIGHT",
@@ -1509,17 +1515,20 @@ def _build_qwen_or_tiny_l1(
     index: _EvidenceIndex,
     view_ids: Mapping[str, str],
     *,
+    parent_view: GraphView,
     view_key: str,
     entry: LayerStripEntry,
 ) -> GraphView:
     is_linear = entry.attention_kind == "linear_attention"
     attention_label = "Gated DeltaNet Linear Attention" if is_linear else "Full Attention (GQA)"
+    parent_node = next(node for node in parent_view.nodes if node.key == "decoder_pattern")
     builder = _ViewBuilder(
         view_id=view_ids[view_key],
         key=view_key,
         level=GraphViewLevel.BLOCK,
         label=f"{attention_label} representative",
-        parent_view_id=view_ids["l0"],
+        parent_view_id=parent_view.id,
+        parent_node_id=parent_node.id,
         breadcrumb=[index.result.model_id, "Decoder", entry.label + f"{entry.layer_index}"],
         layer_index=entry.layer_index,
         metadata={
@@ -1569,16 +1578,20 @@ def _build_glm_l1(
     index: _EvidenceIndex,
     view_ids: Mapping[str, str],
     *,
+    parent_view: GraphView,
     view_key: str,
     entry: LayerStripEntry,
 ) -> GraphView:
     sparse = entry.mlp_kind == "sparse"
+    parent_node_key = "sparse_decoder_stage" if sparse else "dense_decoder_stage"
+    parent_node = next(node for node in parent_view.nodes if node.key == parent_node_key)
     builder = _ViewBuilder(
         view_id=view_ids[view_key],
         key=view_key,
         level=GraphViewLevel.BLOCK,
         label=f"GLM {'Sparse DSA + MoE' if sparse else 'Dense DSA'} representative",
-        parent_view_id=view_ids["l0"],
+        parent_view_id=parent_view.id,
+        parent_node_id=parent_node.id,
         breadcrumb=[index.result.model_id, "DSA Decoder", entry.label + f"{entry.layer_index}"],
         layer_index=entry.layer_index,
         metadata={
@@ -2105,6 +2118,7 @@ def _operator_builder(
         level=GraphViewLevel.OPERATOR,
         label=label,
         parent_view_id=parent_view.id,
+        parent_node_id=parent_node.id,
         breadcrumb=[*parent_view.breadcrumb, parent_node.label, "Operators"],
         layer_index=parent_view.layer_index,
         metadata={
@@ -3447,6 +3461,7 @@ def build_graph_view_document(
             linear_view = _build_qwen_or_tiny_l1(
                 index,
                 view_ids,
+                parent_view=views[0],
                 view_key="l1_linear_attention",
                 entry=linear_entry,
             )
@@ -3470,6 +3485,7 @@ def build_graph_view_document(
             full_view = _build_qwen_or_tiny_l1(
                 index,
                 view_ids,
+                parent_view=views[0],
                 view_key="l1_full_attention",
                 entry=full_entry,
             )
@@ -3494,6 +3510,7 @@ def build_graph_view_document(
             dense_view = _build_glm_l1(
                 index,
                 view_ids,
+                parent_view=views[0],
                 view_key="l1_dense_dsa",
                 entry=_representative(adapter_result, mlp="dense"),
             )
@@ -3515,6 +3532,7 @@ def build_graph_view_document(
             sparse_view = _build_glm_l1(
                 index,
                 view_ids,
+                parent_view=views[0],
                 view_key="l1_sparse_dsa_moe",
                 entry=_representative(adapter_result, mlp="sparse"),
             )
@@ -3552,6 +3570,7 @@ def build_graph_view_document(
             _build_qwen_or_tiny_l1(
                 index,
                 view_ids,
+                parent_view=views[0],
                 view_key="l1_dense",
                 entry=_representative(adapter_result, attention="full_attention", mlp="dense"),
             )

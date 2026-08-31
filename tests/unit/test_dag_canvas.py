@@ -53,6 +53,8 @@ def _graph_document() -> dict[str, object]:
                 "id": "l1-block",
                 "label": "Block L1",
                 "parent_view_id": "l0",
+                "parent_node_id": "block",
+                "decomposes_node_id": "block",
                 "nodes": [],
                 "edges": [],
             },
@@ -78,6 +80,14 @@ def test_render_dag_canvas_embeds_payload_and_read_only_controls() -> None:
     assert 'class="llm-dag-search"' in fragment
     assert 'class="llm-dag-breadcrumb"' in fragment
     assert 'class="llm-dag-minimap"' in fragment
+    assert 'aria-label="Current view minimap"' in fragment
+    assert 'class="llm-dag-current-title">Current view</div>' in fragment
+    assert 'class="llm-dag-parent-context"' in fragment
+    assert 'aria-label="Parent context navigator"' in fragment
+    assert 'data-dag-action="parent-context-back"' in fragment
+    assert 'data-dag-action="toggle-parent-context"' in fragment
+    assert 'class="llm-dag-parent-map" role="button" tabindex="0"' in fragment
+    assert 'aria-keyshortcuts="Enter Space"' in fragment
     assert 'class="llm-dag-heat-legend"' in fragment
     assert "gray = Unknown / not attributable" in fragment
     assert 'role="group" aria-label="Interactive model dataflow graph"' in fragment
@@ -146,6 +156,31 @@ def test_assets_expose_offline_interaction_api_and_distinct_edge_patterns() -> N
     assert "llm-dag-heat-legend" in DAG_CANVAS_CSS
     assert "stroke-dasharray: none" in DAG_CANVAS_CSS
     assert "parent_view_id" in DAG_CANVAS_JS
+    assert "immediateParentContext" in DAG_CANVAS_JS
+    assert "viewsById.get(String(view?.parent_view_id || ''))" in DAG_CANVAS_JS
+    assert "view?.parent_node_id" in DAG_CANVAS_JS
+    assert "view?.decomposes_node_id" in DAG_CANVAS_JS
+    assert "String(node.drilldown_view_id || '') === viewId(view)" in DAG_CANVAS_JS
+    assert "return expandedNode ? { parentView, expandedNodeId, expandedNode } : null" in (
+        DAG_CANVAS_JS
+    )
+    assert "drawParentContext" in DAG_CANVAS_JS
+    assert "stableLayout(parentView)" in DAG_CANVAS_JS
+    assert "is-expanded-parent" in DAG_CANVAS_JS
+    assert "parentContextCollapsed" in DAG_CANVAS_JS
+    assert "returnToParent('parent-context')" in DAG_CANVAS_JS
+    assert "returnToParent('parent-context-map')" in DAG_CANVAS_JS
+    assert "returnToParent('breadcrumb')" in DAG_CANVAS_JS
+    assert "focusNodeId: context?.expandedNodeId || null" in DAG_CANVAS_JS
+    assert "focusRenderedNode(requestedFocusNodeId)" in DAG_CANVAS_JS
+    assert "window.matchMedia('(max-width: 720px)')" in DAG_CANVAS_JS
+    assert "event.key !== 'Escape' || parentContextCollapsed" in DAG_CANVAS_JS
+    assert "compactParentContext.addEventListener('change'" in DAG_CANVAS_JS
+    assert "root.classList.add('has-parent-context')" in DAG_CANVAS_JS
+    assert ".llm-dag-current-context" in DAG_CANVAS_CSS
+    assert "'.llm-dag-parent-context, .llm-dag-current-context, '" in DAG_CANVAS_JS
+    assert ".llm-dag-parent-context" in DAG_CANVAS_CSS
+    assert ".llm-dag-parent-node.is-expanded-parent" in DAG_CANVAS_CSS
     assets_without_svg_namespace = assets.replace("http://www.w3.org/2000/svg", "")
     assert "http://" not in assets_without_svg_namespace
     assert "https://" not in assets_without_svg_namespace

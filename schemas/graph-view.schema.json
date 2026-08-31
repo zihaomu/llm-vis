@@ -730,6 +730,19 @@
           "title": "Nodes",
           "type": "array"
         },
+        "parent_node_id": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Parent Node Id"
+        },
         "parent_view_id": {
           "anyOf": [
             {

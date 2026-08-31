@@ -1,6 +1,6 @@
 {
   "adapter_name": "glm-moe-dsa",
-  "id": "gdoc_201a48f224679fa321bb66d3",
+  "id": "gdoc_656d1980e93029f0a92426f9",
   "model_id": "zai-org/GLM-5.3-BF16",
   "provenance": {
     "evidence": [
@@ -876,6 +876,7 @@
           ]
         }
       ],
+      "parent_node_id": null,
       "parent_view_id": null,
       "ports": [
         {
@@ -1955,6 +1956,7 @@
           ]
         }
       ],
+      "parent_node_id": "gnode_742ae1a0251bc19d0213ecdf",
       "parent_view_id": "gvw_f769ee529d93c5af12ac4313",
       "ports": [
         {
@@ -3060,6 +3062,7 @@
           ]
         }
       ],
+      "parent_node_id": "gnode_56dec331af9c2f63bf840ea4",
       "parent_view_id": "gvw_30b4ee729d67b8acd56b7317",
       "ports": [
         {
@@ -4433,6 +4436,7 @@
           ]
         }
       ],
+      "parent_node_id": "gnode_87aa94ae1c9ac617d396366e",
       "parent_view_id": "gvw_f769ee529d93c5af12ac4313",
       "ports": [
         {
@@ -6162,6 +6166,7 @@
           ]
         }
       ],
+      "parent_node_id": "gnode_22b34bdf41821162109d78df",
       "parent_view_id": "gvw_3544ea8386077077e968f3ac",
       "ports": [
         {
@@ -7258,6 +7263,7 @@
           ]
         }
       ],
+      "parent_node_id": "gnode_eb53933dbba7e4d8eae35e47",
       "parent_view_id": "gvw_3544ea8386077077e968f3ac",
       "ports": [
         {

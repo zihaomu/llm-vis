@@ -96,7 +96,8 @@ GraphViewDocument
   source_model_map_id, provenance, views[]
 
 GraphView
-  id, key, level=L0|L1|operator, label, parent_view_id, decomposes_node_id
+  id, key, level=L0|L1|operator, label
+  parent_view_id, parent_node_id, decomposes_node_id
   breadcrumb[], layer_index, root_group_id, nodes[], ports[], edges[], groups[]
   boundary_bindings[], cost_frontier_node_ids[], cost_reconciliations[], metadata
 
@@ -139,9 +140,9 @@ GraphGroup
 - 每个 `GraphEdge` 必须从 output port 指向 input port；每个 input port 至多有一个 producer，除非未来 schema 显式增加 merge 语义。绑定 TensorSpec 时，边与两端 port 的 `tensor_spec_id` 必须一致。`origin`、`evidence` 和 `coverage` 说明这条可见线为何成立。
 - GraphView 默认不投影 `weight` 边。`data|route|control` 子图必须可拓扑排序；KV/recurrent state 使用 `state_read|state_write` 连接独立 state rail，不把跨 token 反馈回边混入单步主 DAG。
 - L0 的每个模型 output 必须能沿非 control 数据路径从输入到达。MTP 不得只由伪造 bool 条件产生 logits；当前合同是 `decoder hidden → MTP → MTP Draft Logits`，主 LM Head Logits 与 Draft Logits 使用不同 input port/output boundary。
-- L0 的折叠 Decoder/Dense/Sparse pattern 可用 `drilldown_view_id` 指向 L1；L1 用 `parent_view_id` 和 `breadcrumb` 返回上层，`layer_index` 支持 Layer Strip 定位。`GraphGroup.collapsed` 描述应折叠的 pattern/Expert Pool，不要在 L0 物化 64/78 层或 256 专家。
+- L0 的折叠 Decoder/Dense/Sparse pattern 可用 `drilldown_view_id` 指向 L1；每个非 root view 必须用 `parent_view_id + parent_node_id` 精确指向直属母图及其中的锚点节点，`breadcrumb` 只承载可读标签，`layer_index` 支持 Layer Strip 定位。`GraphGroup.collapsed` 描述应折叠的 pattern/Expert Pool，不要在 L0 物化 64/78 层或 256 专家。
 - 搜索、上下游高亮和 Inspector 联动使用上述稳定 `id/key`、`subject_ids`、`tensor_spec_id` 和 `evidence`；交互临时状态不进入 artifact，Scenario 切换也不改变这些结构 ID。
-- M3.6 operator view 的递归深度与 M1/M2 的证据层级分离；`level=operator` 不是新的“L2”事实层。`decomposes_node_id` 必须属于 parent view，且该父节点的 `drilldown_view_id` 必须反向指向 child view。
+- M3.6 operator view 的递归深度与 M1/M2 的证据层级分离；`level=operator` 不是新的“L2”事实层。operator view 的 `parent_node_id` 必须等于 `decomposes_node_id`；该节点必须属于 parent view，且其 `drilldown_view_id` 必须反向指向 child view。
 - decomposition 必须绑定父 compound 的全部 port 且每个只绑定一次。父 input/state-read 对应 child boundary output，父 output/state-write 对应 child boundary input；role、dtype、shape_known、shape、TensorSpec 与 data input→output 可达性保持不变。
 - `primitive_kind` 只使用 DR-0011 冻结的 semantic primitive ontology；它不等于 LogicalOp、ATen op 或 Kernel。证据不足区域使用 `decomposition_status=opaque`，无 drilldown target。
 - `metric_bindings` 必须精确到 child Metric 名，或显式说明 Unknown/Excluded；`cost_reconciliations` 记录父总量、已知子项与未归因/排除范围，禁止用 0 填缺失。热图只统计 `cost_frontier_node_ids`，当前 view 之外的父/子不进入同一分母。
