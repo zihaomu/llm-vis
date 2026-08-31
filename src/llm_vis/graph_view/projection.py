@@ -522,6 +522,8 @@ def _view_ids(result: AdapterResult) -> Dict[str, str]:
             )
     elif result.adapter_name == "tiny-dense":
         keys.append("l1_dense")
+    elif result.adapter_name == "generic-config":
+        pass
     else:
         raise ValueError(f"GraphView projection does not support adapter {result.adapter_name!r}")
     return {key: _view_id(result, key) for key in keys}
@@ -529,12 +531,12 @@ def _view_ids(result: AdapterResult) -> Dict[str, str]:
 
 def _hidden_shape(result: AdapterResult) -> List[ShapeDimension]:
     hidden_size = result.inventory_config.get("hidden_size") or result.metadata.get("hidden_size")
-    return ["B", "T", int(hidden_size)]
+    return ["B", "T", int(hidden_size) if isinstance(hidden_size, int) else "H"]
 
 
 def _logits_shape(result: AdapterResult) -> List[ShapeDimension]:
     vocab_size = result.inventory_config.get("vocab_size") or result.metadata.get("vocab_size")
-    return ["B", "T", int(vocab_size)]
+    return ["B", "T", int(vocab_size) if isinstance(vocab_size, int) else "V"]
 
 
 def _activation_dtype(result: AdapterResult) -> DType:
@@ -1281,6 +1283,320 @@ def _build_tiny_l0(index: _EvidenceIndex, view_ids: Mapping[str, str]) -> GraphV
     )
     _add_l0_common_end(builder, index, upstream_node="decoder_pattern", norm_path="model.norm")
     return builder.finish(cost_frontier_node_keys=("decoder_pattern",))
+
+
+def _build_generic_l0(index: _EvidenceIndex, view_ids: Mapping[str, str]) -> GraphView:
+    """Build one navigable path while keeping every architecture claim opaque."""
+
+    result = index.result
+    evidence = (
+        *index.common_evidence,
+        "projection:conservative-display-skeleton",
+        "coverage:config-only-partial",
+        "runtime_structure:not_observed",
+    )
+    builder = _ViewBuilder(
+        view_id=view_ids["l0"],
+        key="l0",
+        level=GraphViewLevel.MODEL,
+        label="Config-only model skeleton",
+        parent_view_id=None,
+        parent_node_id=None,
+        breadcrumb=[result.model_id],
+        metadata={
+            "layout_direction": "RIGHT",
+            "primary_flow": "acyclic",
+            "semantic_zoom": "model",
+            "evidence_scope": "config-only",
+            "coverage_status": "partial",
+            "architecture_status": "opaque",
+            "family_adapter_available": False,
+            "operator_decomposition_available": False,
+            "config_scope": result.metadata.get("config_scope", "config"),
+            "detailed_display_skeleton": result.metadata.get(
+                "detailed_display_skeleton", False
+            ),
+        },
+    )
+    builder.add_group(
+        "root",
+        "Generic config L0",
+        "model",
+        attributes={"layout": "layered", "coverage_status": "partial"},
+    )
+
+    unknown_cost_reason = (
+        "No family adapter or operator evidence is available; Unknown is not zero."
+    )
+    if result.metadata.get("detailed_display_skeleton") is not True:
+        builder.add_node(
+            "architecture",
+            "Config / Architecture (opaque)",
+            "opaque_architecture",
+            group_key="root",
+            subject_ids=index.subjects(
+                paths=("model.architecture",),
+                definition_keys=("architecture",),
+                include_model=True,
+            ),
+            evidence=(
+                *evidence,
+                "text_model_evidence:insufficient",
+                "display_skeleton:compound-nodes-suppressed",
+            ),
+            coverage=0.0,
+            opaque=True,
+            decomposition_status=GraphDecompositionStatus.OPAQUE,
+            metric_bindings=(
+                _unknown_metric_binding("flops", "flops", unknown_cost_reason),
+                _unknown_metric_binding(
+                    "logical_bytes", "logical_bytes", unknown_cost_reason
+                ),
+            ),
+            attributes={
+                "coverage_status": "opaque",
+                "config_scope": result.metadata.get("config_scope", "config"),
+                "model_type": result.model_type,
+                "text_model_evidence": [],
+                "attention_kind": "unknown",
+                "ffn_kind": "unknown",
+                "state_kind": "unknown",
+                "cost_status": "unknown",
+                "unknown_is_zero": False,
+            },
+        )
+        return builder.finish(cost_frontier_node_keys=("architecture",))
+
+    hidden_size = result.metadata.get("hidden_size")
+    vocab_size = result.metadata.get("vocab_size")
+    hidden_shape: Optional[List[ShapeDimension]] = (
+        ["B", "T", hidden_size]
+        if isinstance(hidden_size, int) and not isinstance(hidden_size, bool)
+        else None
+    )
+    logits_shape: Optional[List[ShapeDimension]] = (
+        ["B", "T", vocab_size]
+        if isinstance(vocab_size, int) and not isinstance(vocab_size, bool)
+        else None
+    )
+    dtype = _activation_dtype(result)
+    opaque_status = GraphDecompositionStatus.OPAQUE
+
+    builder.add_node(
+        "tokens",
+        "Input",
+        "input",
+        group_key="root",
+        subject_ids=index.subjects(include_model=True),
+        evidence=(*evidence, "boundary:assumed-token-input"),
+        coverage=0.0,
+        attributes={"boundary": "input", "coverage_status": "unverified"},
+    )
+    builder.add_port(
+        "tokens",
+        "token_ids",
+        "token_ids",
+        PortDirection.OUTPUT,
+        TensorRole.INPUT,
+        shape=["B", "T"],
+        dtype=DType.INT64,
+        evidence=(*evidence, "interface:display-skeleton"),
+    )
+
+    builder.add_node(
+        "embedding",
+        "Embedding (unverified)",
+        "embedding",
+        group_key="root",
+        subject_ids=index.subjects(
+            paths=("model.embed_tokens",), definition_keys=("token_embedding",)
+        ),
+        evidence=(*evidence, "module:unverified"),
+        coverage=0.0,
+        opaque=True,
+        decomposition_status=opaque_status,
+        attributes={
+            "coverage_status": "opaque",
+            "vocab_size": vocab_size,
+            "shape_evidence_available": hidden_shape is not None,
+        },
+    )
+    builder.add_port(
+        "embedding",
+        "token_ids",
+        "token_ids",
+        PortDirection.INPUT,
+        TensorRole.INPUT,
+        shape=["B", "T"],
+        dtype=DType.INT64,
+        evidence=(*evidence, "interface:display-skeleton"),
+    )
+    builder.add_port(
+        "embedding",
+        "hidden",
+        "hidden_states",
+        PortDirection.OUTPUT,
+        TensorRole.ACTIVATION,
+        shape=hidden_shape,
+        dtype=dtype,
+        evidence=(*evidence, "interface:display-skeleton"),
+    )
+
+    layer_count = result.metadata.get("num_hidden_layers")
+    architecture_label = (
+        f"Architecture × {layer_count} (opaque)"
+        if isinstance(layer_count, int) and not isinstance(layer_count, bool)
+        else "Config / Architecture (opaque)"
+    )
+    builder.add_node(
+        "architecture",
+        architecture_label,
+        "opaque_architecture",
+        group_key="root",
+        subject_ids=index.subjects(
+            paths=("model.architecture",),
+            definition_keys=("architecture",),
+            include_model=True,
+        ),
+        evidence=(*evidence, "architecture_internals:opaque"),
+        coverage=0.0,
+        opaque=True,
+        decomposition_status=opaque_status,
+        metric_bindings=(
+            _unknown_metric_binding("flops", "flops", unknown_cost_reason),
+            _unknown_metric_binding(
+                "logical_bytes", "logical_bytes", unknown_cost_reason
+            ),
+        ),
+        attributes={
+            "coverage_status": "opaque",
+            "layer_count": layer_count,
+            "hidden_size": hidden_size,
+            "intermediate_size": result.inventory_config.get("intermediate_size"),
+            "vocab_size": vocab_size,
+            "recognized_field_sources": result.metadata.get("recognized_field_sources", {}),
+            "attention_kind": "unknown",
+            "ffn_kind": "unknown",
+            "state_kind": "unknown",
+            "cost_status": "unknown",
+            "operator_decomposition_available": False,
+            "unknown_is_zero": False,
+        },
+    )
+    for direction, port_key in (
+        (PortDirection.INPUT, "hidden_in"),
+        (PortDirection.OUTPUT, "hidden"),
+    ):
+        builder.add_port(
+            "architecture",
+            port_key,
+            "hidden_states",
+            direction,
+            TensorRole.ACTIVATION,
+            shape=hidden_shape,
+            dtype=dtype,
+            evidence=(*evidence, "interface:display-skeleton"),
+        )
+
+    builder.add_node(
+        "final_norm",
+        "Final Norm (unverified)",
+        "norm",
+        group_key="root",
+        subject_ids=index.subjects(paths=("model.norm",), definition_keys=("final_norm",)),
+        evidence=(*evidence, "module:unverified"),
+        coverage=0.0,
+        opaque=True,
+        decomposition_status=opaque_status,
+        attributes={"coverage_status": "opaque"},
+    )
+    for direction, port_key, name in (
+        (PortDirection.INPUT, "in", "hidden_states"),
+        (PortDirection.OUTPUT, "out", "normalized_hidden"),
+    ):
+        builder.add_port(
+            "final_norm",
+            port_key,
+            name,
+            direction,
+            TensorRole.ACTIVATION,
+            shape=hidden_shape,
+            dtype=dtype,
+            evidence=(*evidence, "interface:display-skeleton"),
+        )
+
+    builder.add_node(
+        "lm_head",
+        "LM Head (unverified)",
+        "lm_head",
+        group_key="root",
+        subject_ids=index.subjects(paths=("lm_head",), definition_keys=("lm_head",)),
+        evidence=(*evidence, "module:unverified"),
+        coverage=0.0,
+        opaque=True,
+        decomposition_status=opaque_status,
+        attributes={"coverage_status": "opaque", "vocab_size": vocab_size},
+    )
+    builder.add_port(
+        "lm_head",
+        "hidden",
+        "hidden_states",
+        PortDirection.INPUT,
+        TensorRole.ACTIVATION,
+        shape=hidden_shape,
+        dtype=dtype,
+        evidence=(*evidence, "interface:display-skeleton"),
+    )
+    builder.add_port(
+        "lm_head",
+        "logits",
+        "logits",
+        PortDirection.OUTPUT,
+        TensorRole.OUTPUT,
+        shape=logits_shape,
+        dtype=dtype,
+        evidence=(*evidence, "interface:display-skeleton"),
+    )
+
+    builder.add_node(
+        "output",
+        "Output",
+        "output",
+        group_key="root",
+        subject_ids=index.subjects(include_model=True),
+        evidence=(*evidence, "boundary:assumed-logits-output"),
+        coverage=0.0,
+        attributes={"boundary": "output", "coverage_status": "unverified"},
+    )
+    builder.add_port(
+        "output",
+        "logits",
+        "logits",
+        PortDirection.INPUT,
+        TensorRole.OUTPUT,
+        shape=logits_shape,
+        dtype=dtype,
+        evidence=(*evidence, "interface:display-skeleton"),
+    )
+
+    for key, source_node, source_port, target_node, target_port in (
+        ("input_to_embedding", "tokens", "token_ids", "embedding", "token_ids"),
+        ("embedding_to_architecture", "embedding", "hidden", "architecture", "hidden_in"),
+        ("architecture_to_norm", "architecture", "hidden", "final_norm", "in"),
+        ("norm_to_head", "final_norm", "out", "lm_head", "hidden"),
+        ("head_to_output", "lm_head", "logits", "output", "logits"),
+    ):
+        builder.add_edge(
+            key,
+            source_node,
+            source_port,
+            target_node,
+            target_port,
+            GraphEdgeKind.DATA,
+            evidence=(*evidence, "edge:unverified-display-skeleton"),
+            coverage=0.0,
+        )
+    return builder.finish(cost_frontier_node_keys=("architecture",))
 
 
 def _representative(
@@ -3575,6 +3891,8 @@ def build_graph_view_document(
                 entry=_representative(adapter_result, attention="full_attention", mlp="dense"),
             )
         )
+    elif adapter_result.adapter_name == "generic-config":
+        views.append(_build_generic_l0(index, view_ids))
     else:
         raise ValueError(
             f"GraphView projection does not support adapter {adapter_result.adapter_name!r}"

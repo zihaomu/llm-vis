@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import io
 import json
 from pathlib import Path
 
@@ -60,6 +61,10 @@ def test_inspect_writes_reproducible_offline_artifact(tmp_path: Path) -> None:
         "remote_code_executed": False,
         "full_meta_tree_enabled": False,
     }
+    assert manifest["source"]["reads_config_json_only"] is True
+    assert manifest["source"]["config_sha256"] == bundle.resolved.sha256
+    assert manifest["source"]["resolved_revision"] == bundle.resolved.revision
+    assert manifest["source"]["input_kind"] == "local_file"
     assert manifest["capability"]["level"] == "C1"
     assert manifest["capability"]["interactive_semantic_dag"] is True
     assert manifest["capability"]["semantic_zoom_levels"] == ["L0", "L1"]
@@ -141,3 +146,123 @@ def test_cli_inspect_and_validate(tmp_path: Path) -> None:
         == 0
     )
     assert main(["validate", str(output / "model-map.json")]) == 0
+
+
+def test_cli_uses_temporary_output_and_opens_report_by_default(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    output = tmp_path / "default-artifact"
+    opened: list[str] = []
+    monkeypatch.setattr("llm_vis.cli._default_output_dir", lambda bundle: output)
+    monkeypatch.setattr(
+        "llm_vis.cli.webbrowser.open",
+        lambda uri: opened.append(uri) or True,
+    )
+
+    assert main(["inspect", str(FIXTURE_DIR / "tiny_dense.json")]) == 0
+
+    report = (output / "reports" / "report.html").resolve()
+    assert report.is_file()
+    assert opened == [report.as_uri()]
+
+
+def test_cli_explicit_output_only_opens_when_requested(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    opened: list[str] = []
+    monkeypatch.setattr(
+        "llm_vis.cli.webbrowser.open",
+        lambda uri: opened.append(uri) or True,
+    )
+
+    first = tmp_path / "explicit"
+    assert (
+        main(
+            [
+                "inspect",
+                str(FIXTURE_DIR / "tiny_dense.json"),
+                "--output",
+                str(first),
+            ]
+        )
+        == 0
+    )
+    assert opened == []
+
+    second = tmp_path / "explicit-open"
+    assert (
+        main(
+            [
+                "inspect",
+                str(FIXTURE_DIR / "tiny_dense.json"),
+                "--output",
+                str(second),
+                "--open",
+            ]
+        )
+        == 0
+    )
+    assert opened == [(second / "reports" / "report.html").resolve().as_uri()]
+
+
+def test_cli_view_reads_json_from_stdin(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    output = tmp_path / "stdin-view"
+    config_text = (FIXTURE_DIR / "tiny_dense.json").read_text(encoding="utf-8")
+    monkeypatch.setattr("llm_vis.cli.sys.stdin", io.StringIO(config_text))
+
+    assert (
+        main(
+            [
+                "view",
+                "-",
+                "--output",
+                str(output),
+                "--no-open",
+            ]
+        )
+        == 0
+    )
+    assert (output / "reports" / "report.html").is_file()
+    manifest = json.loads((output / "manifest.json").read_text(encoding="utf-8"))
+    assert manifest["source"]["uri"].startswith("inline://sha256/")
+    assert manifest["source"]["input_kind"] == "inline_json"
+
+
+def test_cli_view_opens_by_default_and_keeps_artifact_when_open_fails(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    output = tmp_path / "view-open-failed"
+    opened: list[str] = []
+    monkeypatch.setattr(
+        "llm_vis.cli.webbrowser.open",
+        lambda uri: opened.append(uri) or False,
+    )
+
+    assert (
+        main(
+            [
+                "view",
+                str(FIXTURE_DIR / "tiny_dense.json"),
+                "--output",
+                str(output),
+            ]
+        )
+        == 0
+    )
+
+    report = (output / "reports" / "report.html").resolve()
+    assert report.is_file()
+    assert opened == [report.as_uri()]
+    assert "report was generated" in capsys.readouterr().err
+
+
+def test_cli_rejects_positional_and_option_model_inputs_together(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    config = str(FIXTURE_DIR / "tiny_dense.json")
+
+    assert main(["view", config, "--model", config, "--output", str(tmp_path)]) == 2
+    assert "accepts one model input" in capsys.readouterr().err

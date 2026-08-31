@@ -129,6 +129,14 @@ def test_m3_artifact_contains_hotspots_roofline_diff_and_offline_controls(
     assert "focusNode('model-dag',target.node.id)" in html
     assert "graphViewForLayer" in html
     assert 'id="graph-heading">Model graph' in html
+    assert "Target input: config.json only" in html
+    assert 'id="graph-evidence-badge"' in html
+    assert 'id="source-evidence-badge"' in html
+    assert "Known adapter" in html
+    assert "config SHA-256" in html
+    assert "Current view evidence" in html
+    assert "no target weights · no model code · no full forward" in html
+    assert "renderGraphEvidence(view)" in html
     assert 'class="dag-panel" aria-labelledby="graph-heading"' in html
     assert 'id="navigator-drawer" aria-hidden="true"' in html
     assert 'id="inspector-drawer" aria-hidden="true"' in html
@@ -148,7 +156,10 @@ def test_m3_artifact_contains_hotspots_roofline_diff_and_offline_controls(
     assert "repeat notation is not a cycle and does not imply weight sharing" in html
     assert "panel.addEventListener('toggle',()=>{if(panel.open)renderStrip();})" in html
     assert "if(root.dataset.rendered==='true')return" in html
-    assert "renderDiagnostics();renderLayerSummary();setupScenarios()" in html
+    assert (
+        "renderDiagnostics();renderLayerSummary();"
+        "renderGraphEvidence(graphView.views[0]);setupScenarios()" in html
+    )
     assert "setInspector(graphSelectionContext(detail),{reveal:false})" in html
     assert "Structure index" in html
     for inspector_tab in (

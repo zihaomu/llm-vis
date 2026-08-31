@@ -18,6 +18,10 @@ class AdapterConfigError(ValueError):
     """Raised when a supported config is incomplete or internally inconsistent."""
 
 
+class AdapterEvidenceError(AdapterConfigError):
+    """Raised when a known adapter is selected but required config evidence is absent."""
+
+
 @dataclass(frozen=True)
 class DefinitionSpec:
     """A reusable architecture definition, separate from concrete layer instances."""
@@ -234,6 +238,8 @@ class ConfigFirstAdapter(ABC):
 
 
 def require_mapping(config: Mapping[str, Any], key: str) -> Mapping[str, Any]:
+    if key not in config:
+        raise AdapterEvidenceError(f"{key!r} is required for this adapter")
     value = config.get(key)
     if not isinstance(value, Mapping):
         raise AdapterConfigError(f"{key!r} must be a JSON object")
@@ -241,6 +247,8 @@ def require_mapping(config: Mapping[str, Any], key: str) -> Mapping[str, Any]:
 
 
 def require_positive_int(config: Mapping[str, Any], key: str) -> int:
+    if key not in config:
+        raise AdapterEvidenceError(f"{key!r} is required for this adapter")
     value = config.get(key)
     if isinstance(value, bool) or not isinstance(value, int) or value <= 0:
         raise AdapterConfigError(f"{key!r} must be a positive integer")

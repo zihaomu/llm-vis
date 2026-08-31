@@ -14,7 +14,12 @@ def test_config_fixtures_have_pinned_revision_hash_and_no_weights() -> None:
         provenance = json.loads(
             (FIXTURE_DIR / f"{name}.provenance.json").read_text(encoding="utf-8")
         )
-        resolved = resolve_config(str(config_path), revision=provenance["revision"])
+        revision = (
+            provenance["revision"]
+            if provenance["kind"] == "huggingface_config_subset"
+            else None
+        )
+        resolved = resolve_config(str(config_path), revision=revision)
 
         assert provenance["weights_included"] is False
         assert provenance["revision"] not in {"", "main", "master"}

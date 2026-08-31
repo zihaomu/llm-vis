@@ -5,15 +5,17 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import sys
 import tempfile
+import webbrowser
 from pathlib import Path
 from typing import Any, Optional, Sequence
 
 from pydantic import ValidationError
 
 from llm_vis.adapters import AdapterConfigError
-from llm_vis.analysis import capture_representatives, inspect_model
+from llm_vis.analysis import AnalysisBundle, capture_representatives, inspect_model
 from llm_vis.capture import RepresentativeKind
 from llm_vis.diff import diff_scenario_metrics
 from llm_vis.ir import ModelMap, Scenario, export_schemas
@@ -61,12 +63,36 @@ def _write_json(path: Path, value: Any, *, force: bool) -> None:
         raise
 
 
+def _default_output_dir(bundle: AnalysisBundle) -> Path:
+    """Return a unique temporary root with a recognizable artifact directory."""
+
+    staging_root = Path(tempfile.mkdtemp(prefix="llm-vis-"))
+    identifier = bundle.resolved.identifier
+    if identifier.startswith(("config:", "inline", "local")):
+        identifier = str(bundle.resolved.config.get("model_type") or "model")
+    slug = re.sub(r"[^a-z0-9]+", "-", identifier.lower()).strip("-")[:64] or "model"
+    return staging_root / f"{slug}-{bundle.resolved.sha256[:8]}"
+
+
+def _open_report(path: Path) -> bool:
+    """Open one generated local report without turning headless failure into analysis failure."""
+
+    try:
+        return bool(webbrowser.open(path.resolve().as_uri()))
+    except (OSError, webbrowser.Error):
+        return False
+
+
 def _add_analysis_arguments(command_parser: argparse.ArgumentParser) -> None:
     command_parser.add_argument(
-        "model_positional", nargs="?", help="Local config/model directory or HF ID"
+        "model_positional",
+        nargs="?",
+        help="HF ID/URL, local config, inline JSON, or '-' to read JSON from stdin",
     )
     command_parser.add_argument(
-        "--model", dest="model_option", help="Local config/model directory or HF ID"
+        "--model",
+        dest="model_option",
+        help="HF ID/URL, local config, inline JSON, or '-' for stdin",
     )
     command_parser.add_argument("--revision")
     command_parser.add_argument("--scenario", help="Scenario JSON object or list")
@@ -74,9 +100,27 @@ def _add_analysis_arguments(command_parser: argparse.ArgumentParser) -> None:
         "--hardware-profile",
         help="Explicit HardwareProfile JSON for theoretical roofline lower bounds",
     )
-    command_parser.add_argument("--output", required=True, type=Path)
+    command_parser.add_argument(
+        "--output",
+        type=Path,
+        help="Artifact directory; omitted uses a unique temporary user directory",
+    )
     command_parser.add_argument("--local-files-only", action="store_true")
     command_parser.add_argument("--force", action="store_true")
+    open_group = command_parser.add_mutually_exclusive_group()
+    open_group.add_argument(
+        "--open",
+        dest="open_report",
+        action="store_true",
+        help="Open the generated offline HTML report",
+    )
+    open_group.add_argument(
+        "--no-open",
+        dest="open_report",
+        action="store_false",
+        help="Do not open the generated offline HTML report",
+    )
+    command_parser.set_defaults(open_report=None)
 
 
 def _parser() -> argparse.ArgumentParser:
@@ -85,6 +129,12 @@ def _parser() -> argparse.ArgumentParser:
 
     inspect_parser = subparsers.add_parser("inspect", help="Generate structure without weights")
     _add_analysis_arguments(inspect_parser)
+
+    view_parser = subparsers.add_parser(
+        "view",
+        help="Resolve one config, generate its offline graph, and open it by default",
+    )
+    _add_analysis_arguments(view_parser)
 
     capture_parser = subparsers.add_parser(
         "capture",
@@ -139,10 +189,18 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             print(f"diff: {result.id}")
             print(f"output: {args.output.resolve()}")
             return 0
-        if args.command in {"inspect", "capture"}:
+        if args.command in {"view", "inspect", "capture"}:
+            if args.model_option is not None and args.model_positional is not None:
+                raise ValueError(
+                    f"{args.command} accepts one model input; use either MODEL or --model"
+                )
             source = args.model_option or args.model_positional
             if not source:
                 raise ValueError(f"{args.command} requires MODEL or --model")
+            if source == "-":
+                source = sys.stdin.read()
+                if not source.strip():
+                    raise ValueError("stdin did not contain a JSON config")
             bundle = inspect_model(
                 source,
                 revision=args.revision,
@@ -157,9 +215,22 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                     else None
                 )
                 bundle = capture_representatives(bundle, kinds=kinds)
-            write_analysis(bundle, args.output, force=args.force)
+            output = args.output or _default_output_dir(bundle)
+            written = write_analysis(bundle, output, force=args.force)
             print(f"analysis: {bundle.analysis_id}")
-            print(f"output: {args.output.resolve()}")
+            print(f"output: {output.resolve()}")
+            report_path = written["reports/report.html"].resolve()
+            print(f"report: {report_path}")
+            default_open = args.command == "view" or args.output is None
+            should_open = args.open_report if args.open_report is not None else default_open
+            if should_open:
+                if _open_report(report_path):
+                    print(f"opened: {report_path.as_uri()}")
+                else:
+                    print(
+                        "warning: report was generated but no browser accepted the open request",
+                        file=sys.stderr,
+                    )
             return 0
     except (
         AdapterConfigError,

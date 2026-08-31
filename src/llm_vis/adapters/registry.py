@@ -2,16 +2,23 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
 from typing import Any, Dict, Iterable, Mapping, Tuple
 
-from .base import AdapterConfigError, AdapterResult, ConfigFirstAdapter
+from .base import AdapterConfigError, AdapterEvidenceError, AdapterResult, ConfigFirstAdapter
 
 
 class AdapterRegistry:
     """Registry keyed by Hugging Face ``model_type`` values."""
 
-    def __init__(self, adapters: Iterable[ConfigFirstAdapter] = ()) -> None:
+    def __init__(
+        self,
+        adapters: Iterable[ConfigFirstAdapter] = (),
+        *,
+        fallback: ConfigFirstAdapter | None = None,
+    ) -> None:
         self._by_model_type: Dict[str, ConfigFirstAdapter] = {}
+        self._fallback = fallback
         for adapter in adapters:
             self.register(adapter)
 
@@ -22,7 +29,13 @@ class AdapterRegistry:
     @property
     def adapters(self) -> Tuple[ConfigFirstAdapter, ...]:
         unique = {id(adapter): adapter for adapter in self._by_model_type.values()}
+        if self._fallback is not None:
+            unique[id(self._fallback)] = self._fallback
         return tuple(sorted(unique.values(), key=lambda adapter: adapter.name))
+
+    @property
+    def fallback(self) -> ConfigFirstAdapter | None:
+        return self._fallback
 
     def register(self, adapter: ConfigFirstAdapter, *, replace: bool = False) -> None:
         if not adapter.model_types:
@@ -49,11 +62,10 @@ class AdapterRegistry:
             candidate = text_config.get("model_type")
             if isinstance(candidate, str):
                 nested_model_type = candidate
-                adapter = self._by_model_type.get(candidate)
-                if adapter is not None:
-                    return adapter
 
-        observed = nested_model_type or model_type or "<missing>"
+        observed = model_type or nested_model_type or "<missing>"
+        if self._fallback is not None:
+            return self._fallback
         raise AdapterConfigError(
             f"No config-first adapter is registered for model_type {observed!r}; "
             f"supported types: {', '.join(self.model_types)}"
@@ -66,4 +78,26 @@ class AdapterRegistry:
         model_id: str = "local",
         revision: str = "local",
     ) -> AdapterResult:
-        return self.resolve(config).build(config, model_id=model_id, revision=revision)
+        adapter = self.resolve(config)
+        try:
+            return adapter.build(config, model_id=model_id, revision=revision)
+        except AdapterEvidenceError as error:
+            if (
+                self._fallback is None
+                or adapter is self._fallback
+            ):
+                raise
+            fallback_result = self._fallback.build(
+                config,
+                model_id=model_id,
+                revision=revision,
+            )
+            return replace(
+                fallback_result,
+                metadata={
+                    **fallback_result.metadata,
+                    "fallback_reason": "registered_adapter_rejected_config",
+                    "rejected_adapter": adapter.name,
+                    "adapter_failure": str(error),
+                },
+            )

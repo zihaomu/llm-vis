@@ -2,8 +2,8 @@
 
 - 状态：M0 可核验交互规格
 - 日期：2026-08-29
-- 最后验收：2026-08-30
-- 实现状态：M0–M3.7 自包含离线 UI 已实现并验收；M3.8 Decoder Pattern Summary 实施中。同一中央 DAG 支持递归算子分解与直属母图上下文；graph-first 信息架构、按需 Browse/Inspector/精确 Layers/Supporting analysis 保持不变；官方 Model Explorer consumer 仍为 Partial，M4 timeline 未实现
+- 最后更新：2026-08-31；最后完整浏览器验收：2026-08-30
+- 实现状态：M0–M3.7 自包含离线 UI 已实现并验收；M3.8 Decoder Pattern Summary 功能已实现、最终浏览器退出待手动确认；M3.9 One-Input CLI 与报告证据 UI 已实现并通过静态/自动化，真实 `file://` 页面待手工验收。同一中央 DAG 支持递归算子分解与直属母图上下文；graph-first 信息架构、按需 Browse/Inspector/精确 Layers/Supporting analysis 保持不变；官方 Model Explorer consumer 仍为 Partial，M4 timeline 未实现
 
 ## 1. 目标
 
@@ -43,6 +43,22 @@
 ```
 
 不可隐藏的全局上下文：模型与 revision、Scenario、当前 L0/L1 层级。Metric origin、Coverage 与零执行状态可收纳到 Report status/Inspector，但不能删除或改写。默认首屏不得同时常驻 Browse、Inspector、Layer 全量按钮和分析表格；信息完整性通过按需抽屉与折叠区保留。
+
+### 2.1 M3.9 One-Input CLI 与报告证据状态
+
+M3.9 的启动面是 `llm-vis view INPUT`，不是浏览器表单。CLI 已统一接受 HF Model ID（单段 `model` 或 `owner/model`）、HF 模型页 URL、HF `config.json` blob/resolve URL、本地 config 文件/目录和 JSON 文本/stdin 五类语义输入。当前不实现浏览器启动页、粘贴框或文件选择器；浏览器只打开生成后的自包含离线报告。
+
+用户不指定 `--output` 时，CLI 在唯一临时目录中生成 `<model-slug>-<config-hash8>` artifact，输出 artifact/report 绝对路径并默认调用系统浏览器；`--no-open` 可关闭打开。打开失败只产生 warning，不丢失已生成 artifact。
+
+离线报告沿用现有 graph-first 页面，主图标题下增加紧凑证据栏：`Target input: config.json only`、source kind/requested+resolved revision、config SHA-256、`Known adapter` 或 `Unsupported · opaque`、当前 view evidence，以及 `no target weights · no model code · no full forward`。证据栏不增加第二张图：
+
+- `Known adapter`：显示 adapter 名、requested/resolved revision、config hash 与 coverage，中央位置直接显示已有同一 L0→L1→operator DAG；
+- `Partial`：已知区域继续使用同一 DAG，证据不足的节点为 opaque/Unknown，页头显示范围而不用绿色“完成”掩盖；
+- `Unsupported (opaque)`：保留可读 config inventory、source/hash/Diagnostic 和所需 adapter/remediation，中央画布显示一个有证据范围说明的 opaque model card，不伪造内部 DAG；
+- `Unsupported (opaque)` 的最小形态：语法有效的 JSON object 即使没有 `model_type` 或模型维度证据，也生成 C0 报告，中央图只有一个 coverage 0 的 opaque architecture 节点；
+- `Invalid / blocked`：只有 malformed JSON、顶层非 object、非 HF 远程 host/redirect、非法显式 local revision，或超出 2 MiB、64 层嵌套/100,000 项安全限额时，CLI 显示带 code/hint 的错误并不生成伪报告；私有/gated 仓库显示 `HF_AUTH_REQUIRED` 与本地 config 修复路径。
+
+远程 source 显示已固定的 Hugging Face commit；本地/inline source 默认显示 `sha256:<digest>` 内容身份，不冒充 HF commit。不可信 `_commit_hash`、本机绝对源路径、HF token 或请求头都不得出现在可分享页面。
 
 ## 3. L0：模型宏观视图
 
@@ -303,6 +319,17 @@ M3.8 Layer Disclosure 使用以下浏览器退出任务；完整事实与边界�
 | LAY-UI-05 | 初始打开 GLM/Tiny | 分别显示 `D×3 → M×75`/`D×4` 与模型相关图例，不出现 Qwen 专用文案 | 自动化/报告 PASS；待浏览器 |
 | LAY-UI-06 | 640px 窄屏查看并操作 | 摘要、图例与非循环说明可换行，中央 DAG 不被横向撑开，summary/button 均可键盘操作 | CSS/原生交互契约 PASS；待浏览器 |
 
+M3.9 的 CLI/报告 UI 退出状态如下；真实 `file://` 页面是唯一仍待手工确认的 UI 项：
+
+| ID | 操作 | 页面通过条件 | M3.9 状态 |
+|---|---|---|---|
+| IMP-UI-01 | 通过 CLI 传入 Model ID/模型页/config URL | 固定 revision/hash 后生成报告，不要求用户选 adapter；不声称存在浏览器输入页 | **PASS：CLI/resolver 自动化** |
+| IMP-UI-02 | 通过 CLI 传入本地 config、inline JSON 或 stdin | 报告显示 hash 内容身份而不泄露本机源绝对路径 | **PASS：CLI/artifact 自动化** |
+| IMP-UI-03 | 导入 Qwen/GLM 已知 config | `Known adapter` 与 source/revision/hash/coverage/零执行状态已进入 HTML，中央主视觉仍是现有同一 DAG | **静态/报告自动化 PASS；`file://` 手工待验** |
+| IMP-UI-04 | 导入未知或证据不足的 JSON object | 显示 `Unsupported · opaque`、C0/coverage 证据；缺乏模型证据时只有单个 opaque 节点，无伪造 child view/成本 | **静态/GraphView 自动化 PASS；`file://` 手工待验** |
+| IMP-UI-05 | 导入 malformed/非 object/超限/非 HF 远程 JSON | CLI 显示类型/安全限额 code 与 hint，不生成伪报告；普通有效 object 则降级而非拒绝 | **PASS：resolver 正/负自动化** |
+| IMP-UI-06 | 默认打开、`--no-open` 或模拟打开失败 | 默认在唯一临时目录生成并打开报告；关闭时只给路径；失败不丢 artifact | **PASS：CLI 自动化** |
+
 M3.6 直接采用以下退出编号：
 
 | ID | 操作 | 通过条件 | M3.6 状态 |
@@ -326,6 +353,6 @@ M3.5 浏览器验收进一步确认：Qwen L0 为 11 node/19 port/10 edge，Line
 
 M3.6 浏览器验收确认：Qwen Full Attention 展开为 32 node/36 edge，包含 Q/K/V/O GEMM、Q/K/V reshape+transpose、4→24 GQA KV-head Broadcast、QKᵀ/P×V MatMul、Softmax、RMSNorm、RoPE、cache append、context transpose 与 output gate；FFN 展开为三个 GEMM、SiLU、Multiply；Linear Attention 的 4 条 recurrent-state 边接入 Conv/opaque delta core。Softmax 搜索与 prefill→decode 切换保持相同 node ID；端口选择在 `Collapse`→重新展开后恢复，随后选择 node 会清除 port 描边；operator views 不作为 View 下拉框常驻项，当前 child 只显示一个 `↳` 临时项。Cost Inspector 显示 FLOPs `complete/signed_remainder=0/inconsistent=false` 与 logical bytes `partial/signed_remainder>0/unknown_is_zero=false`；热图只显示当前 frontier（Pressure `4/28 known`，Compute `6/28 known`）。GLM Sparse view 为 14 node/19 edge，显示 Router GEMM、TopK indices、`[B,T,8] float32` routing weights→Combine、route/control、virtual Expert/Shared Expert；Expert child view 显示 Gather/Scatter 与三个 GEMM，且不产生 runtime route/weight value；DSA 没有下钻入口，GLM frontier 保持 `0/10 known`。跨 view Inspector 残留已修复；两页 console 均无 warning/error。27/27 checked-in 资产检查和 Python 3.9/3.12 各 192 项通过。
 
-M3.7 的直属母图、current minimap、per-view viewport/selection、结构 parent focus 和 700px 折叠路径已完成 CTX-01～CTX-10 浏览器验收。M3.8 功能与自动化已完成：Python 3.9/3.12 各 198、Ruff、27/27 verifier、golden current；重生成的 Qwen/GLM 报告分别内嵌 `[L×3 → A] ×16`/`D×3 → M×75`，JavaScript syntax 与 safety flags 通过。自动浏览器因 URL policy 拒绝重载本地 `file://` 页面，因此没有绕过策略；LAY-UI-01～06 的最终目视/交互状态保留为用户手动刷新退出项。
+M3.7 的直属母图、current minimap、per-view viewport/selection、结构 parent focus 和 700px 折叠路径已完成 CTX-01～CTX-10 浏览器验收。M3.8 功能与自动化已完成：Python 3.9/3.12 各 198、Ruff、27/27 verifier、golden current；重生成的 Qwen/GLM 报告分别内嵌 `[L×3 → A] ×16`/`D×3 → M×75`，JavaScript syntax 与 safety flags 通过。自动浏览器因 URL policy 拒绝重载本地 `file://` 页面，因此没有绕过策略；LAY-UI-01～06 的最终目视/交互状态保留为用户手动刷新退出项。M3.9 One-Input CLI、generic C0/opaque GraphView 和 Source/Evidence HTML 已有自动化证据；最终 `file://` 页面的实际展示仍保留为手工退出项，且不声称有浏览器启动页。
 
-仍未完成的还有 M3.8 最终手动浏览器退出、本里程碑外的官方 Model Explorer consumer 真实加载/交互验收、面向 10k 原始 op 图的性能测试，以及 M4 trace timeline。官方 consumer 与超大 raw-op 图继续按 [DR-0003](decisions/DR-0003-model-explorer-bounded-spike.md) 标为 Partial；它们不应与已经通过的 M0–M3.7 自包含离线 DAG 或已经通过自动化的 M3.8 功能混为一谈。
+仍未完成的还有 M3.8 最终手动浏览器退出、M3.9 IMP-08 真实 `file://` 页面手工退出、本里程碑外的官方 Model Explorer consumer 真实加载/交互验收、面向 10k 原始 op 图的性能测试，以及 M4 trace timeline。官方 consumer 与超大 raw-op 图继续按 [DR-0003](decisions/DR-0003-model-explorer-bounded-spike.md) 标为 Partial；它们不应与已经通过的 M0–M3.7 自包含离线 DAG、已经通过自动化的 M3.8/M3.9 功能混为一谈。

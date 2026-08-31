@@ -42,12 +42,14 @@ from .base import (
 
 _DEFINITION_KINDS = {
     "causal_lm": DefinitionKind.MODEL,
+    "generic_model": DefinitionKind.MODEL,
     "multimodal_causal_lm": DefinitionKind.MODEL,
     "vision_tower": DefinitionKind.TOWER,
     "decoder_stack": DefinitionKind.STAGE,
     "decoder_block": DefinitionKind.BLOCK,
     "expert_pool": DefinitionKind.EXPERT_POOL,
     "conditional_head": DefinitionKind.CONDITIONAL,
+    "opaque": DefinitionKind.OPAQUE,
 }
 
 _SEMANTIC_KINDS = {
@@ -59,6 +61,7 @@ _SEMANTIC_KINDS = {
     "expert_pool": SemanticKind.EXPERT_POOL,
     "conditional_mtp": SemanticKind.MTP,
     "vision_tower": SemanticKind.VISION_TOWER,
+    "opaque_architecture": SemanticKind.OPAQUE,
 }
 
 _DTYPE_ALIASES = {
@@ -122,6 +125,25 @@ def _build_config_inventory(result: AdapterResult) -> ConfigInventory:
     config = result.inventory_config
     tensors: List[ConfigTensorSpec] = []
     unknowns: List[ConfigInventoryUnknownSpec] = []
+    if result.adapter_name == "generic-config":
+        return ConfigInventory(
+            unknowns=(
+                ConfigInventoryUnknownSpec(
+                    code="CONFIG_PARAMETER_INVENTORY_OPAQUE",
+                    message=(
+                        "No family adapter matched this config; parameter categories and "
+                        "layouts remain Unknown rather than being inferred from field names"
+                    ),
+                    owner_instance_path="model.architecture",
+                    evidence=(
+                        "source:config",
+                        "coverage:opaque",
+                        "weights_loaded:false",
+                        "unknown-is-not-zero",
+                    ),
+                ),
+            )
+        )
     if not config:
         return ConfigInventory(
             unknowns=(
@@ -908,6 +930,14 @@ def result_to_model_map(result: AdapterResult) -> ModelMap:
         if spec.attributes:
             evidence.append(f"attributes:{canonical_json(dict(spec.attributes))}")
         main_semantic_indices[spec.instance_path] = len(semantic_nodes)
+        raw_confidence = spec.attributes.get("confidence", 1.0)
+        confidence = (
+            float(raw_confidence)
+            if not isinstance(raw_confidence, bool)
+            and isinstance(raw_confidence, (int, float))
+            and 0.0 <= raw_confidence <= 1.0
+            else 1.0
+        )
         semantic_nodes.append(
             SemanticNode(
                 id=semantic_id,
@@ -916,7 +946,7 @@ def result_to_model_map(result: AdapterResult) -> ModelMap:
                 definition_id=definition_ids[instance_spec.definition_key],
                 instance_ids=[instance_ids[spec.instance_path]],
                 child_ids=[state_id] if state_id is not None else [],
-                confidence=1.0,
+                confidence=confidence,
                 evidence=evidence,
             )
         )
@@ -1090,6 +1120,69 @@ def result_to_model_map(result: AdapterResult) -> ModelMap:
                 subject_id=subject_id,
                 message=unknown.message,
                 evidence=list(unknown.evidence),
+            )
+        )
+
+    if result.adapter_name == "generic-config":
+        fallback_reason = str(result.metadata.get("fallback_reason", "no_registered_adapter"))
+        rejected_adapter = result.metadata.get("rejected_adapter")
+        adapter_failure = result.metadata.get("adapter_failure")
+        if rejected_adapter:
+            code = "CONFIG_ADAPTER_FALLBACK"
+            message = (
+                f"Adapter {rejected_adapter!r} could not safely interpret this config; "
+                "a generic opaque skeleton was emitted instead."
+            )
+        else:
+            code = "CONFIG_ADAPTER_UNAVAILABLE"
+            message = (
+                "No registered family adapter matches this config; a generic opaque "
+                "skeleton was emitted instead."
+            )
+        fallback_evidence = [
+            f"fallback_reason:{fallback_reason}",
+            f"model_type:{result.metadata.get('missing_adapter_for_model_type', '<missing>')}",
+            "coverage:config-only-partial",
+            "operator_decomposition:unavailable",
+        ]
+        if rejected_adapter:
+            fallback_evidence.append(f"rejected_adapter:{rejected_adapter}")
+        if adapter_failure:
+            fallback_evidence.append(f"adapter_failure:{adapter_failure}")
+        diagnostics.extend(
+            (
+                Diagnostic(
+                    id=_artifact_id(
+                        result,
+                        f"diagnostic/generic/{code}",
+                        "config-first-generic-diagnostic",
+                    ),
+                    severity=DiagnosticSeverity.WARNING,
+                    code=code,
+                    subject_id=model_id,
+                    message=message,
+                    evidence=fallback_evidence,
+                ),
+                Diagnostic(
+                    id=_artifact_id(
+                        result,
+                        "diagnostic/generic/ARCHITECTURE_INTERNALS_OPAQUE",
+                        "config-first-generic-diagnostic",
+                    ),
+                    severity=DiagnosticSeverity.WARNING,
+                    code="ARCHITECTURE_INTERNALS_OPAQUE",
+                    subject_id=instance_ids["model.architecture"],
+                    message=(
+                        "Attention, FFN, state, operator, and cost internals are Unknown; "
+                        "the visible L0 path is a conservative navigation skeleton only."
+                    ),
+                    evidence=[
+                        "source:config",
+                        "coverage:opaque",
+                        "runtime_structure:not_observed",
+                        "unknown-is-not-zero",
+                    ],
+                ),
             )
         )
 

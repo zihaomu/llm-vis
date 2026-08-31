@@ -15,7 +15,12 @@ CAPTURE_GOLDEN = Path(__file__).parents[1] / "golden" / "capture" / "qwen_repres
 def _model(name: str):
     config_path = FIXTURE_DIR / f"{name}.json"
     provenance = json.loads((FIXTURE_DIR / f"{name}.provenance.json").read_text(encoding="utf-8"))
-    return inspect_model(str(config_path), revision=provenance["revision"])
+    revision = (
+        provenance["revision"]
+        if provenance["kind"] == "huggingface_config_subset"
+        else None
+    )
+    return inspect_model(str(config_path), revision=revision)
 
 
 def test_tiny_capture_merges_two_representatives_into_valid_ir() -> None:

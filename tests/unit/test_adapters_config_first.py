@@ -38,8 +38,7 @@ def test_default_registry_selects_top_level_and_nested_model_types() -> None:
     assert DEFAULT_REGISTRY.resolve(qwen).name == "qwen3-5"
     assert DEFAULT_REGISTRY.resolve(qwen["text_config"]).name == "qwen3-5"
 
-    with pytest.raises(AdapterConfigError, match="No config-first adapter"):
-        DEFAULT_REGISTRY.resolve({"model_type": "unknown_model"})
+    assert DEFAULT_REGISTRY.resolve({"model_type": "unknown_model"}).name == "generic-config"
 
 
 def test_tiny_dense_uses_one_definition_for_all_layer_instances() -> None:

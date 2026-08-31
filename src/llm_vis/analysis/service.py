@@ -132,7 +132,11 @@ class AnalysisBundle:
         """Return a deterministic manifest; wall-clock timestamps are excluded."""
 
         has_capture = bool(self.model_map.logical_ops)
-        capability_level = "C2" if has_capture else "C1"
+        generic_fallback = self.adapter_result.adapter_name == "generic-config"
+        if generic_fallback:
+            capability_level = "C0"
+        else:
+            capability_level = "C2" if has_capture else "C1"
         graph_view = self.graph_view
         graph_nodes = sum(len(view.nodes) for view in graph_view.views)
         graph_edges = sum(len(view.edges) for view in graph_view.views)
@@ -147,10 +151,13 @@ class AnalysisBundle:
                 "level": capability_level,
                 "config_resolved": True,
                 "macro_structure": True,
+                "macro_structure_coverage": "partial" if generic_fallback else "adapter-backed",
+                "family_adapter_available": not generic_fallback,
+                "architecture_internals": "opaque" if generic_fallback else "adapter-backed",
                 "representative_block_captured": has_capture,
                 "cost_analyzed": self.cost_analysis is not None,
                 "interactive_semantic_dag": True,
-                "semantic_zoom_levels": ["L0", "L1"],
+                "semantic_zoom_levels": ["L0"] if generic_fallback else ["L0", "L1"],
                 "recursive_operator_decomposition": has_recursive_operator_decomposition,
                 "roofline_lower_bounds": bool(self.roofline_summaries),
                 "runtime_trace_mapped": False,
@@ -174,7 +181,13 @@ class AnalysisBundle:
                 "schema_version": self.model_map.schema_version,
             },
             "source": {
+                "identifier": self.resolved.identifier,
                 "uri": self.resolved.source_uri,
+                "input_kind": self.resolved.metadata.get("input_kind", "unknown"),
+                "requested_revision": self.resolved.metadata.get("requested_revision"),
+                "resolved_revision": self.resolved.revision,
+                "config_sha256": self.resolved.sha256,
+                "reads_config_json_only": True,
                 "cache_hit": self.resolved.cache_hit,
                 "is_remote": self.resolved.is_remote,
                 "license": self.resolved.license,
@@ -252,6 +265,7 @@ def _with_provenance(
     model_map: ModelMap,
     resolved: ResolvedConfig,
     scenarios: Sequence[Scenario],
+    adapter_result: AdapterResult,
 ) -> ModelMap:
     original_source = model_map.source_artifacts[0]
     if resolved.is_remote:
@@ -284,6 +298,22 @@ def _with_provenance(
             evidence=["weights_loaded=false", "full_forward_executed=false"],
         )
     )
+    if adapter_result.adapter_name == "generic-config" and scenarios:
+        diagnostics.append(
+            _diagnostic(
+                "THEORETICAL_COST_UNAVAILABLE_FOR_GENERIC_CONFIG",
+                "Scenarios were retained, but no theoretical cost was generated because "
+                "the architecture and operators remain opaque.",
+                subject_id=model_map.model.id,
+                severity=DiagnosticSeverity.WARNING,
+                evidence=[
+                    "family_adapter_available=false",
+                    "operator_decomposition_available=false",
+                    "cost_metrics=unknown",
+                    "unknown-is-not-zero",
+                ],
+            )
+        )
     declarations = _remote_code_declarations(resolved.config)
     if declarations:
         diagnostics.append(
@@ -482,8 +512,21 @@ def inspect_model(
         model_id=resolved.identifier,
         revision=resolved.revision,
     )
-    model_map = _with_provenance(adapter_result.to_model_map(), resolved, scenarios)
+    model_map = _with_provenance(
+        adapter_result.to_model_map(),
+        resolved,
+        scenarios,
+        adapter_result,
+    )
     if not scenarios:
+        return AnalysisBundle(
+            resolved=resolved,
+            adapter_result=adapter_result,
+            model_map=model_map,
+            hardware_profile=hardware_profile,
+        )
+
+    if adapter_result.adapter_name == "generic-config":
         return AnalysisBundle(
             resolved=resolved,
             adapter_result=adapter_result,

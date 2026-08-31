@@ -6,6 +6,7 @@ from typing import Any, Mapping
 
 from .base import (
     AdapterConfigError,
+    AdapterEvidenceError,
     AdapterResult,
     ConfigFirstAdapter,
     DefinitionSpec,
@@ -13,6 +14,7 @@ from .base import (
     LayerStripEntry,
     SemanticNodeSpec,
 )
+from .generic_config import GenericConfigAdapter
 from .glm_moe_dsa import GlmMoeDsaAdapter
 from .qwen3_5 import Qwen35Adapter
 from .registry import AdapterRegistry
@@ -23,7 +25,8 @@ DEFAULT_REGISTRY = AdapterRegistry(
         TinyDenseAdapter(),
         Qwen35Adapter(),
         GlmMoeDsaAdapter(),
-    )
+    ),
+    fallback=GenericConfigAdapter(),
 )
 
 
@@ -58,11 +61,13 @@ def build_model_map_from_config(
 
 __all__ = [
     "AdapterConfigError",
+    "AdapterEvidenceError",
     "AdapterRegistry",
     "AdapterResult",
     "ConfigFirstAdapter",
     "DEFAULT_REGISTRY",
     "DefinitionSpec",
+    "GenericConfigAdapter",
     "GlmMoeDsaAdapter",
     "InstanceSpec",
     "LayerStripEntry",

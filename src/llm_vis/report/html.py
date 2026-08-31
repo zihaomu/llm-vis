@@ -1,4 +1,4 @@
-"""Dependency-free offline HTML report for M0-M3.8 analysis artifacts."""
+"""Dependency-free offline HTML report for M0-M3.9 analysis artifacts."""
 
 from __future__ import annotations
 
@@ -318,6 +318,9 @@ def render_html(
     revision_short = html.escape(
         model_revision if model_revision == "Unknown" else model_revision[:8]
     )
+    config_sha256 = str(bundle.resolved.sha256)
+    config_hash_title = html.escape(config_sha256)
+    config_hash_short = html.escape(config_sha256[:8])
     template = """<!doctype html>
 <html lang="en">
 <head>
@@ -362,6 +365,8 @@ section { min-width:0; background:var(--panel); border:1px solid var(--line); bo
 .dag-panel #model-dag .llm-dag-search { display:none; }
 .dag-panel .llm-dag-stage { height:clamp(460px,calc(100vh - 230px),820px); }
 .dag-help { color:var(--muted); font-size:11px; margin:5px 0 0; }
+.dag-evidence { display:flex; align-items:center; flex-wrap:wrap; gap:6px; margin:7px 0 0; color:var(--muted); font-size:10px; }
+.dag-evidence .badge { padding:3px 7px; }
 .workspace-action { min-height:32px; }
 .workspace-actions { flex-wrap:wrap; justify-content:flex-end; }
 .heat-control { display:flex; align-items:center; gap:6px; color:var(--muted); font-size:11px; white-space:nowrap; }
@@ -505,13 +510,13 @@ __DAG_ASSETS__
   <div class="primary-controls">
     <label class="compact-control"><span>Scenario</span><select id="scenario-select" aria-label="Scenario"></select></label>
     <label class="compact-control"><span>Find graph or structure</span><input class="global-search" id="search" type="search" placeholder="Search graph, layer or ID" aria-label="Find graph or structure"></label>
-    <details class="status-menu"><summary>Report status</summary><div class="status-popover"><div class="badges"><span class="badge" id="capability-badge"></span><span class="badge" id="coverage-badge"></span><span class="badge safe">config-only · zero weights · zero full forward</span><span class="badge warn">runtime trace: not imported</span></div></div></details>
+    <details class="status-menu"><summary>Report status</summary><div class="status-popover"><div class="badges"><span class="badge" id="capability-badge"></span><span class="badge" id="coverage-badge"></span><span class="badge safe">target config.json only · zero target weights · zero target forward</span><span class="badge warn">runtime trace: not imported</span></div></div></details>
   </div>
 </header>
 <main>
   <section class="dag-panel" aria-labelledby="graph-heading">
     <div class="workspace-heading">
-      <div><div class="workspace-title"><h2 id="graph-heading">Model graph</h2><span class="level-pill">Recursive DAG</span></div><p class="dag-help">Nodes marked “N ops ›” expand in this canvas; Collapse returns to the parent. Select any item for Inspector.</p></div>
+      <div><div class="workspace-title"><h2 id="graph-heading">Model graph</h2><span class="level-pill">Recursive DAG</span></div><p class="dag-help">Nodes marked “N ops ›” expand in this canvas; Collapse returns to the parent. Select any item for Inspector.</p><p class="dag-evidence"><span class="badge safe">Target input: config.json only</span><span class="badge" id="source-evidence-badge"></span><span class="badge" title="Config SHA-256 __CONFIG_HASH_TITLE__">config __CONFIG_HASH_SHORT__</span><span class="badge" id="graph-evidence-badge"></span><span>no target weights · no model code · no full forward</span></p></div>
       <div class="workspace-actions" aria-label="Workspace panels">
         <label class="heat-control"><span>Theory heat</span><select id="heatmap-mode" aria-label="Theoretical bottleneck heatmap"><option value="pressure">Pressure</option><option value="compute">Compute</option><option value="memory">Memory</option><option value="off">Off</option></select></label>
         <button class="workspace-action" type="button" data-drawer-target="navigator-drawer" aria-controls="navigator-drawer" aria-expanded="false">Browse</button>
@@ -622,6 +627,11 @@ function buttonItem(label,detail,value,className='item'){
 byId('capability-badge').textContent=`${manifest.capability.level} · ${manifest.capability.cost_analyzed?'cost':'structure'}`;
 const captureMode=manifest.captures.length?'bounded Tiny capture':'config only';
 byId('capability-badge').title=`${captureMode}; full model not executed`;
+const sourceSupport=manifest.capability.family_adapter_available?'Known adapter':'Unsupported · opaque';
+const requestedRevision=manifest.source.requested_revision,resolvedRevision=manifest.source.resolved_revision||manifest.model.revision;
+const revisionFlow=requestedRevision&&requestedRevision!==resolvedRevision?` · ${requestedRevision}→${String(resolvedRevision).slice(0,8)}`:'';
+byId('source-evidence-badge').textContent=`${sourceSupport} · ${manifest.adapter.name}${revisionFlow}`;
+byId('source-evidence-badge').title=`Input ${manifest.source.input_kind}; requested revision ${requestedRevision||'not declared'}; resolved revision ${resolvedRevision||'Unknown'}; config SHA-256 ${manifest.source.config_sha256}`;
 
 function uniqueById(items){const seen=new Set();return items.filter(item=>{if(!item)return false;const key=item.id||item.capture_id||JSON.stringify(item);if(seen.has(key))return false;seen.add(key);return true;});}
 function metricsFor(ids){const selected=new Set(ids);return map.metrics.filter(item=>selected.has(item.subject_id));}
@@ -959,6 +969,14 @@ function renderCoverageBadge(scenario){
   if(scope){const total=scope.included_instance_count+scope.excluded_instance_count;badge.textContent=`structure ${scope.included_instance_count}/${total} · ${pct(scope.structural_coverage)} | cost ${known}/${metrics.length} known`;badge.title=`Structural instance scope; cost metric availability is separate. Mean metric coverage: ${pct(average)}. ${scope.coverage_basis}.`;}
   else{badge.textContent=`cost ${known}/${metrics.length} known`;badge.title=`No aggregate structural scope; mean metric coverage: ${pct(average)}.`;}
 }
+function renderGraphEvidence(view){
+  const badge=byId('graph-evidence-badge'),nodes=view?.nodes||[],total=nodes.length;
+  const opaque=nodes.filter(node=>node.opaque).length;
+  const evidenced=nodes.filter(node=>!node.opaque&&Number(node.coverage||0)>0).length;
+  const partial=nodes.filter(node=>!node.opaque&&Number(node.coverage||0)>0&&Number(node.coverage||0)<1).length;
+  badge.textContent=`Current view evidence ${evidenced}/${total}${opaque?` · ${opaque} opaque`:''}${partial?` · ${partial} partial`:''}`;
+  badge.title='Evidence coverage for nodes in the currently visible DAG view; opaque and partial regions are never filled by inference.';
+}
 function renderScenario(){const id=byId('scenario-select').value,scenario=map.scenarios.find(item=>item.id===id);renderScenarioCard(scenario);renderCosts(scenario);renderHotspots(scenario);renderRoofline(scenario);renderDiff(scenario);renderRuntime(scenario);renderCoverageBadge(scenario);renderHeatmap(scenario);if(lastGraphDetail)setInspector(graphSelectionContext(lastGraphDetail),{reveal:false});}
 function setupScenarios(){const select=byId('scenario-select');clear(select);if(!map.scenarios.length){const option=document.createElement('option');option.textContent='No workload';option.value='';select.append(option);select.disabled=true;}else for(const scenario of map.scenarios){const option=document.createElement('option');option.value=scenario.id;option.textContent=`${scenario.phase} · B${scenario.batch} T${scenario.new_tokens} L${scenario.past_tokens} · ${scenario.weight_format}`;select.append(option);}select.onchange=renderScenario;renderScenario();}
 byId('heatmap-mode').onchange=()=>{renderHeatmap();if(lastGraphDetail)setInspector(graphSelectionContext(lastGraphDetail),{reveal:false});};
@@ -966,12 +984,13 @@ byId('model-dag').addEventListener('llm-vis:dag-view-change',event=>{
   const view=event.detail.view,saved=graphDetailByView.get(view.id)||null;
   lastGraphDetail=saved;
   setInspector(saved?graphSelectionContext(saved):emptyInspectorSelection,{reveal:false});
+  renderGraphEvidence(view);
   renderHeatmap(currentScenario(),view);
 });
 byId('search').addEventListener('input',event=>{const query=event.target.value;renderDefinitions(query);renderSemantics(query);renderLogical(query);window.LLMVisDAG?.search('model-dag',query);});
 document.querySelectorAll('.inspector-tab').forEach(button=>{button.onclick=()=>{inspectorTab=button.dataset.inspectorTab;renderInspector();};button.onkeydown=event=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;event.preventDefault();const tabs=[...document.querySelectorAll('.inspector-tab')],index=tabs.indexOf(button),next=event.key==='Home'?0:event.key==='End'?tabs.length-1:(index+(event.key==='ArrowRight'?1:-1)+tabs.length)%tabs.length;tabs[next].click();tabs[next].focus();};});
 document.querySelectorAll('.capture-card').forEach((element,index)=>{element.onclick=()=>inspect(captureContext(data.captures[index]));});
-renderDefinitions();renderSemantics();renderLogical();renderDiagnostics();renderLayerSummary();setupScenarios();renderInspector();
+renderDefinitions();renderSemantics();renderLogical();renderDiagnostics();renderLayerSummary();renderGraphEvidence(graphView.views[0]);setupScenarios();renderInspector();
 </script>
 </body>
 </html>
@@ -981,6 +1000,8 @@ renderDefinitions();renderSemantics();renderLogical();renderDiagnostics();render
         .replace("__SOURCE_TITLE__", source_title)
         .replace("__REVISION_TITLE__", revision_title)
         .replace("__REVISION_SHORT__", revision_short)
+        .replace("__CONFIG_HASH_TITLE__", config_hash_title)
+        .replace("__CONFIG_HASH_SHORT__", config_hash_short)
         .replace("__DAG_ASSETS__", render_dag_canvas_assets())
         .replace("__DAG_CANVAS__", dag_canvas)
         .replace("__CAPTURES__", _capture_summary(bundle))

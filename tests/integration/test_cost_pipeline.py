@@ -23,9 +23,14 @@ def _inspect(
     provenance = json.loads(
         (FIXTURE_DIR / f"{fixture}.provenance.json").read_text(encoding="utf-8")
     )
+    revision = (
+        provenance["revision"]
+        if provenance["kind"] == "huggingface_config_subset"
+        else None
+    )
     return inspect_model(
         str(FIXTURE_DIR / f"{fixture}.json"),
-        revision=provenance["revision"],
+        revision=revision,
         scenarios=[scenario],
         hardware_profile=hardware_profile,
     )

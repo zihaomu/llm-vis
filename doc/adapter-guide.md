@@ -1,6 +1,6 @@
 # LLM-Vis Adapter 指南
 
-状态：M0–M3.6 已实现事实层与递归投影接入契约；M5 扩展项显式标注
+状态：M0–M3.6 已实现事实层与递归投影接入契约；M3.9 One-Input Model Import 功能与自动化已完成，`file://` 真实页面待手工验收；M5 扩展项显式标注
 日期：2026-08-29
 
 Adapter 将外部模型事实转换成 [Model Map IR v0.1](model-map-ir.md)。它负责声明自己知道什么、证据来自哪里和哪些区域仍未知；它不负责替用户执行不可信代码，也不能把 config 推导伪装成真实 forward 图。
@@ -30,6 +30,8 @@ M1 的共同出口是离线可验证的静态 artifact。M0–M3.6 全程默认�
 
 详细策略见 [DR-0002](decisions/DR-0002-remote-code-disabled-in-mvp.md)。MVP 接口中不得提供能绕过该策略的 `trust_remote_code=True` 路径。普通子进程不是安全边界。
 
+M3.9 不改变这张信任表：“可读”仍只表示将 config 当作不可信纯数据解析，不表示会执行 config 中声明的 class、`auto_map` 或模型代码。
+
 ## 3. 解析流程
 
 Adapter runner 按以下顺序工作：
@@ -42,6 +44,33 @@ Adapter runner 按以下顺序工作：
 6. M2 只构造项目自有 Tiny 语义代表 Block，并使用 FakeTensor/meta；完整 meta tree 默认禁用；
 7. 折叠重复层、保留例外实例和 provenance；
 8. 校验 IR，写入 manifest、SourceArtifact、diagnostics 和离线报告。
+
+### 3.1 M3.9 One-Input 规范化契约
+
+> 实施状态：**功能与自动化完成，IMP-08 真实 `file://` 页面待手工验收**。Resolver 和 `llm-vis view` 已接受 Hugging Face Model ID（单段 `model` 或 `owner/model`）、HF 模型页 URL、HF config URL、本地 config 文件/目录以及 JSON 文本/stdin；本里程碑不包含浏览器启动页或文件选择器。
+
+Input normalizer 统一接受五类用户输入：
+
+| Input kind | 示例 | 规范化结果 |
+|---|---|---|
+| HF Model ID | `gpt2` 或 `Qwen/Qwen3.8-27B` | 单段或 namespaced repo ID + requested revision，再固定 commit/config |
+| HF 模型页 URL | `https://huggingface.co/gpt2` 或 `https://huggingface.co/Qwen/Qwen3.8-27B` | 提取单段或 namespaced repo ID/revision，不解析 HTML 作 config |
+| HF config URL | `/blob/<rev>/config.json` 或 `/resolve/<rev>/config.json` | 规范化 repo/revision/path，固定 commit 后再读 JSON |
+| 本地 config | `./config.json` 或包含它的目录 | 本地 JSON object + canonical hash；报告默认脱敏源绝对路径 |
+| JSON 文本 | CLI 参数中的 JSON object 或 stdin `-` | JSON object + canonical hash + `sha256:<digest>` 内容身份 |
+
+所有形式都产生统一 `ResolvedConfig` 语义，但不把来源差异抹掉：manifest 保留 input kind、repo/identifier、requested/resolved revision、source URI、canonical JSON SHA-256、cache/network/license 证据。远程 branch/tag/`main` 在取 config 前固定为 Hugging Face immutable commit；本地/inline JSON 默认使用 `sha256:<digest>` 内容身份，不冒充 HF commit。嵌入 revision 只有严格 40–64 位十六进制 commit 才接受；显式 revision 只可使用 immutable commit 或完全匹配内容的 `sha256:<digest>`。路径、token-like 字符串和其他 `_commit_hash` 不进入 artifact，非法显式值也不会在错误中回显。
+
+远程输入只接受精确 `https://huggingface.co` host 与可规范化的 model/config 路径，不实现任意 URL fetcher。解析器对远程、本地与 inline JSON 统一限制为 2 MiB、嵌套深度 64 和 100,000 个 container items，并执行超时、redirect/final-host 校验。Malformed JSON、非 object 顶层、HTML 伪 JSON 和超限输入被拒绝；语法有效的 JSON object 会进入 adapter/fallback 判定，不因缺少已知 `model_type` 而被拒绝。HF token/请求头不得进入 manifest、log 或报告；私有/gated 仓库在未支持认证时返回 `HF_AUTH_REQUIRED`，提示用户提供已自行下载的本地 `config.json`。
+
+规范化后按证据分流：
+
+1. **Known adapter**：registry 只按可消费的顶层 `model_type` 命中并生成当前同一 Model Map 与 L0→L1→operator GraphView；显式非法字段报错，不得被 generic fallback 吞掉，未知 wrapper 不能只凭 nested type 路由；输入形式不得改变稳定身份、shape、state 或 opaque 边界；
+2. **Partial**：只编译 adapter/config 能证明的区域，其余保持 opaque/Unknown，报告显示范围和 coverage；
+3. **Unsupported (C0)**：未注册 `model_type` 或有效 JSON object 仍生成可读证据报告，保留 config inventory/source/hash/Diagnostic 并给出 adapter remediation，不伪造内部 DAG 或成本。如果 JSON 缺乏任何可识别的文本模型证据，GraphView 只有一个 coverage 0 的 opaque architecture 节点；若存在 config 可证明的通用维度/causal-LM 声明，可显示保守的 unverified skeleton，内部仍 opaque；
+4. **Invalid input**：只有 malformed JSON、顶层非 object、超出安全限额或不受信的 URL/redirect 返回可操作错误。字段很少但语法有效的 JSON object 不被伪装成 C1，也不被粗暴拒绝。
+
+M3.9 默认路径仅调用 config-first `inspect`，不隐式触发 `capture`、下载/读取权重、remote code、目标/完整模型构造、target/full forward、compile 或 profiler。One-Input 是可用性与 provenance 增强，不是新 adapter 证据源。
 
 当前 registry 直接按 `model_type` 选择已知 config adapter，并把 `architectures`/`auto_map` 保留为 metadata/安全证据；不会导入或实例化入口 class。以下优先级仅是 M5 通用 adapter 的候选设计，不是 M0–M3.6 已实现行为：
 
@@ -239,5 +268,14 @@ M4 adapter 只读取用户在外部受控环境生成的 PyTorch Profiler、rocp
 - M4 runtime importer 实现后补充“不启动模型/profiler”的测试；
 - Unknown 不聚合为 0 的测试；
 - 输出 IR 的 schema validation。
+
+M3.9 输入层另需要：
+
+- 五类 input kind 的等价 config/hash 正测，以及 model-page/blob/resolve/revision 规范化测试；
+- branch/tag/`main` 固定 immutable commit 和 requested/resolved provenance 测试；
+- 未知 `model_type`、缺失必需字段、非模型 JSON 与 known adapter 构建失败的分类降级测试；
+- 非 HF URL、redirect/final-host 偏离、HTML、超过 2 MiB、深度 64、超时和超项数输入的拒绝测试；
+- Qwen/GLM 不同 input kind 生成同一核心 Model Map/GraphView 身份与零权重/代码/forward 回归；
+- 默认唯一临时 output/auto-open、`--no-open`、打开失败保留 artifact、路径/token 脱敏与 Source/Evidence status 页面测试。当前页面测试是静态/生成报告自动化，真实 `file://` 打开仍是手工退出项。
 
 新增 adapter 不得通过修改核心 IR 含义来“适配”单一模型。确有通用字段缺口时，先提出 schema migration 和 Decision Record，再更新 adapter。

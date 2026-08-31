@@ -9,7 +9,7 @@
 ## 实施状态（实时维护）
 
 > 最后更新：2026-08-31
-> 当前阶段：**M0–M3.7 已完成；M3.8 Decoder Pattern Summary 实施中；M4a 因 AMD reference stack 未冻结而保持 Blocked**
+> 当前阶段：**M0–M3.7 已完成；M3.8 Decoder Pattern Summary 与 M3.9 One-Input Model Import 的功能/自动化已完成、`file://` 真实页面待手工退出；M4a 因 AMD reference stack 未冻结而保持 Blocked**
 > 状态规则：只有对应机器退出清单全部通过后才标记为完成；代码存在但尚未验收时保持“实施中”。
 
 | 里程碑 | 状态 | 当前证据 | 下一退出检查 |
@@ -22,12 +22,13 @@
 | M3.6 | **完成** | DR-0011、semantic primitive ontology v1、跨 view boundary binding、cost reconciliation、visible frontier；Qwen 4 个、GLM 3 个 operator views；OP-01～OP-10 自动化与真实浏览器验收通过 | 27/27 机器退出项、Python 3.9/3.12 各 192 项、Qwen/GLM 页面 console 0 warning/error；继续保持零目标模型执行 |
 | M3.7 | **完成** | 每个非 root GraphView 已有稳定 `parent_node_id`；左下直属母图、源节点高亮、单层 parent + breadcrumb、per-view viewport/selection 恢复、结构父节点 focus 与 `≤720px` 折叠路径已完成 | Python 3.9/3.12 isolated 全套各 197 passed、Ruff、27/27 verifier；Qwen/GLM acceptance 报告已重生成并通过 JavaScript syntax/safety 检查，UI agent 完成三层、700px 与浏览器交互验收 |
 | M3.8 | **实施中（功能与自动化完成）** | 完整 `layerStrip` 派生可见重复摘要与文字图例；Qwen/GLM/Tiny 定向、tail/anomaly 防伪、惰性精确层契约已实现；Python 3.9/3.12 各 198、Ruff、27/27 verifier、Qwen/GLM HTML JavaScript/safety 通过 | 自动浏览器因本地 `file://` URL policy 无法重载；用户手动刷新现有 Qwen/GLM 标签页完成 LAY UI 退出后标为完成 |
+| M3.9 | **功能与自动化完成，页面手工退出待确认** | `llm-vis view` 五类语义输入、HF immutable commit/本地 SHA-256 身份、known DAG、generic C0/opaque、2 MiB/64 层/项数安全限额、默认唯一临时 artifact + 打开和 HTML Source/Evidence status 已交付 | IMP-01～07、09～10 自动化 PASS；IMP-08 静态/报告自动化 PASS，待手工打开真实 `file://` 页面后标记里程碑完成 |
 
 ### 已冻结的执行边界
 
-- M0–M3.8 默认 **零权重、零完整模型 `forward()`**，任何结构分析、导航或展示增强都不得依赖完整模型推理；
+- M0–M3.9 默认 **零权重、零完整模型 `forward()`**，任何结构分析、导航、输入便利性或展示增强都不得依赖完整模型推理；
 - 已知架构由 config adapter 直接生成惰性 Definition/Instance、代表模板和虚拟 Expert Pool；
-- 完整 meta module tree 在 M0–M3.8 禁用且没有 CLI opt-in；仅对项目自有 Tiny 语义代表 Block 使用 meta/FakeTensor；
+- 完整 meta module tree 在 M0–M3.9 禁用且没有 CLI opt-in；仅对项目自有 Tiny 语义代表 Block 使用 meta/FakeTensor；
 - `torch.export` 只允许捕获 Tiny fixture 或缩小后的代表性 Block，不得因捕获失败退回完整模型执行；失败区域必须成为 opaque node 与 Diagnostic；
 - M4 Runtime 的核心工作流固定为导入外部目标环境产生的 trace，LLM-Vis 核心程序不负责启动完整模型；
 - 没有 trace 时，Runtime latency、Kernel、HBM counter 等指标保持 `Unknown`，不得从静态结构伪造；
@@ -62,6 +63,8 @@
 | 2026-08-30 | 完成 M3.7 Parent Context Navigation 与 CTX-01～CTX-10 | GraphView/schema/golden 补齐 `parent_node_id`；桌面左下直属母图与右下 current minimap 分工完成，返回恢复 viewport/selection 并聚焦结构父节点，`≤720px` 默认折叠；Python 3.9/3.12 isolated 全套各 197 passed、Ruff、27/27 verifier 通过，Qwen/GLM acceptance 报告重生成且 JavaScript syntax/safety flags 通过，UI agent 完成三层/700px/浏览器交互 |
 | 2026-08-30 | 正式启动 M3.8 Decoder Pattern Summary & Exact Layer Disclosure | 默认层栏只显示从完整 `layerStrip` 无损派生的重复/阶段摘要、文字图例与“非循环/非权重共享”说明；64/78 个精确层位置首次展开时才生成，逐层 L1 导航与 Inspector 身份保持不变；不修改 GraphView/schema/IR，不运行目标模型 |
 | 2026-08-31 | 完成 M3.8 功能、自动化与 Qwen/GLM 报告重生成 | Python 3.9/3.12 全套各 198 passed，Ruff、27/27 verifier、golden current；Qwen/GLM 内嵌 pattern 分别为 `[L×3 → A] ×16`/`D×3 → M×75`，两页 JavaScript syntax 与 safety flags 通过。自动浏览器拒绝重载本地 `file://` URL，未绕过策略，最终 LAY UI 交互保留为手动刷新退出项 |
+| 2026-08-31 | 冻结 M3.9 One-Input 实施契约（历史记录） | 在实施前冻结五类 Hugging Face/本地/JSON 输入形式、immutable revision + canonical JSON hash、known rich DAG 与 unknown C0/opaque 降级、HF host/大小/深度限额、默认 artifact 与自动打开报告、页面证据状态及 IMP-01～IMP-10；当前完成状态见下一行 |
+| 2026-08-31 | 完成 M3.9 One-Input 功能与自动化 | 交付 `llm-vis view`、Model ID/HF 模型页/HF config URL/本地 config/JSON 文本与 stdin、HF revision 固定、内容 hash 身份、generic C0/opaque GraphView、2 MiB/64 层/100,000 项限额、默认临时 artifact/auto-open 和 Source/Evidence HTML；IMP-01～07、09～10 自动化通过，IMP-08 静态/报告自动化通过、真实 `file://` 页面待手工退出 |
 
 ## 0. 执行摘要
 
@@ -93,7 +96,7 @@ LogicalOp / Tensor / Lowering + 公式成本
 首版明确采用以下策略：
 
 - 不依赖 GGUF，也不要求下载大模型权重；
-- M0–M3 以 Hugging Face Model ID、本地 `config.json` 或包含它的 Transformers 目录作为入口；本地 Python import adapter 延后 M5；
+- M0–M3.8 以 Hugging Face Model ID、本地 `config.json` 或包含它的 Transformers 目录作为入口；M3.9 已将 Model ID（`model`/`owner/model`）、HF 模型页 URL、HF `config.json` URL、本地 config 与 JSON 文本/stdin 统一为 One-Input 入口；本地 Python import adapter 延后 M5；
 - 已知架构由 config adapter 直接生成惰性的完整宏观骨架；meta/FakeTensor 只构造项目自有 Tiny 语义代表块，不构造目标模型模块；
 - 用“模板定义 + 层实例”压缩重复层；
 - 只捕获项目自有 Tiny 语义代表 Block，并通过 Lowering 关联到目标配置中的代表实例；不捕获或执行 27B/700B 目标模型 Block；
@@ -102,6 +105,8 @@ LogicalOp / Tensor / Lowering + 公式成本
 - M0–M3.8 交互验收使用自包含离线 HTML；同时输出有节点上限的 Model Explorer-compatible JSON，官方 consumer 仍按 DR-0003 保持 Partial。
 
 ## 1. 项目定位
+
+> 产品定位、目标用户、品牌文案与功能取舍的当前权威版本见[项目定位文档](project-positioning.md)；本节保留实现规划所需的技术摘要。
 
 ### 1.1 一句话定位
 
@@ -391,7 +396,7 @@ Rec. State █  █  █     █  █  █
 
 ```mermaid
 flowchart LR
-    A[HF Model ID / Local config] --> B[Model Resolver]
+    A[One Input: HF ID / HF URL / Local or Raw config JSON] --> B[Input Normalizer + Model Resolver]
     B --> C[Config + Source Resolver]
     C --> D[Config-first Adapter]
     D --> E[Static Structure Extractor]
@@ -413,10 +418,11 @@ flowchart LR
 
 #### Model Resolver
 
-- 解析 Hugging Face Model ID、revision、本地 `config.json` 或包含它的目录；本地 Python import path adapter 延后 M5；
+- 已有五类 One-Input normalizer，解析 Hugging Face Model ID（单段或 namespaced）、HF 模型页/config URL、revision、本地 `config.json`/目录以及 JSON 文本/stdin；本地 Python import path adapter 仍延后 M5；
 - 读取 `config.json` 的 `model_type`、`architectures`、`auto_map`；
-- 判断代码是否已集成进 Transformers；
-- 固定依赖版本和源代码 revision；
+- 将远程 requested revision 固定为 immutable commit，并记录 canonical JSON hash、input kind、source/cache/network 证据；
+- 未知 adapter 或缺少模型证据的有效 JSON object 进入 C0/opaque 报告；只有 malformed、非 object 或安全超限输入被拒绝，不为追求“一键成功”猜测图；
+- 远程只允许安全规范化的 Hugging Face HTTPS 路径，并对远程/本地/inline JSON 执行 2 MiB、深度 64、100,000 个 container items 与网络超时限额；
 - 生成并记录 remote-code 安全策略；MVP 固定为禁止执行。
 
 #### Config-first Adapter / Tiny Capture Builder
@@ -1561,6 +1567,48 @@ GraphView 导航锚点契约：
 
 明确不在 M3.8 范围内：把 64 层各自投影为独立 GraphView、绘制循环执行图、层间权重共享推断、vision/MTP 层混入 text decoder count、跨 renderer LayerPattern schema、raw-op 大图性能优化，以及任何新的运行时测量。
 
+### M3.9：One-Input Model Import
+
+> 实施状态：**功能与自动化完成，真实 `file://` 页面手工退出待确认（2026-08-31）**。用户只提供一个 Hugging Face 模型/config 标识或一份 config JSON，`llm-vis view` 完成解析、降级判定、artifact 生成和本地报告打开。IMP-01～07、09～10 已有自动化证据；IMP-08 的 HTML 静态/报告自动化已通过，但不代替最终手工打开页面。
+
+One-Input 统一接受五类形式：
+
+1. Hugging Face Model ID，包括单段 `model`（例如 `gpt2`）和 `owner/model`（例如 `Qwen/Qwen3.8-27B`）；
+2. Hugging Face 模型页 URL，包括 `https://huggingface.co/gpt2` 与 `https://huggingface.co/Qwen/Qwen3.8-27B`；
+3. Hugging Face `config.json` URL，包括可规范化的 `/blob/<rev>/config.json` 与 `/resolve/<rev>/config.json`；
+4. 本地 `config.json` 文件或包含它的目录；
+5. 直接作为 CLI 参数传入或通过 stdin `-` 读取的 JSON object 文本。
+
+五类形式都进入同一 input normalizer，不要求新手先理解 `blob`/`resolve`、HF cache 或 adapter 名称。语法有效的 JSON object 只在 adapter/config 证据足够时生成丰富 DAG；证据很少时仍生成 C0/opaque 报告，不凭字段名猜出模型。Malformed JSON、顶层非 object 或安全超限才作为 invalid input 拒绝。当前没有浏览器启动页或文件选择器。
+
+解析、证据与降级契约：
+
+- 远程分支、tag 或 `main` 先解析为 immutable commit，再获取该 commit 的 `config.json`；manifest 同时记录 requested input、repo ID、requested revision、resolved commit、canonical JSON SHA-256、source URI、cache/network 状态与可用许可证据。
+- 本地/inline JSON 记录 canonical JSON SHA-256，默认 revision 是 `sha256:<digest>` 内容身份，不伪造 HF commit。只有严格 40–64 位十六进制 `_commit_hash` 才可作为上游 immutable commit；显式 revision 只接受 immutable commit 或与内容完全一致的 `sha256:<digest>`。其他嵌入值被忽略，路径/token-like 等非法显式 revision 被拒绝且不回显。可分享报告使用脱敏 `local://`/`inline://sha256/` source URI，不泄露本机绝对路径。
+- registry 命中已知 adapter 时，复用当前 Model Map/GraphView 链生成同一 L0→L1→operator DAG；M3.9 不创建第二份简化事实图，也不改变节点稳定身份。
+- 未知 `model_type`、字段不足或只需 remote code 才能解释的架构不终止在空白页。它们输出 C0/unsupported 报告：保留可证明的 config inventory、源、hash 和 Diagnostic，不可证明的模型内部只显示 opaque/Unknown。有效 object 缺乏任何文本模型证据时，L0 只生成一个 coverage 0 的 opaque architecture 节点；存在通用维度/causal-LM 证据时可生成保守 unverified skeleton，仍不声称内部真实性。
+- 远程 JSON 只接受精确 `https://huggingface.co` host 与可规范化的模型/config 路径，不提供任意 URL fetcher。远程响应、本地和 inline JSON 统一限制为 2 MiB、最大嵌套深度 64 和 100,000 个 container items，并执行超时、redirect/final-host 校验；401/403 返回不含凭据的 `HF_AUTH_REQUIRED` 能力错误，超限时返回带 code/hint 的可操作错误，不部分解析后猜测。
+- 默认 One-Input 路径等价于 config-first `inspect`：不下载/读取权重，不导入 Hugging Face remote code，不构造目标/完整模型，不执行 target/full `forward()`、compile 或 profiler。`capture` 仍是显式高级操作，不被 One-Input 默认触发。
+- 用户不指定 `--output` 时，在唯一临时目录中生成 `<model-slug>-<config-hash8>` artifact；成功后默认打开自包含 `report.html`，`--no-open` 可禁用。打开失败不丢失 artifact，CLI 返回完整路径并只产生 warning。
+- 报告顶部 `Source / Evidence status` 必须显示 `Known adapter / Partial / Unsupported (opaque)`、requested/resolved revision、config hash、coverage 和零执行状态；未知降级不能用“成功可视化”文案掩盖。
+
+退出条件：
+
+| ID | 验收条件 | 当前状态 |
+|---|---|---|
+| IMP-01 | 五类语义输入（Model ID：`model`/`owner/model`、HF 模型页 URL、HF config URL、本地 config/目录、JSON 文本/stdin）经同一 normalizer 生成 config 与明确 input kind。 | **PASS**：resolver/CLI 定向测试覆盖五类输入及单段 HF ID/URL |
+| IMP-02 | HF `main`/branch/tag/blob/resolve 最终固定 immutable commit；manifest 的 requested/resolved revision、canonical JSON SHA-256 与 source 可核对，同 commit/config 重复导入的核心 IR/ID 一致；本地/inline 默认使用 `sha256:<digest>`，嵌入 revision 只接受严格 immutable commit，显式 revision 只接受 commit/同内容 hash。 | **PASS**：revision/hash/provenance/跨输入确定性及恶意 `_commit_hash`/显式 token-like revision 负测通过 |
+| IMP-03 | Qwen/GLM 已知 config 进入现有同一 L0→L1→operator DAG，稳定 node/port/edge identity、Tensor shape、state rail 与 opaque 边界不变。 | **PASS**：known adapter、GraphView/golden 与输入身份回归通过 |
+| IMP-04 | 未注册 `model_type` 或已知 adapter 缺少必要证据的有效 JSON object 生成 C0/opaque 报告；显式非法的已知模型字段必须报错而不能被 fallback 吞掉，未知 wrapper 也不能仅凭 nested type 错误路由。缺乏模型证据时只有单个 opaque 节点；不伪造 DAG/成本，Unknown 不补 0。 | **PASS**：generic fallback、known-invalid/nested-routing、single-node C0 与 invalid/limit 负测通过 |
+| IMP-05 | 远程只允许规范化的 Hugging Face HTTPS host/path；2 MiB、深度 64、100,000 个 container items、超时、redirect/final-host 均有正/负测，非 HF URL、HTML 伪 JSON 和超限输入被拒绝。 | **PASS**：本地/inline/远程限额与 URL 安全自动化通过 |
+| IMP-06 | 全过程继续断言零权重下载/读取、零 remote code、零目标/完整模型构造、零 target/full forward/compile/profiler；`auto_map` 只显示 Diagnostic。 | **PASS**：safety/manifest/不导入模型代码回归通过 |
+| IMP-07 | 只给一个输入且不给 `--output` 时在唯一临时目录生成 `<slug>-<hash8>` artifact 并默认打开报告；`--no-open`、打开失败和已存在输出的行为确定且不覆盖无关文件。 | **PASS**：`view`/inspect 默认输出、open/no-open/open-failure 自动化通过 |
+| IMP-08 | 页面主图标题区显示 input/source kind、requested/resolved revision、config hash、adapter/support/coverage 状态与零执行证据；known 直接展示主 DAG，unsupported 显示 opaque 范围。 | **静态/报告自动化 PASS；真实 `file://` 页面手工待验** |
+| IMP-09 | inline/本地 config 与不可信 `_commit_hash` 不泄露本机绝对路径，HF token/请求头不进入 log、manifest 或 HTML；私有/gated 仓库未实现认证时给出明确能力错误。 | **PASS**：脱敏 source URI、全 artifact 秘密负测与 401/403 `HF_AUTH_REQUIRED` 自动化通过 |
+| IMP-10 | M3.9 只改变输入便利性、provenance 和启动流；同一 DAG、visible frontier、parent context、Layer Disclosure、opaque/Unknown 和非实测热图边界全量回归通过。 | **PASS**：Python 3.9/3.12 全量各 **258 passed**，known/generic GraphView 与旧里程碑回归通过 |
+
+明确不在 M3.9 范围内：承诺任意 Hugging Face JSON 都有完整语义 DAG、从 tokenizer/generation config 猜模型、执行 `trust_remote_code`、下载权重、构造完整 meta tree、执行目标模型或在无 trace 时生成实测性能数据。深度披露仍严格由 adapter/config 证据决定。
+
 ### M4a：AMD Runtime 关联（3–4 周）
 
 只针对 M0 冻结的 reference stack：
@@ -1604,7 +1652,7 @@ GraphView 导航锚点契约：
 
 ### 16.1 MVP 边界
 
-当前公开 MVP 是已完成的 M0–M3.7 端到端纵切加已实现、待最终浏览器退出的 M3.8 Layer Disclosure：Tiny Dense + Qwen3.8/GLM-5.3 已知 adapter + `torch.export` 单一 Tiny 捕获后端 + 基础 prefill/decode 成本 + renderer-neutral recursive GraphView、自包含离线 DAG 前端、直属父图上下文导航、自解释 decoder pattern 摘要及 Model Explorer-compatible JSON spike。GLM-5.3 在 MVP 只承担超大 MoE 的 config-level 宏观结构、递归静态 MoE/opaque DSA 语义 DAG、静态父图上下文与可证明静态成本验收，动态捕获延后到 M5。
+当前公开 MVP 是已完成的 M0–M3.7 端到端纵切、已实现但待最终浏览器退出的 M3.8 Layer Disclosure，以及功能/自动化已完成、真实页面待手工退出的 M3.9 One-Input Model Import：Tiny Dense + Qwen3.8/GLM-5.3 已知 adapter + `torch.export` 单一 Tiny 捕获后端 + 基础 prefill/decode 成本 + renderer-neutral recursive GraphView、自包含离线 DAG 前端、直属父图上下文导航、自解释 decoder pattern 摘要及 Model Explorer-compatible JSON spike。M3.9 为这条纵切增加了 CLI 单输入启动流与 generic C0/opaque 降级，不扩大模型事实声明。GLM-5.3 在 MVP 只承担超大 MoE 的 config-level 宏观结构、递归静态 MoE/opaque DSA 语义 DAG、静态父图上下文与可证明静态成本验收，动态捕获延后到 M5。
 
 M4a 是 Infra/AMD 专业能力的第一道分水岭；M4b 才提供硬件 counter 级证据。没有精确 op-to-kernel 关联时，产品是结构与理论成本工具，不能称为完整性能诊断器。
 
@@ -1620,6 +1668,7 @@ M4a 是 Infra/AMD 专业能力的第一道分水岭；M4b 才提供硬件 counte
 | M3.6 | DR-0011；Qwen/GLM recursive GraphView golden；boundary/cost/frontier validator；OP-01～OP-10 自动化与浏览器任务 | **PASS** |
 | M3.7 | `parent_node_id`/primary+alternate child、per-view viewport/selection 与 parent focus 单测；Qwen/GLM CTX-01～CTX-10；桌面/700px 响应式与键盘浏览器验收；零执行 provenance 回归 | **PASS**：Python 3.9/3.12 各 197、Ruff、27/27 verifier、报告 JavaScript/safety 与 UI agent 通过 |
 | M3.8 | 完整 Layer Strip pattern/tail/anomaly 推导、Qwen/GLM/Tiny 摘要与文字图例、报告静态惰性/幂等代码契约及零执行回归；真实 DOM、逐层导航、窄屏和键盘另作浏览器退出 | **Python/静态契约 PASS / 浏览器待确认**：Python 3.9/3.12 各 198、Ruff、27/27 verifier、Qwen/GLM HTML JavaScript/safety 通过；`file://` 自动重载被浏览器 URL policy 拒绝，待用户手动刷新完成 LAY UI 退出 |
+| M3.9 | 五类 One-Input 规范化、HF immutable revision/本地 SHA-256 身份、known DAG/generic C0 降级、HF host/2 MiB JSON 限额、默认临时 artifact/自动打开、Source/Evidence status 与零执行回归 | **功能/自动化 PASS / `file://` 手工待确认**：IMP-01～07、09～10 PASS，IMP-08 静态/报告自动化 PASS；Python 3.9/3.12 各 258 passed |
 | M4a | marker→correlation→dispatch 映射测试；eager/compile 覆盖率按固定分母达标；无重复时间归属 | **Blocked：AMD reference stack 未冻结** |
 | M4b | 固定 Top-20 Kernel counter 导入；replay 路径哈希一致；counter wall time 不进入 latency | Blocked by M4a |
 | M5 | GLM 动态 fixture、第二 backend、cross-revision canonical matching、sandbox/禁用策略测试通过 | 未开始 |
@@ -1638,7 +1687,7 @@ M4a 是 Infra/AMD 专业能力的第一道分水岭；M4b 才提供硬件 counte
 | Tiny MoE synthetic config | 路由、expert pool、active params、动态 trace |
 | Tiny Mamba/SSM fixture | scan/recurrent state、非 KV 状态 |
 
-测试不会在 CI 下载或读取 27B/1.5TB 权重。固定 config/revision 与完全位于 meta/FakeTensor 上的项目自有 Tiny 语义代表块即可完成 M0–M3.8 结构、捕获、公式、GraphView、父图导航与 layer pattern 披露测试；M3.7/M3.8 只复用这些已生成 artifact 做导航、展示与浏览器验收，同样不需要权重或目标模型 forward。当前没有真实性能结论，未来只有外部 AMD trace/counter artifact 才能提供实测证据。
+测试不会在 CI 下载或读取 27B/1.5TB 权重。固定 config/revision 与完全位于 meta/FakeTensor 上的项目自有 Tiny 语义代表块即可完成 M0–M3.9 结构、捕获、公式、GraphView、父图导航、layer pattern 披露与 One-Input 解析测试；M3.7/M3.8 只复用已生成 artifact 做导航/展示验收，M3.9 只在解析 config 后进入同一静态 DAG 生成链，同样不需要权重或目标模型 forward。当前没有真实性能结论，未来只有外部 AMD trace/counter artifact 才能提供实测证据。
 
 ### 17.2 测试类型
 
@@ -1783,6 +1832,8 @@ M4a 是 Infra/AMD 专业能力的第一道分水岭；M4b 才提供硬件 counte
 
 - [x] Model ID/revision resolver；
 - [x] `model_type`、`architectures`、`auto_map` 解析；
+- [x] M3.9 Model ID（`model`/`owner/model`）/HF 模型页/HF config URL/本地 config/JSON 文本与 stdin 五类 One-Input normalizer；
+- [x] M3.9 HF immutable revision + canonical JSON hash、本地 SHA-256 内容身份、HF host/2 MiB/64 层/项数限额与 C0/opaque 降级；
 - [x] 预算隔离的 meta probe/fallback；完整 meta tree 默认关闭；
 - [x] SourceArtifact、revision、hash 与 license 字段；
 - [ ] 完整 source-map 与本地 Python model adapter（M5）；
@@ -1838,6 +1889,9 @@ M4a 是 Infra/AMD 专业能力的第一道分水岭；M4b 才提供硬件 counte
 - [x] M3.8 完整 strip 派生重复/阶段摘要、模型相关文字图例与非循环说明；
 - [x] M3.8 精确层按钮首次展开惰性生成，逐层 Instance/L1/Inspector 导航保持；
 - [ ] M3.8 Qwen/GLM LAY 浏览器退出（自动 `file://` 重载受 URL policy 限制，待手动刷新确认）；
+- [x] M3.9 `llm-vis view` 单输入 CLI、默认唯一临时 artifact/自动打开报告与 `--no-open`；不包含浏览器启动页/文件选择器；
+- [x] M3.9 HTML Source/Evidence status、known 主 DAG 与 unsupported opaque C0 的静态/报告自动化；
+- [ ] M3.9 IMP-08 真实 `file://` 页面手工退出；
 - [x] Layer Type Strip；
 - [x] Definition/Instance/Tensor/Metric/Diagnostic Inspector；
 - [x] workload switch；
