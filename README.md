@@ -7,21 +7,22 @@
 
 > See the model. Follow the tensors. Unfold the operators. No weights required.
 
-LLM Vis turns a Hugging Face `config.json` into an interactive, top-to-bottom model DAG. Start with the model architecture, open Attention, FFN, or MoE blocks, follow tensor and state edges, and inspect theoretical compute and memory pressure—all without loading the target model's weights or running a full forward pass.
+LLM Vis turns a Hugging Face `config.json` into an interactive, top-to-bottom model DAG. Follow the centered activation path, inspect supporting branches in stable side lanes, open Attention, FFN, or MoE blocks, and explore theoretical compute and memory—all without loading the target model's weights or running a full forward pass.
 
-![LLM Vis showing a Qwen3.8 model as a top-to-bottom DAG with tensor edges and a theoretical pressure heatmap.](https://raw.githubusercontent.com/zihaomu/llm-vis/main/doc/assets/llm-vis-qwen-dag.png)
+![LLM Vis showing Qwen3.8 as a centered top-to-bottom DAG with concise node cards and a stable vision side lane.](https://raw.githubusercontent.com/zihaomu/llm-vis/main/doc/assets/llm-vis-qwen-dag.png)
 
-<p align="center"><sub>Qwen3.8 in LLM Vis: a top-to-bottom architecture DAG, typed tensor flows, recursive child nodes, and scenario-aware theoretical pressure.</sub></p>
+<p align="center"><sub>Qwen3.8 in LLM Vis: a Structure-first activation spine, stable optional side lane, progressive detail, and discoverable recursive drill-down.</sub></p>
 
 ## Why LLM Vis?
 
 Very large models are difficult to inspect directly: their weights may not fit locally, generic operator graphs are overwhelming, and static Transformer diagrams hide model-specific structure. LLM Vis provides a middle ground between a teaching diagram and a runtime profiler.
 
-- **Graph first.** Read the architecture from input to output in a Netron-style vertical DAG.
+- **Graph first.** Read the main activation path on a centered Netron-style vertical spine, with optional, state, and routing work placed in stable side lanes.
 - **Recursive, not flattened.** Double-click a compound node to enter a real child graph, from Attention or FFN down to semantic primitives such as GEMM, MatMul, Softmax, RMSNorm, activation, and Multiply.
 - **Explanations in context.** Single-click any node to see its purpose, a simplified equation, input/output shape and dtype, child graphs, and evidence boundary.
-- **Tensor and state flow.** Edges distinguish data, KV cache, recurrent state, route, and control semantics with explicit ports.
-- **Theoretical bottleneck views.** Compute and Memory are immediately available for the built-in prefill/decode presets. Pressure is enabled only when you provide an explicit HardwareProfile; every heatmap is formula-derived and never presented as measured latency.
+- **Progressive detail.** Compact node cards keep the path readable; edge names, dtypes, kinds, and full evidence remain available through hover, focus, selection, and the Inspector.
+- **Tensor and state flow.** Edges distinguish data, KV cache, recurrent state, route, and control semantics with explicit ports while avoiding repeated labels by default.
+- **Theoretical bottleneck views.** Reports open in Structure mode. Compute and Memory are one click away for the built-in prefill/decode presets, while Pressure is enabled only with an explicit HardwareProfile; every heatmap is formula-derived and never presented as measured latency.
 - **Evidence-aware by design.** Unsupported or unverifiable regions remain `Unknown` or opaque instead of being guessed or silently treated as zero.
 - **Dark or light.** The offline report follows the system theme on first use, provides an accessible theme switch, and remembers an explicit choice without changing graph state.
 - **Local and shareable.** Each run produces a self-contained offline HTML report plus deterministic JSON and Markdown artifacts.
@@ -53,9 +54,9 @@ continues to work both inside and outside a checkout. The repository-local
 `artifacts/` tree is ignored by Git.
 
 When no Scenario is supplied, the report includes clearly labeled Prefill
-(`B1 T512 L0`) and Decode (`B1 T1 L512`) presets. It opens on Compute, allows a
-Memory view, and keeps Pressure disabled until an explicit HardwareProfile is
-provided.
+(`B1 T512 L0`) and Decode (`B1 T1 L512`) presets. It opens in Structure mode
+with the heat overlay off; Compute and Memory remain one click away, and
+Pressure stays disabled until an explicit HardwareProfile is provided.
 
 For a deterministic demo that requires no network access:
 
@@ -103,9 +104,12 @@ Known adapters produce the detailed recursive DAG. A valid but unsupported confi
 | Single-click a node | Open **Explain** with purpose, simplified equation, I/O contracts, child graphs, cost coverage, and evidence notes |
 | Double-click a compound node | Enter its child DAG while preserving stable node identity and parent context |
 | Double-click a primitive or opaque node | Keep the current view and explain why no child graph exists |
-| Select Pressure / Compute / Memory | Apply a scenario-aware theoretical heatmap to the current visible cost frontier |
+| Hover, focus, or select an edge | Reveal its tensor name, dtype, and kind; the default view keeps only the necessary shape label |
+| Select Compute / Memory | Apply a scenario-aware theoretical heatmap to the current visible cost frontier |
+| Select Structure | Remove the heat overlay without changing the Scenario, selection, search, or viewport |
+| Select Pressure | Apply HardwareProfile-backed theoretical pressure when a matching profile is available |
 | Search or choose a hotspot | Focus and highlight the matching node without changing its identity |
-| Use Parent context / minimap | See where the current child graph sits in its parent and where the viewport sits in the current graph |
+| Use Parent context / minimap | Parent context appears in child graphs; the current-view minimap appears only when the graph exceeds the visible viewport |
 
 Layer summaries such as `[L×3 → A] ×16` compress repeated structure for readability; they are not loop edges and do not imply weight sharing. Exact layer instances remain available in the report.
 
@@ -200,7 +204,7 @@ CI covers Python 3.9 and 3.12. The optional capture path uses Torch; config-firs
 
 ## Project status
 
-LLM Vis is at `0.1.0` and under active development. Config-first import, recursive Qwen/GLM DAGs, explainable node details, scenario-based theoretical heatmaps, and offline reports are implemented. Runtime trace import and hardware-backed operator-to-kernel mappings remain roadmap work; the [implementation plan](https://github.com/zihaomu/llm-vis/blob/main/doc/llm-visualization-plan.md) is the source of truth.
+LLM Vis is at `0.1.0` and under active development. Config-first import, recursive Qwen/GLM DAGs, explainable node details, scenario-based theoretical heatmaps, offline reports, and the M3.13 centered-spine/progressive-disclosure UI are implemented. M3.13 has passed its engineering and Chromium checks; the five-person novice usability task remains before the milestone is fully closed. Runtime trace import and hardware-backed operator-to-kernel mappings remain roadmap work; the [implementation plan](https://github.com/zihaomu/llm-vis/blob/main/doc/llm-visualization-plan.md) is the source of truth.
 
 Focused bug reports and architecture-adapter contributions are welcome through [GitHub Issues](https://github.com/zihaomu/llm-vis/issues).
 
