@@ -22,22 +22,220 @@ from collections.abc import Mapping
 from typing import Any, Optional
 
 DAG_CANVAS_CSS = r"""
-.llm-dag {
+.llm-dag,
+[data-theme="dark"] .llm-dag,
+.llm-dag[data-theme="dark"] {
+  /* Semantic DAG palette.  Keep every SVG/CSS paint behind these tokens so the
+     report can switch theme without rebuilding the graph or losing interaction state. */
+  --dag-color-scheme: dark;
   --dag-bg: #08101d;
   --dag-panel: #101b2d;
+  --dag-toolbar-bg: #0e192a;
+  --dag-control-bg: #111f35;
+  --dag-control-border: #354967;
+  --dag-grid-line: rgba(94, 124, 164, .07);
   --dag-node: #172741;
+  --dag-node-border: #3e5577;
+  --dag-node-header: #20385b;
+  --dag-node-title: #ffffff;
+  --dag-node-meta: #a9bdd9;
+  --dag-node-core: #ced9e9;
   --dag-line: #31415d;
   --dag-text: #e8effa;
   --dag-muted: #91a7c7;
   --dag-accent: #70adff;
+  --dag-focus: #ffffff;
+  --dag-selected: #ffffff;
+  --dag-search: #fff0a6;
+  --dag-search-filter: brightness(1.25);
   --dag-upstream: #f1bd64;
   --dag-downstream: #6be0b3;
+  --dag-edge-data: #91bfff;
+  --dag-edge-state: #e3a7ff;
+  --dag-edge-route: #ffd172;
+  --dag-edge-control: #a8b5c8;
+  --dag-edge-label: #c8d6ec;
+  --dag-label-halo: #08101d;
+  --dag-drill-bg: #0e1b30;
+  --dag-drill-border: #6ea8fe;
+  --dag-drill-hover-bg: #1d3c64;
+  --dag-drill-hover-border: #b9d7ff;
+  --dag-drill-text: #b9d7ff;
+  --dag-port-border: #07101e;
+  --dag-port-input: #8ab7f2;
+  --dag-port-output: #69ddb1;
+  --dag-heat-unknown: #1c2533;
+  --dag-heat-not-applicable: #111a27;
+  --dag-heat-legend-bg: #0b1525;
+  --dag-heat-scale-border: #41516a;
+  --dag-heat-low-rgb: 23, 58, 88;
+  --dag-heat-mid-rgb: 88, 64, 16;
+  --dag-heat-high-rgb: 112, 32, 42;
+  --dag-heat-gradient: linear-gradient(
+    90deg, rgb(23, 58, 88), rgb(88, 64, 16), rgb(112, 32, 42)
+  );
+  --dag-overlay-border: #49617f;
+  --dag-overlay-bg: rgba(7, 14, 25, .94);
+  --dag-overlay-shadow: rgba(0, 0, 0, .35);
+  --dag-minimap-node: #4f719e;
+  --dag-minimap-node-outline: #b9d7ff;
+  --dag-minimap-edge: #536887;
+  --dag-minimap-viewport-fill: rgba(112, 173, 255, .09);
+  --dag-minimap-viewport-stroke: #84b8ff;
+  --dag-minimap-heat-unknown: #343d4d;
+  --dag-parent-map-border: #293b55;
+  --dag-parent-map-bg: #091322;
+  --dag-parent-edge: #536887;
+  --dag-parent-node: #4f719e;
+  --dag-parent-node-border: #617a9d;
+  --dag-parent-expanded: #8a6322;
+  --dag-parent-expanded-border: #ffd172;
+  --dag-parent-summary: #c7d5ea;
+  --dag-status-bg: rgba(7, 14, 25, .84);
   min-width: 0;
+  color-scheme: var(--dag-color-scheme);
   color: var(--dag-text);
   background: var(--dag-bg);
   border: 1px solid var(--dag-line);
   border-radius: 12px;
   overflow: hidden;
+}
+[data-theme="light"] .llm-dag:not([data-theme="dark"]),
+.llm-dag[data-theme="light"] {
+  --dag-color-scheme: light;
+  --dag-bg: #f5f7fb;
+  --dag-panel: #ffffff;
+  --dag-toolbar-bg: #ffffff;
+  --dag-control-bg: #ffffff;
+  --dag-control-border: #8396af;
+  --dag-grid-line: rgba(37, 77, 120, .09);
+  --dag-node: #ffffff;
+  --dag-node-border: #6f89aa;
+  --dag-node-header: #dce9fa;
+  --dag-node-title: #102544;
+  --dag-node-meta: #385473;
+  --dag-node-core: #263b57;
+  --dag-line: #b8c5d6;
+  --dag-text: #18283e;
+  --dag-muted: #506784;
+  --dag-accent: #145ca8;
+  --dag-focus: #082f63;
+  --dag-selected: #082f63;
+  --dag-search: #784500;
+  --dag-search-filter: brightness(.96) saturate(1.12);
+  --dag-upstream: #8a4b00;
+  --dag-downstream: #006f57;
+  --dag-edge-data: #1e5fa9;
+  --dag-edge-state: #71389c;
+  --dag-edge-route: #815000;
+  --dag-edge-control: #4f6074;
+  --dag-edge-label: #213954;
+  --dag-label-halo: #f5f7fb;
+  --dag-drill-bg: #eef5ff;
+  --dag-drill-border: #2568b2;
+  --dag-drill-hover-bg: #d9eaff;
+  --dag-drill-hover-border: #0b4e95;
+  --dag-drill-text: #164f8c;
+  --dag-port-border: #ffffff;
+  --dag-port-input: #2165aa;
+  --dag-port-output: #00775e;
+  --dag-heat-unknown: #d5dbe4;
+  --dag-heat-not-applicable: #edf0f4;
+  --dag-heat-legend-bg: #eef2f7;
+  --dag-heat-scale-border: #7f8fa4;
+  --dag-heat-low-rgb: 215, 235, 252;
+  --dag-heat-mid-rgb: 252, 222, 139;
+  --dag-heat-high-rgb: 250, 169, 173;
+  --dag-heat-gradient: linear-gradient(
+    90deg, rgb(215, 235, 252), rgb(252, 222, 139), rgb(250, 169, 173)
+  );
+  --dag-overlay-border: #899bb2;
+  --dag-overlay-bg: rgba(255, 255, 255, .96);
+  --dag-overlay-shadow: rgba(27, 47, 76, .2);
+  --dag-minimap-node: #5277a5;
+  --dag-minimap-node-outline: #304f73;
+  --dag-minimap-edge: #607590;
+  --dag-minimap-viewport-fill: rgba(20, 92, 168, .1);
+  --dag-minimap-viewport-stroke: #145ca8;
+  --dag-minimap-heat-unknown: #9da8b7;
+  --dag-parent-map-border: #91a2b7;
+  --dag-parent-map-bg: #eef2f7;
+  --dag-parent-edge: #61758e;
+  --dag-parent-node: #5277a5;
+  --dag-parent-node-border: #405f83;
+  --dag-parent-expanded: #a45f00;
+  --dag-parent-expanded-border: #704200;
+  --dag-parent-summary: #344c69;
+  --dag-status-bg: rgba(255, 255, 255, .9);
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme]) .llm-dag:not([data-theme]) {
+    --dag-color-scheme: light;
+    --dag-bg: #f5f7fb;
+    --dag-panel: #ffffff;
+    --dag-toolbar-bg: #ffffff;
+    --dag-control-bg: #ffffff;
+    --dag-control-border: #8396af;
+    --dag-grid-line: rgba(37, 77, 120, .09);
+    --dag-node: #ffffff;
+    --dag-node-border: #6f89aa;
+    --dag-node-header: #dce9fa;
+    --dag-node-title: #102544;
+    --dag-node-meta: #385473;
+    --dag-node-core: #263b57;
+    --dag-line: #b8c5d6;
+    --dag-text: #18283e;
+    --dag-muted: #506784;
+    --dag-accent: #145ca8;
+    --dag-focus: #082f63;
+    --dag-selected: #082f63;
+    --dag-search: #784500;
+    --dag-search-filter: brightness(.96) saturate(1.12);
+    --dag-upstream: #8a4b00;
+    --dag-downstream: #006f57;
+    --dag-edge-data: #1e5fa9;
+    --dag-edge-state: #71389c;
+    --dag-edge-route: #815000;
+    --dag-edge-control: #4f6074;
+    --dag-edge-label: #213954;
+    --dag-label-halo: #f5f7fb;
+    --dag-drill-bg: #eef5ff;
+    --dag-drill-border: #2568b2;
+    --dag-drill-hover-bg: #d9eaff;
+    --dag-drill-hover-border: #0b4e95;
+    --dag-drill-text: #164f8c;
+    --dag-port-border: #ffffff;
+    --dag-port-input: #2165aa;
+    --dag-port-output: #00775e;
+    --dag-heat-unknown: #d5dbe4;
+    --dag-heat-not-applicable: #edf0f4;
+    --dag-heat-legend-bg: #eef2f7;
+    --dag-heat-scale-border: #7f8fa4;
+    --dag-heat-low-rgb: 215, 235, 252;
+    --dag-heat-mid-rgb: 252, 222, 139;
+    --dag-heat-high-rgb: 250, 169, 173;
+    --dag-heat-gradient: linear-gradient(
+      90deg, rgb(215, 235, 252), rgb(252, 222, 139), rgb(250, 169, 173)
+    );
+    --dag-overlay-border: #899bb2;
+    --dag-overlay-bg: rgba(255, 255, 255, .96);
+    --dag-overlay-shadow: rgba(27, 47, 76, .2);
+    --dag-minimap-node: #5277a5;
+    --dag-minimap-node-outline: #304f73;
+    --dag-minimap-edge: #607590;
+    --dag-minimap-viewport-fill: rgba(20, 92, 168, .1);
+    --dag-minimap-viewport-stroke: #145ca8;
+    --dag-minimap-heat-unknown: #9da8b7;
+    --dag-parent-map-border: #91a2b7;
+    --dag-parent-map-bg: #eef2f7;
+    --dag-parent-edge: #61758e;
+    --dag-parent-node: #5277a5;
+    --dag-parent-node-border: #405f83;
+    --dag-parent-expanded: #a45f00;
+    --dag-parent-expanded-border: #704200;
+    --dag-parent-summary: #344c69;
+    --dag-status-bg: rgba(255, 255, 255, .9);
+  }
 }
 .llm-dag * { box-sizing: border-box; }
 .llm-dag-toolbar {
@@ -46,7 +244,7 @@ DAG_CANVAS_CSS = r"""
   gap: 10px;
   padding: 9px 10px;
   border-bottom: 1px solid var(--dag-line);
-  background: #0e192a;
+  background: var(--dag-toolbar-bg);
 }
 .llm-dag-nav-controls,
 .llm-dag-view-controls {
@@ -60,8 +258,8 @@ DAG_CANVAS_CSS = r"""
 .llm-dag-toolbar select,
 .llm-dag-toolbar input {
   color: var(--dag-text);
-  background: #111f35;
-  border: 1px solid #354967;
+  background: var(--dag-control-bg);
+  border: 1px solid var(--dag-control-border);
   border-radius: 6px;
   min-height: 30px;
   padding: 5px 8px;
@@ -95,7 +293,7 @@ DAG_CANVAS_CSS = r"""
 .llm-dag-separator { color: var(--dag-muted); }
 .llm-dag-readonly {
   color: var(--dag-muted);
-  border: 1px solid #354967;
+  border: 1px solid var(--dag-control-border);
   border-radius: 999px;
   padding: 4px 8px;
   font-size: 10px;
@@ -109,8 +307,8 @@ DAG_CANVAS_CSS = r"""
   overflow: hidden;
   background-color: var(--dag-bg);
   background-image:
-    linear-gradient(rgba(94, 124, 164, .07) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(94, 124, 164, .07) 1px, transparent 1px);
+    linear-gradient(var(--dag-grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--dag-grid-line) 1px, transparent 1px);
   background-size: 24px 24px;
   touch-action: pan-y;
   cursor: grab;
@@ -120,18 +318,28 @@ DAG_CANVAS_CSS = r"""
 .llm-dag-world { transform-origin: 0 0; }
 .llm-dag-edge {
   fill: none;
-  stroke: #91bfff;
+  stroke: var(--dag-edge-data);
   stroke-width: 2;
   vector-effect: non-scaling-stroke;
   pointer-events: none;
 }
-.llm-dag-edge[data-edge-kind="state"] { stroke: #e3a7ff; stroke-dasharray: 9 5; }
-.llm-dag-edge[data-edge-kind="route"] { stroke: #ffd172; stroke-dasharray: 2 5; }
+.llm-dag-edge[data-edge-kind="state"] {
+  stroke: var(--dag-edge-state);
+  stroke-dasharray: 9 5;
+}
+.llm-dag-edge[data-edge-kind="route"] {
+  stroke: var(--dag-edge-route);
+  stroke-dasharray: 2 5;
+}
 .llm-dag-edge[data-edge-kind="control"] {
-  stroke: #a8b5c8;
+  stroke: var(--dag-edge-control);
   stroke-width: 1.5;
   stroke-dasharray: 11 4 2 4;
 }
+.llm-dag-arrow { fill: var(--dag-edge-data); }
+.llm-dag-arrow[data-edge-kind="state"] { fill: var(--dag-edge-state); }
+.llm-dag-arrow[data-edge-kind="route"] { fill: var(--dag-edge-route); }
+.llm-dag-arrow[data-edge-kind="control"] { fill: var(--dag-edge-control); }
 .llm-dag-edge-hit {
   fill: none;
   stroke: transparent;
@@ -141,8 +349,8 @@ DAG_CANVAS_CSS = r"""
   pointer-events: stroke;
 }
 .llm-dag-edge-label {
-  fill: #c8d6ec;
-  stroke: var(--dag-bg);
+  fill: var(--dag-edge-label);
+  stroke: var(--dag-label-halo);
   stroke-width: 4px;
   paint-order: stroke;
   font: 10px/1 ui-monospace, monospace;
@@ -151,59 +359,79 @@ DAG_CANVAS_CSS = r"""
 .llm-dag-node { cursor: pointer; }
 .llm-dag-node-card {
   fill: var(--dag-node-heat, var(--dag-node));
-  stroke: #3e5577;
+  stroke: var(--dag-node-border);
   stroke-width: 1.5;
   vector-effect: non-scaling-stroke;
 }
 .llm-dag-node.has-drilldown { cursor: pointer; }
-.llm-dag-node-header { fill: #20385b; }
-.llm-dag-node-title { fill: #fff; font: 600 13px/1 ui-sans-serif, system-ui; }
-.llm-dag-node-meta { fill: #a9bdd9; font: 10px/1 ui-monospace, monospace; }
-.llm-dag-node-core { fill: #ced9e9; font: 10px/1 ui-monospace, monospace; }
+.llm-dag-node-header { fill: var(--dag-node-header); }
+.llm-dag-node-title {
+  fill: var(--dag-node-title);
+  font: 600 13px/1 ui-sans-serif, system-ui;
+}
+.llm-dag-node-meta { fill: var(--dag-node-meta); font: 10px/1 ui-monospace, monospace; }
+.llm-dag-node-core { fill: var(--dag-node-core); font: 10px/1 ui-monospace, monospace; }
 .llm-dag-drill-badge { cursor: pointer; }
 .llm-dag-drill-hit { fill: transparent; }
-.llm-dag-drill-pill { fill: #0e1b30; stroke: #6ea8fe; stroke-width: 1; }
+.llm-dag-drill-pill {
+  fill: var(--dag-drill-bg);
+  stroke: var(--dag-drill-border);
+  stroke-width: 1;
+}
 .llm-dag-drill-badge:hover .llm-dag-drill-pill,
-.llm-dag-drill-badge:focus .llm-dag-drill-pill { fill: #1d3c64; stroke: #b9d7ff; }
+.llm-dag-drill-badge:focus .llm-dag-drill-pill {
+  fill: var(--dag-drill-hover-bg);
+  stroke: var(--dag-drill-hover-border);
+}
 .llm-dag-drill-label {
-  fill: #b9d7ff;
+  fill: var(--dag-drill-text);
   font: 700 8px/1 ui-sans-serif, system-ui;
   letter-spacing: .04em;
   pointer-events: none;
 }
 .llm-dag-port-label {
-  fill: #b7c7de;
-  stroke: var(--dag-bg);
+  fill: var(--dag-node-meta);
+  stroke: var(--dag-label-halo);
   stroke-width: 3px;
   paint-order: stroke;
   font: 9px/1 ui-monospace, monospace;
 }
-.llm-dag-port { stroke: #07101e; stroke-width: 2; pointer-events:none; }
+.llm-dag-port { stroke: var(--dag-port-border); stroke-width: 2; pointer-events:none; }
 .llm-dag-port-hit { fill: transparent; pointer-events: all; cursor: pointer; }
-.llm-dag-port[data-port-direction="input"] { fill: #8ab7f2; }
-.llm-dag-port[data-port-direction="output"] { fill: #69ddb1; }
+.llm-dag-port[data-port-direction="input"] { fill: var(--dag-port-input); }
+.llm-dag-port[data-port-direction="output"] { fill: var(--dag-port-output); }
 .llm-dag-node:focus-visible .llm-dag-node-card,
 .llm-dag-port-group:focus-visible .llm-dag-port,
 .llm-dag-edge-group:focus-visible .llm-dag-edge {
-  stroke: #fff;
+  stroke: var(--dag-focus);
   stroke-width: 4;
 }
-.llm-dag-node.is-selected .llm-dag-node-card { stroke: #fff; stroke-width: 3; }
-.llm-dag-port-group.is-selected .llm-dag-port { stroke: #fff; stroke-width: 4; }
+.llm-dag-node.is-selected .llm-dag-node-card {
+  stroke: var(--dag-selected);
+  stroke-width: 3;
+}
+.llm-dag-port-group.is-selected .llm-dag-port {
+  stroke: var(--dag-selected);
+  stroke-width: 4;
+}
 .llm-dag-node.is-upstream .llm-dag-node-card { stroke: var(--dag-upstream); }
 .llm-dag-node.is-downstream .llm-dag-node-card { stroke: var(--dag-downstream); }
-.llm-dag-node.is-match .llm-dag-node-card { filter: brightness(1.35); stroke: #fff0a6; }
+.llm-dag-node.is-match .llm-dag-node-card {
+  filter: var(--dag-search-filter);
+  stroke: var(--dag-search);
+  stroke-width: 3;
+}
 .llm-dag-node.is-dimmed,
 .llm-dag-edge-group.is-dimmed { opacity: .18; }
 .llm-dag-edge-group.is-selected .llm-dag-edge { stroke-width: 4; }
 .llm-dag[data-heatmap]:not([data-heatmap="off"])
   .llm-dag-node[data-heat-known="false"] .llm-dag-node-card {
-  fill: #1c2533;
+  fill: var(--dag-heat-unknown);
   stroke-dasharray: 6 4;
 }
 .llm-dag[data-heatmap]:not([data-heatmap="off"])
   .llm-dag-node[data-heat-status="not-applicable"] .llm-dag-node-card {
-  fill: #111a27;
+  fill: var(--dag-heat-not-applicable);
   stroke-dasharray: 2 5;
 }
 .llm-dag[data-heatmap]:not([data-heatmap="off"])
@@ -217,7 +445,18 @@ DAG_CANVAS_CSS = r"""
 .llm-dag[data-heatmap]:not([data-heatmap="off"])
   .llm-dag-node.is-downstream .llm-dag-node-card { stroke-dasharray: none; }
 .llm-dag[data-heatmap]:not([data-heatmap="off"])
-  .llm-dag-minimap-node[data-heat-known="false"] { fill: #343d4d; }
+  .llm-dag-minimap-node[data-heat-known="false"] { fill: var(--dag-minimap-heat-unknown); }
+.llm-dag[data-heatmap]:not([data-heatmap="off"])
+  .llm-dag-minimap-node[data-heat-status="not-applicable"] {
+  fill: var(--dag-heat-not-applicable);
+  stroke: var(--dag-minimap-edge);
+  stroke-dasharray: 2 5;
+}
+.llm-dag[data-heatmap]:not([data-heatmap="off"])
+  .llm-dag-minimap-node[data-heat-status="partial"] {
+  stroke: var(--dag-minimap-edge);
+  stroke-dasharray: 8 3;
+}
 .llm-dag-heat-legend {
   display: flex;
   align-items: center;
@@ -225,7 +464,7 @@ DAG_CANVAS_CSS = r"""
   min-height: 36px;
   padding: 6px 10px;
   border-bottom: 1px solid var(--dag-line);
-  background: #0b1525;
+  background: var(--dag-heat-legend-bg);
   color: var(--dag-muted);
   font: 10px/1.25 ui-sans-serif, system-ui, sans-serif;
 }
@@ -234,9 +473,9 @@ DAG_CANVAS_CSS = r"""
 .llm-dag-heat-scale {
   width: 112px;
   height: 8px;
-  border: 1px solid #41516a;
+  border: 1px solid var(--dag-heat-scale-border);
   border-radius: 999px;
-  background: linear-gradient(90deg,#173a58,#806722,#87353c);
+  background: var(--dag-heat-gradient);
 }
 .llm-dag-heat-basis {
   min-width: 0;
@@ -253,22 +492,30 @@ DAG_CANVAS_CSS = r"""
   bottom: 12px;
   width: 190px;
   overflow: hidden;
-  border: 1px solid #49617f;
+  border: 1px solid var(--dag-overlay-border);
   border-radius: 7px;
-  background: rgba(7, 14, 25, .92);
-  box-shadow: 0 5px 18px rgba(0, 0, 0, .35);
+  background: var(--dag-overlay-bg);
+  box-shadow: 0 5px 18px var(--dag-overlay-shadow);
 }
 .llm-dag-current-title {
   min-height: 28px;
   padding: 8px 9px 6px;
-  border-bottom: 1px solid #31415d;
+  border-bottom: 1px solid var(--dag-line);
   color: var(--dag-text);
   font: 700 10px/1.2 ui-sans-serif, system-ui, sans-serif;
 }
 .llm-dag-minimap { display: block; width: 100%; height: 112px; }
-.llm-dag-minimap-node { fill: #4f719e; }
-.llm-dag-minimap-edge { fill: none; stroke: #536887; stroke-width: 1; }
-.llm-dag-minimap-viewport { fill: rgba(112, 173, 255, .09); stroke: #84b8ff; }
+.llm-dag-minimap-node {
+  fill: var(--dag-minimap-node);
+  stroke: var(--dag-minimap-node-outline);
+  stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
+}
+.llm-dag-minimap-edge { fill: none; stroke: var(--dag-minimap-edge); stroke-width: 1; }
+.llm-dag-minimap-viewport {
+  fill: var(--dag-minimap-viewport-fill);
+  stroke: var(--dag-minimap-viewport-stroke);
+}
 .llm-dag-parent-context {
   position: absolute;
   z-index: 3;
@@ -276,10 +523,10 @@ DAG_CANVAS_CSS = r"""
   bottom: 12px;
   width: 210px;
   overflow: hidden;
-  border: 1px solid #49617f;
+  border: 1px solid var(--dag-overlay-border);
   border-radius: 7px;
-  background: rgba(7, 14, 25, .94);
-  box-shadow: 0 5px 18px rgba(0, 0, 0, .35);
+  background: var(--dag-overlay-bg);
+  box-shadow: 0 5px 18px var(--dag-overlay-shadow);
 }
 .llm-dag-parent-context[hidden] { display: none; }
 .llm-dag-parent-context-header {
@@ -289,14 +536,14 @@ DAG_CANVAS_CSS = r"""
   gap: 8px;
   min-height: 30px;
   padding: 5px 7px;
-  border-bottom: 1px solid #31415d;
+  border-bottom: 1px solid var(--dag-line);
   color: var(--dag-text);
   font: 700 10px/1.2 ui-sans-serif, system-ui, sans-serif;
 }
 .llm-dag-parent-context button {
   color: var(--dag-text);
-  background: #111f35;
-  border: 1px solid #354967;
+  background: var(--dag-control-bg);
+  border: 1px solid var(--dag-control-border);
   border-radius: 5px;
   min-height: 24px;
   padding: 3px 6px;
@@ -305,7 +552,7 @@ DAG_CANVAS_CSS = r"""
 }
 .llm-dag-parent-context button:hover { border-color: var(--dag-accent); }
 .llm-dag-parent-context button:focus-visible {
-  outline: 2px solid #fff;
+  outline: 2px solid var(--dag-focus);
   outline-offset: 1px;
 }
 .llm-dag-parent-context-body { padding: 6px; }
@@ -324,30 +571,30 @@ DAG_CANVAS_CSS = r"""
   display: block;
   width: 100%;
   height: 92px;
-  border: 1px solid #293b55;
+  border: 1px solid var(--dag-parent-map-border);
   border-radius: 5px;
-  background: #091322;
+  background: var(--dag-parent-map-bg);
   cursor: pointer;
 }
 .llm-dag-parent-map:focus-visible {
-  outline: 2px solid #fff;
+  outline: 2px solid var(--dag-focus);
   outline-offset: -3px;
 }
-.llm-dag-parent-edge { fill: none; stroke: #536887; stroke-width: 2; }
+.llm-dag-parent-edge { fill: none; stroke: var(--dag-parent-edge); stroke-width: 2; }
 .llm-dag-parent-node {
-  fill: #355275;
-  stroke: #617a9d;
+  fill: var(--dag-parent-node);
+  stroke: var(--dag-parent-node-border);
   stroke-width: 2;
 }
 .llm-dag-parent-node.is-expanded-parent {
-  fill: #8a6322;
-  stroke: #ffd172;
+  fill: var(--dag-parent-expanded);
+  stroke: var(--dag-parent-expanded-border);
   stroke-width: 6;
 }
 .llm-dag-parent-summary {
   margin-top: 5px;
   overflow: hidden;
-  color: #c7d5ea;
+  color: var(--dag-parent-summary);
   font: 9px/1.25 ui-monospace, monospace;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -358,7 +605,7 @@ DAG_CANVAS_CSS = r"""
   left: 11px;
   bottom: 9px;
   color: var(--dag-muted);
-  background: rgba(7, 14, 25, .84);
+  background: var(--dag-status-bg);
   border-radius: 5px;
   padding: 4px 7px;
   font: 10px/1.2 ui-monospace, monospace;
@@ -409,6 +656,48 @@ DAG_CANVAS_JS = r"""
   const ROUTE_LANE_INSET = 34;
   const ROUTE_LANE_GAP = 12;
   const instances = new Map();
+  const mediaFallback = query => ({
+    media: query, matches: false,
+    addEventListener() {}, removeEventListener() {},
+    addListener() {}, removeListener() {}
+  });
+  const safeMatchMedia = (query, nativeFactory) => {
+    let nativeMedia = null;
+    try {
+      if (typeof window.matchMedia === 'function') nativeMedia = nativeFactory();
+    } catch (_error) {
+      return mediaFallback(query);
+    }
+    if (!nativeMedia) return mediaFallback(query);
+    const add = listener => {
+      try {
+        if (typeof nativeMedia.addEventListener === 'function') {
+          nativeMedia.addEventListener('change', listener);
+        } else if (typeof nativeMedia.addListener === 'function') {
+          nativeMedia.addListener(listener);
+        }
+      } catch (_error) {}
+    };
+    const remove = listener => {
+      try {
+        if (typeof nativeMedia.removeEventListener === 'function') {
+          nativeMedia.removeEventListener('change', listener);
+        } else if (typeof nativeMedia.removeListener === 'function') {
+          nativeMedia.removeListener(listener);
+        }
+      } catch (_error) {}
+    };
+    return {
+      get media() { try { return nativeMedia.media || query; } catch (_error) { return query; } },
+      get matches() {
+        try { return Boolean(nativeMedia.matches); } catch (_error) { return false; }
+      },
+      addEventListener(_type, listener) { add(listener); },
+      removeEventListener(_type, listener) { remove(listener); },
+      addListener(listener) { add(listener); },
+      removeListener(listener) { remove(listener); }
+    };
+  };
   const svg = (tag, attrs = {}) => {
     const el = document.createElementNS(NS, tag);
     for (const [key, value] of Object.entries(attrs)) el.setAttribute(key, String(value));
@@ -732,8 +1021,33 @@ DAG_CANVAS_JS = r"""
     const viewportByView = new Map();
     let searchQuery = '';
     let heatmap = { mode: 'off', nodes: {} };
-    const compactParentContext = window.matchMedia('(max-width: 720px)');
+    let heatPalette = [[23, 58, 88], [88, 64, 16], [112, 32, 42]];
+    let themePaintFrame = null;
+    const compactParentContext = safeMatchMedia(
+      '(max-width: 720px)', () => window.matchMedia('(max-width: 720px)')
+    );
+    const preferredLightTheme = safeMatchMedia(
+      '(prefers-color-scheme: light)',
+      () => window.matchMedia('(prefers-color-scheme: light)')
+    );
     let parentContextCollapsed = compactParentContext.matches;
+
+    function scheduleThemePaint() {
+      if (themePaintFrame !== null) window.cancelAnimationFrame(themePaintFrame);
+      themePaintFrame = window.requestAnimationFrame(() => {
+        themePaintFrame = null;
+        syncThemePaint();
+      });
+    }
+
+    const handleThemeChange = () => scheduleThemePaint();
+    window.addEventListener('llm-vis:theme-change', handleThemeChange);
+    preferredLightTheme.addEventListener('change', handleThemeChange);
+    const themeObserver = new MutationObserver(handleThemeChange);
+    const themeTargets = new Set([document.documentElement, document.body, root].filter(Boolean));
+    themeTargets.forEach(target => themeObserver.observe(target, {
+      attributes: true, attributeFilter: ['data-theme']
+    }));
 
     function applyTransform() {
       world.setAttribute('transform', `translate(${tx} ${ty}) scale(${scale})`);
@@ -1280,9 +1594,25 @@ DAG_CANVAS_JS = r"""
       miniViewport.setAttribute('height', Math.min(layout.height, box.height / scale));
     }
 
+    function readRgbToken(styles, name, fallback) {
+      const channels = (styles.getPropertyValue(name).match(/[\d.]+/g) || [])
+        .slice(0, 3).map(Number);
+      return channels.length === 3 && channels.every(Number.isFinite) ? channels : fallback;
+    }
+
+    function refreshHeatPalette() {
+      const styles = window.getComputedStyle(root);
+      heatPalette = [
+        readRgbToken(styles, '--dag-heat-low-rgb', [23, 58, 88]),
+        readRgbToken(styles, '--dag-heat-mid-rgb', [88, 64, 16]),
+        readRgbToken(styles, '--dag-heat-high-rgb', [112, 32, 42])
+      ];
+      return styles;
+    }
+
     function heatColor(value) {
       const normalized = Math.max(0, Math.min(1, Number(value) || 0));
-      const stops = [[23, 58, 88], [128, 103, 34], [135, 53, 60]];
+      const stops = heatPalette;
       const position = normalized * 2;
       const index = Math.min(1, Math.floor(position));
       const mix = position - index;
@@ -1292,6 +1622,7 @@ DAG_CANVAS_JS = r"""
     }
 
     function applyHeatmap() {
+      refreshHeatPalette();
       const mode = String(heatmap.mode || 'off');
       const entries = heatmap.nodes || {};
       root.dataset.heatmap = mode;
@@ -1332,6 +1663,22 @@ DAG_CANVAS_JS = r"""
         if (known) element.style.fill = heatColor(normalized);
         else element.style.removeProperty('fill');
       });
+    }
+
+    function syncThemePaint() {
+      const styles = refreshHeatPalette();
+      const fallbackPaint = {
+        data: '#91bfff', state: '#e3a7ff', route: '#ffd172', control: '#a8b5c8'
+      };
+      root.querySelectorAll('.llm-dag-arrow').forEach(element => {
+        const kind = element.dataset.edgeKind || 'data';
+        const paint = styles.getPropertyValue(`--dag-edge-${kind}`).trim()
+          || fallbackPaint[kind] || fallbackPaint.data;
+        element.style.fill = paint;
+      });
+      // Known node and minimap heat paints are inline by design. Re-applying only
+      // the palette leaves normalization, selection, viewport and graph identity intact.
+      applyHeatmap();
     }
 
     function setHeatmap(next = {}) {
@@ -1573,13 +1920,18 @@ DAG_CANVAS_JS = r"""
       setHeatmap,
       destroy() {
         cancelPendingNodeClick();
+        if (themePaintFrame !== null) window.cancelAnimationFrame(themePaintFrame);
         window.removeEventListener('resize', frameReadable);
+        window.removeEventListener('llm-vis:theme-change', handleThemeChange);
+        preferredLightTheme.removeEventListener('change', handleThemeChange);
         compactParentContext.removeEventListener('change', handleParentContextBreakpoint);
+        themeObserver.disconnect();
         instances.delete(root.id);
         root.dataset.dagMounted = 'false';
       }
     };
     instances.set(root.id, controller);
+    syncThemePaint();
     if (views.length) openView(options.initialViewId || viewId(views[0]), { source: 'initial' });
     else {
       empty.hidden = false;
@@ -1692,13 +2044,17 @@ def render_dag_canvas(
     <svg class="llm-dag-surface" role="group" aria-label="Interactive model dataflow graph">
       <defs>
         <marker id="{safe_element_id}-arrow-data" markerWidth="8" markerHeight="8"
-          refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#91bfff"/></marker>
+          refX="7" refY="4" orient="auto"><path class="llm-dag-arrow"
+            data-edge-kind="data" d="M0,0 L8,4 L0,8 Z"/></marker>
         <marker id="{safe_element_id}-arrow-state" markerWidth="8" markerHeight="8"
-          refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#e3a7ff"/></marker>
+          refX="7" refY="4" orient="auto"><path class="llm-dag-arrow"
+            data-edge-kind="state" d="M0,0 L8,4 L0,8 Z"/></marker>
         <marker id="{safe_element_id}-arrow-route" markerWidth="8" markerHeight="8"
-          refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#ffd172"/></marker>
+          refX="7" refY="4" orient="auto"><path class="llm-dag-arrow"
+            data-edge-kind="route" d="M0,0 L8,4 L0,8 Z"/></marker>
         <marker id="{safe_element_id}-arrow-control" markerWidth="8" markerHeight="8"
-          refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#a8b5c8"/></marker>
+          refX="7" refY="4" orient="auto"><path class="llm-dag-arrow"
+            data-edge-kind="control" d="M0,0 L8,4 L0,8 Z"/></marker>
       </defs>
       <g class="llm-dag-world">
         <g class="llm-dag-edges"></g>

@@ -23,6 +23,7 @@ Very large models are difficult to inspect directly: their weights may not fit l
 - **Tensor and state flow.** Edges distinguish data, KV cache, recurrent state, route, and control semantics with explicit ports.
 - **Theoretical bottleneck views.** Compute and Memory are immediately available for the built-in prefill/decode presets. Pressure is enabled only when you provide an explicit HardwareProfile; every heatmap is formula-derived and never presented as measured latency.
 - **Evidence-aware by design.** Unsupported or unverifiable regions remain `Unknown` or opaque instead of being guessed or silently treated as zero.
+- **Dark or light.** The offline report follows the system theme on first use, provides an accessible theme switch, and remembers an explicit choice without changing graph state.
 - **Local and shareable.** Each run produces a self-contained offline HTML report plus deterministic JSON and Markdown artifacts.
 
 ## Quick start
@@ -38,7 +39,18 @@ uv tool install .
 llm-vis view Qwen/Qwen3.8-27B
 ```
 
-The command resolves the requested Hugging Face revision to an immutable commit, records the `config.json` SHA-256, writes an artifact to a unique temporary directory, and opens its self-contained report. It does **not** download model weights.
+The command resolves the requested Hugging Face revision to an immutable commit,
+records the `config.json` SHA-256, writes the artifact under
+`artifacts/generated/<model-slug>-<config-hash8>` in the verified LLM Vis Git
+checkout containing the current working directory,
+and opens its self-contained report. If that name already exists, LLM Vis uses
+`-2`, `-3`, and so on rather than overwriting it. Outside an LLM Vis checkout,
+omitting `--output` produces an actionable error instead of writing into an
+unrelated working directory. It does **not** download model weights.
+
+Pass `--output PATH` whenever you need a different location; an explicit path
+continues to work both inside and outside a checkout. The repository-local
+`artifacts/` tree is ignored by Git.
 
 When no Scenario is supplied, the report includes clearly labeled Prefill
 (`B1 T512 L0`) and Decode (`B1 T1 L512`) presets. It opens on Compute, allows a

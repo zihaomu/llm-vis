@@ -53,7 +53,7 @@
 
 M3.9 的启动面是 `llm-vis view INPUT`，不是浏览器表单。CLI 已统一接受 HF Model ID（单段 `model` 或 `owner/model`）、HF 模型页 URL、HF `config.json` blob/resolve URL、本地 config 文件/目录和 JSON 文本/stdin 五类语义输入。当前不实现浏览器启动页、粘贴框或文件选择器；浏览器只打开生成后的自包含离线报告。
 
-用户不指定 `--output` 时，CLI 在唯一临时目录中生成 `<model-slug>-<config-hash8>` artifact，输出 artifact/report 绝对路径并默认调用系统浏览器；`--no-open` 可关闭打开。打开失败只产生 warning，不丢失已生成 artifact。
+用户不指定 `--output` 时，CLI 只在确认当前工作目录位于 LLM Vis Git checkout（Git marker 与项目身份均匹配）后，才在仓库根目录的 `artifacts/generated/<model-slug>-<config-hash8>` 生成 artifact；同名目录已存在时依次使用 `-2`、`-3`，不覆盖旧结果。仓库外省略 `--output` 会返回带修复提示的错误，不向无关 cwd 写文件。CLI 输出 artifact/report 绝对路径并默认调用系统浏览器；`--no-open` 可关闭打开。打开失败只产生 warning，不丢失已生成 artifact。用户显式传入的 `--output` 路径及其既有行为不变，并可在仓库外使用。
 
 离线报告沿用现有 graph-first 页面，主图标题下增加紧凑证据栏：`Target input: config.json only`、source kind/requested+resolved revision、config SHA-256、`Known adapter` 或 `Unsupported · opaque`、当前 view evidence，以及 `no target weights · no model code · no full forward`。证据栏不增加第二张图：
 
@@ -346,7 +346,7 @@ M3.9 的 CLI/报告 UI 退出状态如下；真实 `file://` 页面是唯一仍�
 | IMP-UI-03 | 导入 Qwen/GLM 已知 config | `Known adapter` 与 source/revision/hash/coverage/零执行状态已进入 HTML，中央主视觉仍是现有同一 DAG | **静态/报告自动化 PASS；`file://` 手工待验** |
 | IMP-UI-04 | 导入未知或证据不足的 JSON object | 显示 `Unsupported · opaque`、C0/coverage 证据；缺乏模型证据时只有单个 opaque 节点，无伪造 child view/成本 | **静态/GraphView 自动化 PASS；`file://` 手工待验** |
 | IMP-UI-05 | 导入 malformed/非 object/超限/非 HF 远程 JSON | CLI 显示类型/安全限额 code 与 hint，不生成伪报告；普通有效 object 则降级而非拒绝 | **PASS：resolver 正/负自动化** |
-| IMP-UI-06 | 默认打开、`--no-open` 或模拟打开失败 | 默认在唯一临时目录生成并打开报告；关闭时只给路径；失败不丢 artifact | **PASS：CLI 自动化** |
+| IMP-UI-06 | 默认打开、`--no-open` 或模拟打开失败 | 仅在已确认的 LLM Vis Git checkout 中默认写入仓库根 `artifacts/generated/<slug>-<hash8>`，冲突时使用 `-2`/`-3` 且不覆盖；仓库外省略 `--output` 给出可操作错误；显式 `--output` 仍可用且不变；关闭时只给路径；打开失败不丢 artifact | **PASS（2026-09-08 maintenance）**：当前环境与 Python 3.9 隔离定向各 19 项、全量 Python 276 项与真实 Chromium 17 项通过；真实 CLI 连续生成 base/`-2` 且均被 Git ignore |
 
 M3.6 直接采用以下退出编号：
 

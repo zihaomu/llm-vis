@@ -8,8 +8,8 @@
 
 ## 实施状态（实时维护）
 
-> 最后更新：2026-08-31
-> 当前阶段：**M3.11 Public Release Hardening 已完成，v0.1 本地 release candidate 的默认体验、真实浏览器 CI、三类 E2E 与发布包机器退出全部通过；M4a 继续因 AMD reference stack 未冻结而保持 Blocked**
+> 最后更新：2026-09-08
+> 当前阶段：**M3.12 Dual Theme UI 与默认 artifact repository-local maintenance 已完成；M4a 继续因 AMD reference stack 未冻结而保持 Blocked**
 > 状态规则：只有对应机器退出清单全部通过后才标记为完成；代码存在但尚未验收时保持“实施中”。
 
 | 里程碑 | 状态 | 当前证据 | 下一退出检查 |
@@ -25,6 +25,8 @@
 | M3.9 | **完成** | `llm-vis view` 五类语义输入、immutable revision/SHA-256、known DAG、generic C0/opaque、安全限额、默认 artifact/open 与 Source/Evidence 已交付 | IMP-01～IMP-10 全部 PASS；真实 Chromium `file://` known/generic 页面标题、source/revision/hash/coverage 与零执行边界通过 |
 | M3.10 | **完成** | GraphView 正式切换为 `DOWN`；主图、端口、连线、minimap 与 Parent context 统一为上入下出；节点单击解释、去抖双击下钻、结构化用途/简式公式/I/O/child view 已落地 | EXP-01～EXP-10 PASS；Python 3.9/3.12 各 260、Ruff、27/27 verifier、Qwen/GLM acceptance、JavaScript 与 1280/700px 浏览器通过 |
 | M3.11 | **完成** | 默认 preset/Pressure 门控、Layer 防伪、真实 Chromium CI、Qwen/GLM/generic E2E、三份 acceptance、Apache-2.0/社区文档及 PEP 639 包元数据全部交付 | RC-01～RC-10 PASS；Python 3.9/3.12 各 266、Chromium 5、Ruff、golden、27/27、Twine、wheel/sdist 与无 Torch/NumPy 隔离安装通过；PyPI/GitHub Release/tag 明确不在本里程碑内 |
+| M3.12 | **完成** | 页面与 DAG 已使用两套实际语义 palette；system/storage/matchMedia 异常降级、可访问切换、状态无损、四类边/port/marker/minimap/parent/heat 对比度及三模型往返均由真实 Chromium 覆盖 | THM-01～THM-10 PASS；Python 3.9/3.12 各 268、Chromium 17、Ruff、golden、27/27 verifier 与 Qwen/GLM/generic 最终报告通过；继续保持零执行边界 |
+| 2026-09-08 maintenance | **完成** | 默认输出仅限已确认的 LLM Vis Git checkout 根 `artifacts/generated/<slug>-<hash8>`；冲突分配 `-2`/`-3`，仓库外要求显式 `--output` | 当前环境与 Python 3.9 隔离定向各 19 项、全量 Python 276 passed/17 browser-opt-in skipped、真实 Chromium 17、27/27 verifier、Ruff 与 diff-check 通过；真实 CLI base/`-2` 均 Git ignored 且 safety flags 为 false |
 
 ### 已冻结的执行边界
 
@@ -66,12 +68,15 @@
 | 2026-08-30 | 正式启动 M3.8 Decoder Pattern Summary & Exact Layer Disclosure | 默认层栏只显示从完整 `layerStrip` 无损派生的重复/阶段摘要、文字图例与“非循环/非权重共享”说明；64/78 个精确层位置首次展开时才生成，逐层 L1 导航与 Inspector 身份保持不变；不修改 GraphView/schema/IR，不运行目标模型 |
 | 2026-08-31 | 完成 M3.8 功能、自动化与 Qwen/GLM 浏览器退出 | Python 3.9/3.12 基础回归、Ruff、27/27 verifier、golden current；Qwen/GLM 内嵌 pattern 分别为 `[L×3 → A] ×16`/`D×3 → M×75`。早期自动浏览器受 `file://` policy 阻塞，现已由 M3.11 Playwright Chromium 直接加载最终报告并覆盖惰性/幂等、0/3/63 层、GLM 78 层、键盘和 700px 后关闭 |
 | 2026-08-31 | 冻结 M3.9 One-Input 实施契约（历史记录） | 在实施前冻结五类 Hugging Face/本地/JSON 输入形式、immutable revision + canonical JSON hash、known rich DAG 与 unknown C0/opaque 降级、HF host/大小/深度限额、默认 artifact 与自动打开报告、页面证据状态及 IMP-01～IMP-10；当前完成状态见下一行 |
-| 2026-08-31 | 完成 M3.9 One-Input 功能与浏览器退出 | 交付 `llm-vis view`、Model ID/HF 模型页/HF config URL/本地 config/JSON 文本与 stdin、HF revision 固定、内容 hash 身份、generic C0/opaque GraphView、2 MiB/64 层/100,000 项限额、默认临时 artifact/auto-open 和 Source/Evidence HTML；IMP-01～IMP-10 全部通过，known/generic 最终 `file://` 页面已由 M3.11 Chromium 验收 |
+| 2026-08-31 | 完成 M3.9 One-Input 功能与浏览器退出 | 交付 `llm-vis view`、Model ID/HF 模型页/HF config URL/本地 config/JSON 文本与 stdin、HF revision 固定、内容 hash 身份、generic C0/opaque GraphView、2 MiB/64 层/100,000 项限额、默认 artifact/auto-open 和 Source/Evidence HTML；IMP-01～IMP-10 全部通过，known/generic 最终 `file://` 页面已由 M3.11 Chromium 验收；默认 artifact 位置的后续契约见 2026-09-08 maintenance |
 | 2026-08-31 | 正式启动 M3.10 Top-Down Explainable DAG | 按 Netron 阅读习惯把所有 GraphView、端口、连线与两类缩略图统一为从上到下；冻结“单击解释、双击下钻、叶节点双击不跳转”、Qwen alternate child 选择、语义简式公式与 Cost 公式隔离、零执行及 EXP-01～EXP-10 验收契约 |
 | 2026-08-31 | 完成 M3.10 Top-Down Explainable DAG 与 EXP-01～EXP-10 | Qwen/GLM 所有 view、端口、连线与 Parent/current minimap 已统一为纵向；跨 rank 边使用稳定左右 lane，13 个 view 的几何采样为 0 条 edge/label 穿过非端点卡片；单击 Explain、跨 view 安全的去抖双击、primary/alternate child、Softmax 简式公式和 GLM DSA opaque 边界完成真实浏览器验收；700px Inspector 无横向溢出且 console 0 warning/error；Python 3.9/3.12 各 260、Ruff、27/27 verifier 与两份报告 JavaScript 通过 |
 | 2026-08-31 | 正式启动 M3.11 Public Release Hardening | 冻结四条并行交付线：`view` 默认附带明确标注的 Prefill/Decode preset 且无 HardwareProfile 不启用 Pressure；修复 Layer anomaly 摘要并补精确身份测试；以真实 Chromium 覆盖 Explain/下钻/返回/搜索/热图/700px；完成 Qwen/GLM/generic E2E 与 LICENSE/CHANGELOG/SECURITY/CONTRIBUTING/包元数据。继续零权重、零 remote code、零完整 forward。 |
 | 2026-08-31 | 阶段性完成 M3.11 默认场景、Pressure 门控、Layer anomaly 与发布包链路 | `view` 默认 Prefill/Decode、显式 Scenario 优先、Compute/Memory 首屏和 HardwareProfile-only Pressure 已有 integration 契约；anomaly/expected-pattern deviation 与 layer identity/path/no-mutation 回归通过；Apache-2.0、CHANGELOG、SECURITY、CONTRIBUTING、PEP 639 元数据、wheel/sdist 核验及 Python 3.9/3.12 无 Torch 隔离安装 smoke 完成，随后进入下一行的 Chromium/三模型总退出。 |
 | 2026-08-31 | 完成 M3.11 Public Release Hardening 与 RC-01～RC-10 | Qwen primary/alternate/层导航、GLM static MoE/opaque DSA、generic C0、显式/缺失 HardwareProfile、700px、parent/minimap、source evidence 和 console/pageerror 由 5 项真实 Chromium 覆盖；Qwen/GLM/generic acceptance 已重生成且 6 个 JavaScript block 通过 syntax；Python 3.9/3.12 各 266、Ruff、golden、27/27、Twine、wheel/sdist 及无 Torch/NumPy 隔离安装全部通过 |
+| 2026-09-01 | 正式启动 M3.12 Dual Theme UI | 冻结两套真实语义 palette、首次 `prefers-color-scheme`、显式偏好本地持久化、无闪烁首屏、可访问切换、DAG/minimap/parent/heat 全覆盖、交互状态无损、浅色对比度与桌面/700px Chromium 验收；仍是单文件离线报告，不新增网络、权重、remote code 或 forward |
+| 2026-09-01 | 完成 M3.12 Dual Theme UI 与 THM-01～THM-10 | 页面/DAG semantic token、system-first-use、storage/matchMedia 缺失/抛错/legacy 降级、键盘与 ARIA、主题事件和 rAF 热图重绘完成；Qwen Memory、profiled Pressure、GLM MoE 与 generic Unknown 往返状态不变，页面文字 ≥4.5:1、关键图形 ≥3:1；Python 3.9/3.12 各 268、真实 Chromium 17、Ruff、golden、27/27 verifier 通过，三份 acceptance 已重生成且保持零权重/remote code/full forward |
+| 2026-09-08 | 完成默认 artifact 位置 maintenance | 不再把持久报告写入系统 temp；未显式传入 `--output` 时，仅在 Git marker 与项目身份确认当前位于 LLM Vis checkout 后写入仓库根 `artifacts/generated/<slug>-<hash8>`，冲突使用 `-2`/`-3` 且不覆盖；仓库外返回可操作错误并要求显式 `--output`，后者保持原契约。当前环境与 Python 3.9 隔离定向各 19 项、全量 Python 276 passed/17 browser-opt-in skipped、真实 Chromium 17、27/27 verifier、Ruff 与 diff-check 通过；真实 CLI 生成 `qwen2-c66f60bb`/`qwen2-c66f60bb-2`，均被 Git ignore 且 safety flags 为 false。 |
 
 ## 0. 执行摘要
 
@@ -1596,7 +1601,7 @@ One-Input 统一接受五类形式：
 - 未知 `model_type`、字段不足或只需 remote code 才能解释的架构不终止在空白页。它们输出 C0/unsupported 报告：保留可证明的 config inventory、源、hash 和 Diagnostic，不可证明的模型内部只显示 opaque/Unknown。有效 object 缺乏任何文本模型证据时，L0 只生成一个 coverage 0 的 opaque architecture 节点；存在通用维度/causal-LM 证据时可生成保守 unverified skeleton，仍不声称内部真实性。
 - 远程 JSON 只接受精确 `https://huggingface.co` host 与可规范化的模型/config 路径，不提供任意 URL fetcher。远程响应、本地和 inline JSON 统一限制为 2 MiB、最大嵌套深度 64 和 100,000 个 container items，并执行超时、redirect/final-host 校验；401/403 返回不含凭据的 `HF_AUTH_REQUIRED` 能力错误，超限时返回带 code/hint 的可操作错误，不部分解析后猜测。
 - 默认 One-Input 路径等价于 config-first `inspect`：不下载/读取权重，不导入 Hugging Face remote code，不构造目标/完整模型，不执行 target/full `forward()`、compile 或 profiler。`capture` 仍是显式高级操作，不被 One-Input 默认触发。
-- 用户不指定 `--output` 时，在唯一临时目录中生成 `<model-slug>-<config-hash8>` artifact；成功后默认打开自包含 `report.html`，`--no-open` 可禁用。打开失败不丢失 artifact，CLI 返回完整路径并只产生 warning。
+- 用户不指定 `--output` 时，只在当前目录能够向上定位到经过 Git marker 与 LLM Vis 项目身份共同确认的 checkout 后，才在其根目录的 `artifacts/generated/<model-slug>-<config-hash8>` 生成 artifact；同名目录存在时依次使用 `-2`、`-3`，绝不覆盖旧 artifact。仓库外省略 `--output` 必须返回带修复提示的错误且不向 cwd 写入默认 artifact。成功后默认打开自包含 `report.html`，`--no-open` 可禁用；打开失败不丢失 artifact，CLI 返回完整路径并只产生 warning。显式 `--output` 的位置和既有行为不变，在仓库外仍可使用。
 - 报告顶部 `Source / Evidence status` 必须显示 `Known adapter / Partial / Unsupported (opaque)`、requested/resolved revision、config hash、coverage 和零执行状态；未知降级不能用“成功可视化”文案掩盖。
 
 退出条件：
@@ -1609,7 +1614,7 @@ One-Input 统一接受五类形式：
 | IMP-04 | 未注册 `model_type` 或已知 adapter 缺少必要证据的有效 JSON object 生成 C0/opaque 报告；显式非法的已知模型字段必须报错而不能被 fallback 吞掉，未知 wrapper 也不能仅凭 nested type 错误路由。缺乏模型证据时只有单个 opaque 节点；不伪造 DAG/成本，Unknown 不补 0。 | **PASS**：generic fallback、known-invalid/nested-routing、single-node C0 与 invalid/limit 负测通过 |
 | IMP-05 | 远程只允许规范化的 Hugging Face HTTPS host/path；2 MiB、深度 64、100,000 个 container items、超时、redirect/final-host 均有正/负测，非 HF URL、HTML 伪 JSON 和超限输入被拒绝。 | **PASS**：本地/inline/远程限额与 URL 安全自动化通过 |
 | IMP-06 | 全过程继续断言零权重下载/读取、零 remote code、零目标/完整模型构造、零 target/full forward/compile/profiler；`auto_map` 只显示 Diagnostic。 | **PASS**：safety/manifest/不导入模型代码回归通过 |
-| IMP-07 | 只给一个输入且不给 `--output` 时在唯一临时目录生成 `<slug>-<hash8>` artifact 并默认打开报告；`--no-open`、打开失败和已存在输出的行为确定且不覆盖无关文件。 | **PASS**：`view`/inspect 默认输出、open/no-open/open-failure 自动化通过 |
+| IMP-07 | 只给一个输入且不给 `--output` 时，仅在已确认的 LLM Vis Git checkout 根 `artifacts/generated/<slug>-<hash8>` 生成 artifact；冲突使用 `-2`/`-3` 且不覆盖。仓库外必须给出可操作错误并要求显式 `--output`；显式路径行为不变。默认打开报告，`--no-open` 与打开失败行为确定且不丢 artifact。 | **PASS（2026-09-08 maintenance）**：`test_inspect_artifact.py` 在当前环境与 Python 3.9 隔离环境各 19 项，全量回归通过；真实 CLI 验证 base/`-2`、Git ignore、零执行 safety 与不覆盖契约 |
 | IMP-08 | 页面主图标题区显示 input/source kind、requested/resolved revision、config hash、adapter/support/coverage 状态与零执行证据；known 直接展示主 DAG，unsupported 显示 opaque 范围。 | **PASS**：Qwen/generic 最终 `file://` 报告真实 Chromium 验证 source badge/title、revision/hash、known/opaque 主图与 coverage |
 | IMP-09 | inline/本地 config 与不可信 `_commit_hash` 不泄露本机绝对路径，HF token/请求头不进入 log、manifest 或 HTML；私有/gated 仓库未实现认证时给出明确能力错误。 | **PASS**：脱敏 source URI、全 artifact 秘密负测与 401/403 `HF_AUTH_REQUIRED` 自动化通过 |
 | IMP-10 | M3.9 只改变输入便利性、provenance 和启动流；同一 DAG、visible frontier、parent context、Layer Disclosure、opaque/Unknown 和非实测热图边界全量回归通过。 | **PASS**：Python 3.9/3.12 全量各 **258 passed**，known/generic GraphView 与旧里程碑回归通过 |
@@ -1675,6 +1680,39 @@ One-Input 统一接受五类形式：
 
 明确不在 M3.11 范围内：发布到 PyPI 或创建正式 GitHub Release/tag（需要发布凭据与最终版本决策）、导入 runtime trace、执行目标模型、自动推断任意未知架构内部、实现 remote-code sandbox，以及把 synthetic HardwareProfile 当作用户默认硬件。
 
+### M3.12：Dual Theme UI
+
+> 实施状态：**完成（2026-09-01）**。M3.12 只改变同一份自包含报告的视觉呈现，不创建第二套图、不改变 GraphView/Model Map 事实，也不改变 Compute/Memory/Pressure 的成本与证据边界。Dark 与 Light 均已成为经过设计和真实浏览器验收的正式主题，而不是对页面做颜色反转或灰度滤镜。
+
+交付范围：
+
+- 建立页面级语义颜色 token，并为 Dark、Light 分别提供实际 palette。页面背景、层级 surface、文字、边界、focus、状态、节点、port、四类 edge、current minimap、parent context、drawer、表格与控件必须按语义取色；不使用整页 `filter`/`invert` 假造浅色主题。
+- 首次打开且没有有效显式偏好时读取 `prefers-color-scheme`，系统为 Light 时进入 Light，否则确定性回退到 Dark。主题判定必须在首屏绘制前完成，避免先闪出错误主题；系统主题后续变化只在用户尚未显式选择时跟随。
+- 顶栏提供键盘可达、带清晰 accessible name/状态的主题按钮。用户显式选择写入同源 `localStorage`，刷新及再次打开同一报告时恢复；存储被禁用、值非法或读写抛错时安全降级，不阻止报告启动。
+- 主题切换只更新视觉 token 与需要重绘的热力 palette，不重建 DAG、不重新 `openView`。当前 GraphView、节点身份/选择、viewport transform、搜索、Scenario、heat mode、layer disclosure、Inspector、parent/minimap 状态均保持不变。
+- Compute/Memory/Pressure 使用主题适配后的同一语义梯度；数值、排序、`data-heat-known`、Unknown/not-attributable、Pressure HardwareProfile 门控及“非实测 latency”说明不随主题改变。仅为可读性改变颜色表示。
+- Light 主题关键正文/控件文字相对背景对比度目标至少 4.5:1；大号文字、边、端口、focus ring 和其他必要非文本交互图形至少 3:1。Unknown 除灰色外继续保留文字、虚线或状态属性，不依赖颜色单独传达含义。
+- 所有主题代码、字体与图形继续内嵌在单文件报告中；不得增加远程 CSS/脚本、遥测、cookie、任意网络访问或不可信 HTML 注入。继续保持零权重、零 remote code、零目标/完整模型 `forward()`。
+
+稳定 DOM/事件契约：主题按钮为 `#theme-toggle`；当前生效值写入 `document.documentElement.dataset.theme`，且只允许 `dark|light`；显式偏好键为 `llm-vis-theme`。按钮 `aria-label` 描述下一动作，`aria-pressed="true"` 表示当前 Light；切换后派发 `llm-vis:theme-change`，detail 至少包含 `{theme, source}`。DAG 的主题刷新只消费上述页面契约，不拥有第二份偏好状态。
+
+退出条件：
+
+| ID | 验收条件 | 当前状态 |
+|---|---|---|
+| THM-01 | Dark 与 Light 都使用独立语义 palette 覆盖页面、drawer、控件和 DAG；实现不依赖整页 invert/filter，且两主题有可观测的 surface/text 差异。 | **PASS**：页面与 DAG 全量 semantic token；computed surface/text、节点、热图及缩略图均存在双 palette 差异 |
+| THM-02 | 首次打开、无有效存储偏好时按 `prefers-color-scheme` 选择主题；Light/Dark 系统模拟均在首屏得到正确值，未知能力确定性回退 Dark。 | **PASS**：Chromium 模拟 Light/Dark，并覆盖 `matchMedia` 缺失、factory 抛错与 legacy listener，均安全回退且 DAG 正常挂载 |
+| THM-03 | 用户显式选择保存为 `llm-vis-theme`，刷新后恢复并覆盖系统偏好；非法值或 storage 访问异常不崩溃、不产生外部副作用。 | **PASS**：刷新恢复、非法值、读取/写入 `SecurityError` 及会话显式偏好均通过，console/pageerror 为 0 |
+| THM-04 | `#theme-toggle` 可由鼠标和键盘操作，accessible name 说明下一动作，`aria-pressed`/可见状态准确，主题事件 detail 可供 DAG 同步。 | **PASS**：Enter/Click、下一动作 label、pressed 状态与 `{theme, source}` 事件均有真实浏览器断言 |
+| THM-05 | 切换主题前后当前 view/node stable ID、selection、viewport transform、搜索、Scenario、heat mode、layer/Inspector/parent 状态完全不变。 | **PASS**：Qwen 下钻、搜索、选择、缩放、Layer/Inspector/parent 与 Scenario/Memory 的切换前后快照完全相同 |
+| THM-06 | 节点、port、data/state/route/control edge、箭头、current minimap、parent map 和 focus/selection 在两主题均清晰；主题切换不改变节点/边数量与拓扑。 | **PASS**：四类 edge/marker、两类 port、focus/selection、上下游及 current/parent map computed paint 与 token 一致且图拓扑不变 |
+| THM-07 | Compute/Memory/Pressure/Unknown 的语义值、known/status 属性、排序与 HardwareProfile 门控在主题切换前后不变；Light 只替换可视 palette。 | **PASS**：Qwen Memory、profiled Pressure、GLM MoE 与 generic Unknown 完成 Light→Dark→Light 往返，heat/mode/gate/known/status 精确恢复 |
+| THM-08 | Light 的关键文字达到 4.5:1，边/port/focus 等必要图形达到 3:1；Unknown/状态不只靠颜色表达。 | **PASS**：实际 computed text ≥4.5:1；边、port、focus、minimap outline 与 parent map 关键图形 ≥3:1；Unknown 继续保留文字与 dash/status |
+| THM-09 | 1280px 与 700px 的 Dark/Light 页面均无横向溢出或关键遮挡，主题按钮、Inspector、child、layer、parent/minimap 可操作，console/pageerror 为空。 | **PASS**：真实 Chromium 覆盖桌面与 700px、主题按钮、下钻/返回、Inspector、Layer、parent/current minimap；无横向溢出且 0 error |
+| THM-10 | 最终 Qwen、GLM、generic 自包含报告和 Python 3.9/3.12 全套回归通过；HTML 仍无远程资源，并继续零权重、零 remote code、零目标/完整模型 forward。 | **PASS**：Python 3.9/3.12 各 268、Chromium 17、Ruff、golden、27/27 verifier 通过；三份最终报告已重生成且 safety flags 全 false |
+
+明确不在 M3.12 范围内：自动主题定时调度、自定义 palette 编辑器、云端同步主题、改变热力算法/成本数值、重新设计 GraphView schema、导入 runtime trace、执行模型或引入远程前端依赖。
+
 ### M4a：AMD Runtime 关联（3–4 周）
 
 只针对 M0 冻结的 reference stack：
@@ -1718,7 +1756,7 @@ One-Input 统一接受五类形式：
 
 ### 16.1 MVP 边界
 
-当前公开 MVP 是已完成的 M0–M3.10 端到端纵切，并由 M3.11 收敛首发体验与发布工程：Tiny Dense + Qwen3.8/GLM-5.3 已知 adapter + `torch.export` 单一 Tiny 捕获后端 + 默认 prefill/decode 理论成本 + renderer-neutral recursive GraphView、自包含离线 DAG 前端、直属父图上下文导航、自解释 decoder pattern 摘要、One-Input Model Import、generic C0/opaque 降级及 Model Explorer-compatible JSON spike。GLM-5.3 在 MVP 只承担超大 MoE 的 config-level 宏观结构、递归静态 MoE/opaque DSA 语义 DAG、静态父图上下文与可证明静态成本验收，动态捕获延后到 M5。
+当前公开 MVP 是已完成的 M0–M3.12 端到端纵切：M3.11 收敛首发体验与发布工程，M3.12 补齐经过验收的 Dark/Light 双主题。当前能力包括 Tiny Dense + Qwen3.8/GLM-5.3 已知 adapter + `torch.export` 单一 Tiny 捕获后端 + 默认 prefill/decode 理论成本 + renderer-neutral recursive GraphView、自包含离线 DAG 前端、直属父图上下文导航、自解释 decoder pattern 摘要、One-Input Model Import、generic C0/opaque 降级及 Model Explorer-compatible JSON spike。GLM-5.3 在 MVP 只承担超大 MoE 的 config-level 宏观结构、递归静态 MoE/opaque DSA 语义 DAG、静态父图上下文与可证明静态成本验收，动态捕获延后到 M5。
 
 M4a 是 Infra/AMD 专业能力的第一道分水岭；M4b 才提供硬件 counter 级证据。没有精确 op-to-kernel 关联时，产品是结构与理论成本工具，不能称为完整性能诊断器。
 
@@ -1734,7 +1772,10 @@ M4a 是 Infra/AMD 专业能力的第一道分水岭；M4b 才提供硬件 counte
 | M3.6 | DR-0011；Qwen/GLM recursive GraphView golden；boundary/cost/frontier validator；OP-01～OP-10 自动化与浏览器任务 | **PASS** |
 | M3.7 | `parent_node_id`/primary+alternate child、per-view viewport/selection 与 parent focus 单测；Qwen/GLM CTX-01～CTX-10；桌面/700px 响应式与键盘浏览器验收；零执行 provenance 回归 | **PASS**：Python 3.9/3.12 各 197、Ruff、27/27 verifier、报告 JavaScript/safety 与 UI agent 通过 |
 | M3.8 | 完整 Layer Strip pattern/tail/anomaly/definition 消歧、Qwen/GLM/Tiny 摘要与文字图例、惰性/幂等 DOM、逐层导航、窄屏/键盘及零执行回归 | **PASS**：LAY-01～LAY-10；最终 Qwen/GLM `file://` 报告真实 Chromium 与 Python 契约共同通过 |
-| M3.9 | 五类 One-Input 规范化、HF immutable revision/本地 SHA-256 身份、known DAG/generic C0 降级、HF host/2 MiB JSON 限额、默认临时 artifact/自动打开、Source/Evidence status 与零执行回归 | **PASS**：IMP-01～IMP-10；最终 known/generic `file://` 页面真实 Chromium 通过 |
+| M3.9 | 五类 One-Input 规范化、HF immutable revision/本地 SHA-256 身份、known DAG/generic C0 降级、HF host/2 MiB JSON 限额、repository-local artifact/自动打开、Source/Evidence status 与零执行回归 | **PASS**：IMP-01～IMP-10 与最终页面已退出；2026-09-08 默认输出位置 maintenance 另通过定向文件 19 项、全量 Python 276 项与真实 Chromium 17 项 |
+| M3.10 | 所有 GraphView/port/edge/minimap top-down；单击 Explain、双击/按钮下钻、公式/opaque 边界、稳定身份与 1280/700px 浏览器回归 | **PASS**：EXP-01～EXP-10；Python 3.9/3.12、最终 Qwen/GLM 报告与真实浏览器通过 |
+| M3.11 | 默认 Prefill/Decode、HardwareProfile-only Pressure、Layer anomaly、防伪三模型 E2E、真实 Chromium CI 与发行包检查 | **PASS**：RC-01～RC-10；Python 3.9/3.12、Chromium 5、27/27、Twine 与隔离安装通过 |
+| M3.12 | 两套语义 palette、system-first-use、持久化/异常降级、可访问切换、状态无损、DAG/minimap/heat 同步、浅色对比度、Dark/Light 桌面与 700px Chromium、安全离线回归 | **PASS**：THM-01～THM-10；Python 3.9/3.12 各 268、Chromium 17、Ruff、golden、27/27 verifier 与三份最终报告通过 |
 | M4a | marker→correlation→dispatch 映射测试；eager/compile 覆盖率按固定分母达标；无重复时间归属 | **Blocked：AMD reference stack 未冻结** |
 | M4b | 固定 Top-20 Kernel counter 导入；replay 路径哈希一致；counter wall time 不进入 latency | Blocked by M4a |
 | M5 | GLM 动态 fixture、第二 backend、cross-revision canonical matching、sandbox/禁用策略测试通过 | 未开始 |
@@ -1955,9 +1996,13 @@ M4a 是 Infra/AMD 专业能力的第一道分水岭；M4b 才提供硬件 counte
 - [x] M3.8 完整 strip 派生重复/阶段摘要、模型相关文字图例与非循环说明；
 - [x] M3.8 精确层按钮首次展开惰性生成，逐层 Instance/L1/Inspector 导航保持；
 - [x] M3.8 Qwen/GLM LAY 真实 Chromium `file://` 浏览器退出；
-- [x] M3.9 `llm-vis view` 单输入 CLI、默认唯一临时 artifact/自动打开报告与 `--no-open`；不包含浏览器启动页/文件选择器；
+- [x] M3.9 `llm-vis view` 单输入 CLI、默认 artifact/自动打开报告与 `--no-open`；不包含浏览器启动页/文件选择器；
+- [x] 2026-09-08 默认 artifact repository-local maintenance：Git/project checkout 识别、仓库外可操作错误、`-2`/`-3` 不覆盖与显式 `--output`；定向文件 19 项、全量 Python/Chromium、verifier 与真实 CLI 通过；
 - [x] M3.9 HTML Source/Evidence status、known 主 DAG 与 unsupported opaque C0 的静态/报告自动化；
 - [x] M3.9 IMP-08 真实 Chromium `file://` 页面退出；
+- [x] M3.10 全图 Top→Bottom、单击 Explain、双击下钻与简式公式/稳定身份；
+- [x] M3.11 默认 Prefill/Decode、HardwareProfile-only Pressure、真实浏览器 CI 与公开发行工程；
+- [x] M3.12 Dark/Light 语义 palette、system/storage 安全降级、状态无损重绘与 THM-01～THM-10；
 - [x] Layer Type Strip；
 - [x] Definition/Instance/Tensor/Metric/Diagnostic Inspector；
 - [x] workload switch；

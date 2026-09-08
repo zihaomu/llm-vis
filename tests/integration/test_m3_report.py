@@ -88,6 +88,29 @@ def test_m3_artifact_contains_hotspots_roofline_diff_and_offline_controls(
     assert 'id="coverage-badge"' in html
     assert 'id="model-dag"' in html
     assert 'id="heatmap-mode"' in html
+    assert 'id="theme-toggle"' in html
+    assert 'class="theme-toggle"' in html
+    assert 'aria-pressed="false"' in html
+    assert ":root[data-theme=\"light\"]" in html
+    assert "localStorage.getItem('llm-vis-theme')" in html
+    assert "localStorage.setItem(themeStorageKey,next)" in html
+    assert "matchMedia('(prefers-color-scheme: light)')" in html
+    assert "let theme=null,prefersLight=false" in html
+    assert "try{prefersLight=typeof window.matchMedia==='function'" in html
+    assert "catch(_error){}theme=prefersLight?'light':'dark'" in html
+    assert "let themeQuery=null" in html
+    assert "try{if(typeof window.matchMedia==='function')themeQuery=window.matchMedia(" in html
+    assert "catch(_error){}\nlet hasExplicitThemePreference=false" in html
+    assert "document.documentElement.dataset.theme=theme" in html
+    assert "theme==='light'?'light':'dark'" in html
+    assert "button.setAttribute('aria-pressed',String(theme==='light'))" in html
+    assert "button.setAttribute('aria-label',`Use ${target} theme`)" in html
+    assert "new CustomEvent('llm-vis:theme-change'" in html
+    assert "detail:{theme:next,source}" in html
+    assert "if(!storedTheme())applyTheme(" in html
+    assert "window.addEventListener('storage'" in html
+    assert "filter:invert(" not in html
+    assert "filter: invert(" not in html
     assert '<option value="pressure">Pressure</option>' in html
     assert '<option value="compute">Compute</option>' in html
     assert '<option value="memory">Memory</option>' in html
@@ -107,6 +130,19 @@ def test_m3_artifact_contains_hotspots_roofline_diff_and_offline_controls(
     assert 'class="llm-dag-parent-map" role="button" tabindex="0"' in html
     assert "returnToParent('parent-context-map')" in html
     assert "window.matchMedia('(max-width: 720px)')" in html
+    assert '[data-theme="light"] .llm-dag' in html
+    assert "--dag-edge-data:" in html
+    assert "--dag-edge-state:" in html
+    assert "--dag-edge-route:" in html
+    assert "--dag-edge-control:" in html
+    assert "--dag-heat-low-rgb:" in html
+    assert "--dag-heat-mid-rgb:" in html
+    assert "--dag-heat-high-rgb:" in html
+    assert "--dag-heat-unknown:" in html
+    assert "--dag-minimap-node:" in html
+    assert "--dag-minimap-edge:" in html
+    assert "--dag-minimap-viewport-fill:" in html
+    assert "--dag-minimap-viewport-stroke:" in html
     assert "window.llmVisInspect" in html
     assert "window.LLMVisDAG?.search('model-dag',query)" in html
     assert "graphMetricsFor" in html

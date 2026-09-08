@@ -97,15 +97,85 @@ def _write_json(path: Path, value: Any, *, force: bool) -> None:
         raise
 
 
-def _default_output_dir(bundle: AnalysisBundle) -> Path:
-    """Return a unique temporary root with a recognizable artifact directory."""
+def _is_llm_vis_repo_root(candidate: Path) -> bool:
+    """Return whether ``candidate`` is an LLM-Vis Git checkout root."""
 
-    staging_root = Path(tempfile.mkdtemp(prefix="llm-vis-"))
+    git_marker = candidate / ".git"
+    pyproject = candidate / "pyproject.toml"
+    if not (git_marker.is_dir() or git_marker.is_file()):
+        return False
+    if not pyproject.is_file() or not (candidate / "src" / "llm_vis").is_dir():
+        return False
+    try:
+        project_text = pyproject.read_text(encoding="utf-8")
+    except OSError:
+        return False
+    project_section = re.search(
+        r"(?ms)^\[project\][ \t]*(?:#[^\r\n]*)?\r?\n(?P<body>.*?)(?=^\[|\Z)",
+        project_text,
+    )
+    return bool(
+        project_section
+        and re.search(
+            r"(?m)^\s*name\s*=\s*(['\"])llm-vis\1\s*(?:#.*)?$",
+            project_section.group("body"),
+        )
+    )
+
+
+def _find_repo_root(start: Path) -> Optional[Path]:
+    """Find the nearest LLM-Vis checkout containing ``start``."""
+
+    start = start.resolve()
+    for candidate in (start, *start.parents):
+        if _is_llm_vis_repo_root(candidate):
+            return candidate
+    return None
+
+
+def _default_output_dir(bundle: AnalysisBundle) -> Path:
+    """Atomically reserve a readable artifact directory inside the current checkout."""
+
+    current_directory = Path.cwd().resolve()
+    repo_root = _find_repo_root(current_directory)
+    if repo_root is None:
+        raise ValueError(
+            "default output requires running inside the LLM-Vis Git checkout; "
+            "change into the clone or pass --output PATH"
+        )
+
+    artifacts_root = repo_root / "artifacts"
+    output_root = artifacts_root / "generated"
+    for path in (artifacts_root, output_root):
+        if path.is_symlink():
+            raise OSError(
+                "default output must remain inside the LLM-Vis checkout; "
+                f"refusing symlinked directory: {path}"
+            )
+    output_root.mkdir(parents=True, exist_ok=True)
+    try:
+        output_root.resolve().relative_to(repo_root)
+    except ValueError as exc:
+        raise OSError(
+            "default output resolved outside the LLM-Vis checkout; pass --output PATH"
+        ) from exc
+
     identifier = bundle.resolved.identifier
     if identifier.startswith(("config:", "inline", "local")):
         identifier = str(bundle.resolved.config.get("model_type") or "model")
     slug = re.sub(r"[^a-z0-9]+", "-", identifier.lower()).strip("-")[:64] or "model"
-    return staging_root / f"{slug}-{bundle.resolved.sha256[:8]}"
+    base_name = f"{slug}-{bundle.resolved.sha256[:8]}"
+
+    suffix = 1
+    while True:
+        name = base_name if suffix == 1 else f"{base_name}-{suffix}"
+        candidate = output_root / name
+        try:
+            candidate.mkdir()
+        except FileExistsError:
+            suffix += 1
+            continue
+        return candidate
 
 
 def _open_report(path: Path) -> bool:
@@ -137,7 +207,10 @@ def _add_analysis_arguments(command_parser: argparse.ArgumentParser) -> None:
     command_parser.add_argument(
         "--output",
         type=Path,
-        help="Artifact directory; omitted uses a unique temporary user directory",
+        help=(
+            "Artifact directory; omitted requires an LLM-Vis checkout and uses "
+            "its Git-ignored artifacts/generated directory"
+        ),
     )
     command_parser.add_argument("--local-files-only", action="store_true")
     command_parser.add_argument("--force", action="store_true")

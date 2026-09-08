@@ -2,17 +2,37 @@ from __future__ import annotations
 
 import io
 import json
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 import pytest
 
 from llm_vis.analysis import inspect_model
-from llm_vis.cli import main
+from llm_vis.cli import _default_output_dir, main
 from llm_vis.graph_view import GraphViewDocument
 from llm_vis.ir import ModelMap, Scenario
 from llm_vis.report import ArtifactWriteError, write_analysis
 
 FIXTURE_DIR = Path(__file__).parents[1] / "fixtures" / "configs"
+
+
+def _fake_checkout(
+    path: Path,
+    *,
+    project_name: str = "llm-vis",
+    worktree_git_file: bool = False,
+) -> Path:
+    path.mkdir(parents=True)
+    if worktree_git_file:
+        (path / ".git").write_text("gitdir: /unused/test-worktree\n", encoding="utf-8")
+    else:
+        (path / ".git").mkdir()
+    (path / "pyproject.toml").write_text(
+        f"[project]\nname = {project_name!r}\n",
+        encoding="utf-8",
+    )
+    (path / "src" / "llm_vis").mkdir(parents=True)
+    return path
 
 
 def _scenario() -> Scenario:
@@ -148,7 +168,7 @@ def test_cli_inspect_and_validate(tmp_path: Path) -> None:
     assert main(["validate", str(output / "model-map.json")]) == 0
 
 
-def test_cli_uses_temporary_output_and_opens_report_by_default(
+def test_cli_uses_default_output_and_opens_report_by_default(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     output = tmp_path / "default-artifact"
@@ -166,14 +186,178 @@ def test_cli_uses_temporary_output_and_opens_report_by_default(
     assert opened == [report.as_uri()]
 
 
+def test_cli_default_output_uses_nearest_checkout_artifacts_directory(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    checkout = _fake_checkout(tmp_path / "llm-vis-checkout")
+    working_directory = checkout / "examples" / "nested"
+    working_directory.mkdir(parents=True)
+    monkeypatch.chdir(working_directory)
+
+    bundle = inspect_model(str(FIXTURE_DIR / "tiny_dense.json"))
+    expected = (
+        checkout
+        / "artifacts"
+        / "generated"
+        / f"qwen2-{bundle.resolved.sha256[:8]}"
+    )
+
+    assert (
+        main(
+            [
+                "inspect",
+                str(FIXTURE_DIR / "tiny_dense.json"),
+                "--no-open",
+            ]
+        )
+        == 0
+    )
+    assert (expected / "reports" / "report.html").is_file()
+    assert not (working_directory / "artifacts").exists()
+
+
+def test_cli_default_output_requires_checkout_or_explicit_output(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    working_directory = tmp_path / "standalone"
+    working_directory.mkdir()
+    monkeypatch.chdir(working_directory)
+
+    assert (
+        main(
+            [
+                "inspect",
+                str(FIXTURE_DIR / "tiny_dense.json"),
+                "--no-open",
+            ]
+        )
+        == 2
+    )
+    assert not (working_directory / "artifacts").exists()
+    assert "default output requires running inside the LLM-Vis Git checkout" in (
+        capsys.readouterr().err
+    )
+
+
+def test_default_output_recognizes_git_worktree_marker(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    checkout = _fake_checkout(tmp_path / "checkout", worktree_git_file=True)
+    working_directory = checkout / "doc" / "nested"
+    working_directory.mkdir(parents=True)
+    monkeypatch.chdir(working_directory)
+    bundle = inspect_model(str(FIXTURE_DIR / "tiny_dense.json"))
+
+    output = _default_output_dir(bundle)
+
+    assert output.parent == checkout / "artifacts" / "generated"
+
+
+def test_default_output_accepts_commented_crlf_project_header(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    checkout = _fake_checkout(tmp_path / "checkout")
+    (checkout / "pyproject.toml").write_bytes(
+        b'[project] # package metadata\r\nname = "llm-vis"\r\n\r\n[project.urls]\r\n'
+    )
+    monkeypatch.chdir(checkout)
+    bundle = inspect_model(str(FIXTURE_DIR / "tiny_dense.json"))
+
+    output = _default_output_dir(bundle)
+
+    assert output.parent == checkout / "artifacts" / "generated"
+
+
+def test_default_output_rejects_lookalike_git_repository(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    lookalike = _fake_checkout(tmp_path / "lookalike", project_name="other-project")
+    monkeypatch.chdir(lookalike)
+    bundle = inspect_model(str(FIXTURE_DIR / "tiny_dense.json"))
+
+    with pytest.raises(ValueError, match="requires running inside the LLM-Vis Git checkout"):
+        _default_output_dir(bundle)
+
+    assert not (lookalike / "artifacts").exists()
+
+
+def test_default_output_rejects_symlinked_artifacts_root(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    checkout = _fake_checkout(tmp_path / "checkout")
+    external = tmp_path / "external"
+    external.mkdir()
+    (checkout / "artifacts").symlink_to(external, target_is_directory=True)
+    monkeypatch.chdir(checkout)
+    bundle = inspect_model(str(FIXTURE_DIR / "tiny_dense.json"))
+
+    with pytest.raises(OSError, match="refusing symlinked directory"):
+        _default_output_dir(bundle)
+
+    assert not list(external.iterdir())
+
+
+def test_default_output_reservation_is_unique_and_never_overwrites(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    checkout = _fake_checkout(tmp_path / "checkout")
+    monkeypatch.chdir(checkout)
+    bundle = inspect_model(str(FIXTURE_DIR / "tiny_dense.json"))
+    base_name = f"qwen2-{bundle.resolved.sha256[:8]}"
+
+    first = _default_output_dir(bundle)
+    sentinel = first / "user-note.txt"
+    sentinel.write_text("keep", encoding="utf-8")
+    second = _default_output_dir(bundle)
+    third = _default_output_dir(bundle)
+
+    assert [first.name, second.name, third.name] == [base_name, f"{base_name}-2", f"{base_name}-3"]
+    assert all(path.is_dir() for path in (first, second, third))
+    assert sentinel.read_text(encoding="utf-8") == "keep"
+
+
+def test_default_output_reservation_is_atomic_under_concurrency(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    checkout = _fake_checkout(tmp_path / "checkout")
+    monkeypatch.chdir(checkout)
+    bundle = inspect_model(str(FIXTURE_DIR / "tiny_dense.json"))
+    base_name = f"qwen2-{bundle.resolved.sha256[:8]}"
+
+    with ThreadPoolExecutor(max_workers=8) as executor:
+        paths = list(executor.map(lambda _: _default_output_dir(bundle), range(8)))
+
+    assert len(set(paths)) == 8
+    assert {path.name for path in paths} == {
+        base_name,
+        *(f"{base_name}-{suffix}" for suffix in range(2, 9)),
+    }
+    assert all(path.is_dir() for path in paths)
+
+
 def test_cli_explicit_output_only_opens_when_requested(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
+    monkeypatch.chdir(tmp_path)
     opened: list[str] = []
     monkeypatch.setattr(
         "llm_vis.cli.webbrowser.open",
         lambda uri: opened.append(uri) or True,
     )
+
+    def unexpected_default_output(_bundle: object) -> Path:
+        raise AssertionError("explicit --output must bypass default directory selection")
+
+    monkeypatch.setattr("llm_vis.cli._default_output_dir", unexpected_default_output)
 
     first = tmp_path / "explicit"
     assert (

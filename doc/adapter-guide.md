@@ -252,6 +252,8 @@ M4 adapter 只读取用户在外部受控环境生成的 PyTorch Profiler、rocp
 
 当前 `analysis_id` 至少包含完整模型 revision/config hash、schema version、adapter name、工具版本和 cost-model version；工具版本承担当前内置 adapter 实现版本的身份，不另设独立 `adapter_version` 字段。相同输入和版本必须生成相同层级、artifact-local ID、canonical key 和静态成本。报告只保存必要的 config 派生事实、哈希和链接，不重分发模型权重或受限制源码。manifest 的 `safety` 还要固定 `weights_loaded=false`、`full_model_constructed=false`、`full_forward_executed=false`、`full_meta_tree_enabled=false`，以及存在时的代表 capture/trace 来源。
 
+未提供 `--output` 时，CLI 只在确认当前目录处于 LLM Vis Git checkout 后使用仓库根的 `artifacts/generated/`；checkout 必须同时具有 Git marker（`.git` 目录或 worktree 文件）与 LLM Vis 项目身份，避免误认只有相似源码布局的无关目录。单次目录名为 `<model-slug>-<config-hash8>`；若已存在则分配 `-2`、`-3` 等后缀，禁止静默覆盖。仓库外省略 `--output` 必须返回可操作错误且不创建默认目录。显式 `--output` 仍完全由调用者控制，可在仓库内外使用，不受该默认路径策略影响。
+
 ## 13. 测试要求
 
 每个 adapter 需要：
@@ -276,6 +278,6 @@ M3.9 输入层另需要：
 - 未知 `model_type`、缺失必需字段、非模型 JSON 与 known adapter 构建失败的分类降级测试；
 - 非 HF URL、redirect/final-host 偏离、HTML、超过 2 MiB、深度 64、超时和超项数输入的拒绝测试；
 - Qwen/GLM 不同 input kind 生成同一核心 Model Map/GraphView 身份与零权重/代码/forward 回归；
-- 默认唯一临时 output/auto-open、`--no-open`、打开失败保留 artifact、路径/token 脱敏与 Source/Evidence status 页面测试。当前页面测试是静态/生成报告自动化，真实 `file://` 打开仍是手工退出项。
+- 默认 repo-local output、Git/project 身份校验、冲突后缀、仓库外可操作错误、显式 `--output` 优先、auto-open、`--no-open`、打开失败保留 artifact、路径/token 脱敏与 Source/Evidence status 页面测试。当前页面测试是静态/生成报告自动化，真实 `file://` 打开仍是手工退出项。
 
 新增 adapter 不得通过修改核心 IR 含义来“适配”单一模型。确有通用字段缺口时，先提出 schema migration 和 Decision Record，再更新 adapter。

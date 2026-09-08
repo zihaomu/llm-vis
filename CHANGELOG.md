@@ -22,8 +22,20 @@ The first public release is being prepared as `v0.1.0`.
   contracts, evidence boundaries, and explicit child-graph choices.
 - Scenario-based formula cost, visible-frontier Compute/Memory heatmaps, and
   HardwareProfile-gated theoretical Pressure.
+- Accessible Dark/Light report themes with system-first selection, local
+  preference persistence, and state-preserving DAG/heatmap repainting.
 - Python 3.9 and 3.12 CI, schema/golden verification, and real Chromium report
   interaction coverage.
+
+### Changed
+
+- Default report output is now kept in
+  `<llm-vis-checkout>/artifacts/generated/<model-slug>-<config-hash8>` when the
+  command runs inside a verified LLM Vis Git checkout, with `-2`, `-3`, and
+  later suffixes used to avoid overwriting an existing artifact. Outside that
+  checkout, omitting `--output` returns an actionable error rather than writing
+  into an unrelated directory; an explicit `--output` remains available and
+  unchanged.
 
 ### Security
 

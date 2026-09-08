@@ -118,8 +118,15 @@ def _open_report(
     *,
     width: int = 1280,
     height: int = 900,
+    color_scheme: str = "no-preference",
+    init_script: str = "",
 ) -> Iterator[tuple[Page, list[str]]]:
-    context = browser.new_context(viewport={"width": width, "height": height})
+    context = browser.new_context(
+        viewport={"width": width, "height": height},
+        color_scheme=color_scheme,
+    )
+    if init_script:
+        context.add_init_script(script=init_script)
     page = context.new_page()
     browser_errors: list[str] = []
 
@@ -164,6 +171,324 @@ def _center_node(page: Page, node) -> None:  # type: ignore[no-untyped-def]
 
 def _assert_browser_clean(browser_errors: list[str]) -> None:
     assert browser_errors == []
+
+
+def _theme_interaction_snapshot(page: Page) -> dict[str, object]:
+    return page.evaluate(
+        """() => ({
+            view: document.querySelector('#model-dag .llm-dag-view-select').value,
+            selected: document
+                .querySelector('#model-dag .llm-dag-node.is-selected')?.dataset.nodeId || null,
+            transform: document
+                .querySelector('#model-dag .llm-dag-world').getAttribute('transform'),
+            scenario: document.querySelector('#scenario-select').value,
+            heatmap: document.querySelector('#heatmap-mode').value,
+            search: document.querySelector('#search').value,
+            layerOpen: document.querySelector('#layer-panel').open,
+            inspectorOpen: document.querySelector('#inspector-drawer')
+                .getAttribute('aria-hidden') === 'false',
+            parentExpanded: document.querySelector(
+                '#model-dag .llm-dag-parent-context-toggle'
+            )?.getAttribute('aria-expanded') || null,
+            nodeIds: [...document.querySelectorAll('#model-dag .llm-dag-node')]
+                .map(node => node.dataset.nodeId),
+            edgeIds: [...document.querySelectorAll('#model-dag .llm-dag-edge-group')]
+                .map(edge => edge.dataset.edgeId),
+            nodeHeat: [...document.querySelectorAll('#model-dag .llm-dag-node')]
+                .map(node => [node.dataset.nodeId, node.dataset.heatKnown,
+                    node.dataset.heatStatus]),
+            minimapHeat: [...document.querySelectorAll(
+                '#model-dag .llm-dag-minimap-node'
+            )].map(node => [node.dataset.nodeId, node.dataset.heatKnown,
+                node.dataset.heatStatus])
+        })"""
+    )
+
+
+def _theme_computed_styles(page: Page) -> dict[str, str]:
+    return page.evaluate(
+        """() => {
+            const value = (selector, property) => {
+                const element = document.querySelector(selector);
+                return element ? getComputedStyle(element)[property] : '';
+            };
+            return {
+                bodyBackground: value('body', 'backgroundColor'),
+                bodyText: value('body', 'color'),
+                dagBackground: value('#model-dag', 'backgroundColor'),
+                nodeHeader: value('#model-dag .llm-dag-node-header', 'fill'),
+                nodeTitle: value('#model-dag .llm-dag-node-title', 'fill'),
+                dataEdge: value(
+                    '#model-dag .llm-dag-edge[data-edge-kind="data"]', 'stroke'
+                ),
+                minimapNode: value(
+                    '#model-dag .llm-dag-minimap-node', 'fill'
+                ),
+                knownHeat: value(
+                    '#model-dag .llm-dag-node[data-heat-known="true"] '
+                        + '.llm-dag-node-card',
+                    'fill'
+                )
+            };
+        }"""
+    )
+
+
+def _heat_semantics_snapshot(page: Page) -> dict[str, object]:
+    return page.evaluate(
+        """() => ({
+            mode: document.querySelector('#heatmap-mode').value,
+            title: document.querySelector('#model-dag .llm-dag-heat-title').textContent,
+            basis: document.querySelector('#model-dag .llm-dag-heat-basis').textContent,
+            pressureDisabled: document.querySelector(
+                '#heatmap-mode option[value="pressure"]'
+            ).disabled,
+            nodeHeat: [...document.querySelectorAll('#model-dag .llm-dag-node')]
+                .map(node => [node.dataset.nodeId, node.dataset.heatKnown,
+                    node.dataset.heatStatus]),
+            minimapHeat: [...document.querySelectorAll(
+                '#model-dag .llm-dag-minimap-node'
+            )].map(node => [node.dataset.nodeId, node.dataset.heatKnown,
+                node.dataset.heatStatus])
+        })"""
+    )
+
+
+def _heat_palette_snapshot(page: Page) -> dict[str, object]:
+    return page.evaluate(
+        """() => {
+            const root = document.querySelector('#model-dag');
+            const styles = getComputedStyle(root);
+            const node = root.querySelector('.llm-dag-node[data-heat-known="true"]')
+                || root.querySelector('.llm-dag-node');
+            const minimap = root.querySelector(
+                `.llm-dag-minimap-node[data-node-id="${node.dataset.nodeId}"]`
+            ) || root.querySelector('.llm-dag-minimap-node');
+            return {
+                tokens: [
+                    '--dag-heat-low-rgb', '--dag-heat-mid-rgb',
+                    '--dag-heat-high-rgb', '--dag-heat-unknown',
+                    '--dag-heat-not-applicable'
+                ].map(name => [name, styles.getPropertyValue(name).trim()]),
+                nodeFill: getComputedStyle(
+                    node.querySelector('.llm-dag-node-card')
+                ).fill,
+                minimapFill: getComputedStyle(minimap).fill,
+                nodeId: node.dataset.nodeId,
+                nodeKnown: node.dataset.heatKnown
+            };
+        }"""
+    )
+
+
+def _light_theme_contrast_ratios(page: Page) -> dict[str, float]:
+    return page.evaluate(
+        """() => {
+            const parse = value => {
+                const channels = String(value).match(/[0-9.]+/g)?.map(Number) || [];
+                return channels.length >= 3 ? channels.slice(0, 3) : [0, 0, 0];
+            };
+            const luminance = value => {
+                const linear = parse(value).map(channel => {
+                    const normalized = channel / 255;
+                    return normalized <= .04045 ? normalized / 12.92
+                        : ((normalized + .055) / 1.055) ** 2.4;
+                });
+                return .2126 * linear[0] + .7152 * linear[1] + .0722 * linear[2];
+            };
+            const ratio = (foreground, background) => {
+                const first = luminance(foreground), second = luminance(background);
+                return (Math.max(first, second) + .05) /
+                    (Math.min(first, second) + .05);
+            };
+            const style = selector => getComputedStyle(document.querySelector(selector));
+            const body = style('body'), control = style('#scenario-select');
+            const dag = style('#model-dag');
+            const nodeTitle = style('#model-dag .llm-dag-node-title');
+            const nodeHeader = style('#model-dag .llm-dag-node-header');
+            const edge = style('#model-dag .llm-dag-edge[data-edge-kind="data"]');
+            const mainPanel = style('.dag-panel');
+            const layerPanel = style('#layer-panel');
+            const mutedSoft = style('#layer-summary-note');
+            const root = style('html');
+            return {
+                bodyText: ratio(body.color, body.backgroundColor),
+                controlText: ratio(control.color, control.backgroundColor),
+                dagText: ratio(dag.color, dag.backgroundColor),
+                nodeTitle: ratio(nodeTitle.fill, nodeHeader.fill),
+                dataEdge: ratio(edge.stroke, dag.backgroundColor),
+                controlBorder: ratio(
+                    control.borderTopColor, control.backgroundColor
+                ),
+                lineStrong: ratio(
+                    root.getPropertyValue('--line-strong'), mainPanel.backgroundColor
+                ),
+                mutedSoftText: ratio(
+                    mutedSoft.color, layerPanel.backgroundColor
+                )
+            };
+        }"""
+    )
+
+
+def _minimap_outline_contrast(page: Page) -> dict[str, object]:
+    return page.evaluate(
+        """() => {
+            const parse = value => {
+                const channels = String(value).match(/[0-9.]+/g)?.map(Number) || [];
+                return {
+                    rgb: channels.slice(0, 3),
+                    alpha: channels.length > 3 ? channels[3] : 1
+                };
+            };
+            const composite = (foreground, background) => {
+                const fg = parse(foreground), bg = parse(background);
+                return fg.rgb.map((channel, index) =>
+                    channel * fg.alpha + bg.rgb[index] * (1 - fg.alpha));
+            };
+            const luminance = channels => {
+                const linear = channels.map(channel => {
+                    const normalized = channel / 255;
+                    return normalized <= .04045 ? normalized / 12.92
+                        : ((normalized + .055) / 1.055) ** 2.4;
+                });
+                return .2126 * linear[0] + .7152 * linear[1] + .0722 * linear[2];
+            };
+            const ratio = (first, second) => {
+                const left = luminance(first), right = luminance(second);
+                return (Math.max(left, right) + .05) /
+                    (Math.min(left, right) + .05);
+            };
+            const node = document.querySelector(
+                '#model-dag .llm-dag-minimap-node[data-heat-known="true"]'
+            );
+            const minimapNode = getComputedStyle(node);
+            const overlay = getComputedStyle(document.querySelector(
+                '#model-dag .llm-dag-current-context'
+            ));
+            const dag = getComputedStyle(document.querySelector('#model-dag'));
+            const background = composite(overlay.backgroundColor, dag.backgroundColor);
+            const stroke = parse(minimapNode.stroke).rgb;
+            return {
+                ratio: ratio(stroke, background),
+                stroke: minimapNode.stroke,
+                strokeWidth: parseFloat(minimapNode.strokeWidth),
+                heatKnown: node.dataset.heatKnown
+            };
+        }"""
+    )
+
+
+def _dag_semantic_token_contrast(page: Page) -> dict[str, object]:
+    return page.evaluate(
+        """() => {
+            const root = document.querySelector('#model-dag');
+            const styles = getComputedStyle(root);
+            const token = name => styles.getPropertyValue(name).trim();
+            const channels = value => {
+                const text = String(value).trim();
+                if (/^#[0-9a-f]{6}$/i.test(text)) {
+                    return [1, 3, 5].map(index => parseInt(
+                        text.slice(index, index + 2), 16
+                    ));
+                }
+                return (text.match(/[0-9.]+/g) || []).slice(0, 3).map(Number);
+            };
+            const luminance = value => {
+                const linear = channels(value).map(channel => {
+                    const normalized = channel / 255;
+                    return normalized <= .04045 ? normalized / 12.92
+                        : ((normalized + .055) / 1.055) ** 2.4;
+                });
+                return .2126 * linear[0] + .7152 * linear[1] + .0722 * linear[2];
+            };
+            const ratio = (foreground, background) => {
+                const first = luminance(foreground), second = luminance(background);
+                return (Math.max(first, second) + .05) /
+                    (Math.min(first, second) + .05);
+            };
+            const sameColor = (first, second) => {
+                const left = channels(first), right = channels(second);
+                return left.length === 3 && right.length === 3
+                    && left.every((value, index) => Math.abs(value - right[index]) < .5);
+            };
+            const dagBackground = token('--dag-bg');
+            const parentBackground = token('--dag-parent-map-bg');
+            const ratioPairs = {
+                edgeData: ['--dag-edge-data', dagBackground],
+                edgeState: ['--dag-edge-state', dagBackground],
+                edgeRoute: ['--dag-edge-route', dagBackground],
+                edgeControl: ['--dag-edge-control', dagBackground],
+                portInput: ['--dag-port-input', dagBackground],
+                portOutput: ['--dag-port-output', dagBackground],
+                focus: ['--dag-focus', dagBackground],
+                selection: ['--dag-selected', dagBackground],
+                upstream: ['--dag-upstream', dagBackground],
+                downstream: ['--dag-downstream', dagBackground],
+                parentEdge: ['--dag-parent-edge', parentBackground],
+                parentNode: ['--dag-parent-node', parentBackground],
+                parentExpanded: ['--dag-parent-expanded', parentBackground]
+            };
+            const ratios = Object.fromEntries(Object.entries(ratioPairs).map(
+                ([name, [foreground, background]]) => [
+                    name, ratio(token(foreground), background)
+                ]
+            ));
+
+            const surface = root.querySelector('.llm-dag-surface');
+            const edgeTokenMatches = {}, markerTokenMatches = {};
+            for (const kind of ['data', 'state', 'route', 'control']) {
+                const edge = document.createElementNS(
+                    'http://www.w3.org/2000/svg', 'path'
+                );
+                edge.setAttribute('class', 'llm-dag-edge');
+                edge.dataset.edgeKind = kind;
+                surface.append(edge);
+                edgeTokenMatches[kind] = sameColor(
+                    getComputedStyle(edge).stroke, token(`--dag-edge-${kind}`)
+                );
+                edge.remove();
+                markerTokenMatches[kind] = sameColor(
+                    getComputedStyle(root.querySelector(
+                        `.llm-dag-arrow[data-edge-kind="${kind}"]`
+                    )).fill,
+                    token(`--dag-edge-${kind}`)
+                );
+            }
+            const portTokenMatches = Object.fromEntries(
+                ['input', 'output'].map(direction => {
+                    const port = root.querySelector(
+                        `.llm-dag-port[data-port-direction="${direction}"]`
+                    );
+                    return [direction, sameColor(
+                        getComputedStyle(port).fill, token(`--dag-port-${direction}`)
+                    )];
+                })
+            );
+            const parentChecks = {
+                edge: ['.llm-dag-parent-edge', '--dag-parent-edge', 'stroke'],
+                node: ['.llm-dag-parent-node:not(.is-expanded-parent)',
+                    '--dag-parent-node', 'fill'],
+                expanded: ['.llm-dag-parent-node.is-expanded-parent',
+                    '--dag-parent-expanded', 'fill']
+            };
+            const parentTokenMatches = Object.fromEntries(Object.entries(
+                parentChecks
+            ).map(([name, [selector, tokenName, property]]) => {
+                const element = root.querySelector(selector);
+                return [name, Boolean(element) && sameColor(
+                    getComputedStyle(element)[property], token(tokenName)
+                )];
+            }));
+            return {
+                ratios,
+                edgeTokenMatches,
+                markerTokenMatches,
+                portTokenMatches,
+                parentTokenMatches
+            };
+        }"""
+    )
 
 
 def test_qwen_explain_drilldown_search_and_formula_heat(
@@ -318,17 +643,524 @@ def test_qwen_explain_drilldown_search_and_formula_heat(
         _assert_browser_clean(browser_errors)
 
 
+@pytest.mark.parametrize("system_theme", ["light", "dark"])
+def test_theme_first_use_follows_system_and_manual_choice_persists(
+    chromium: Browser,
+    qwen_report: Path,
+    system_theme: str,
+) -> None:
+    with _open_report(
+        chromium,
+        qwen_report,
+        color_scheme=system_theme,
+    ) as (page, browser_errors):
+        toggle = page.locator("#theme-toggle")
+        expect(toggle).to_be_visible()
+        expect(page.locator("html")).to_have_attribute("data-theme", system_theme)
+        expect(toggle).to_have_attribute(
+            "aria-pressed", str(system_theme == "light").lower()
+        )
+        expect(toggle).to_have_attribute(
+            "aria-label", f"Use {'dark' if system_theme == 'light' else 'light'} theme"
+        )
+        assert page.evaluate("localStorage.getItem('llm-vis-theme')") is None
+
+        page.evaluate(
+            """() => {
+                window.__llmVisThemeEvents = [];
+                window.addEventListener('llm-vis:theme-change', event => {
+                    window.__llmVisThemeEvents.push(event.detail);
+                });
+            }"""
+        )
+        manual_theme = "dark" if system_theme == "light" else "light"
+        toggle.focus()
+        page.keyboard.press("Enter")
+        expect(page.locator("html")).to_have_attribute("data-theme", manual_theme)
+        expect(toggle).to_have_attribute(
+            "aria-pressed", str(manual_theme == "light").lower()
+        )
+        assert page.evaluate("localStorage.getItem('llm-vis-theme')") == manual_theme
+        assert page.evaluate("window.__llmVisThemeEvents.at(-1)") == {
+            "theme": manual_theme,
+            "source": "user",
+        }
+
+        page.reload(wait_until="domcontentloaded")
+        page.wait_for_function(
+            "() => document.querySelector('#model-dag')?.dataset.dagMounted === 'true'"
+        )
+        expect(page.locator("html")).to_have_attribute("data-theme", manual_theme)
+        expect(page.locator("#theme-toggle")).to_have_attribute(
+            "aria-pressed", str(manual_theme == "light").lower()
+        )
+        _assert_browser_clean(browser_errors)
+
+
+def test_theme_manual_choice_survives_storage_security_error_and_system_change(
+    chromium: Browser,
+    qwen_report: Path,
+) -> None:
+    storage_denied = """
+        Object.defineProperty(Storage.prototype, 'setItem', {
+            configurable: true,
+            value() {
+                throw new DOMException('storage denied by test', 'SecurityError');
+            }
+        });
+    """
+    with _open_report(
+        chromium,
+        qwen_report,
+        color_scheme="light",
+        init_script=storage_denied,
+    ) as (page, browser_errors):
+        expect(page.locator("html")).to_have_attribute("data-theme", "light")
+        page.locator("#theme-toggle").click()
+        expect(page.locator("html")).to_have_attribute("data-theme", "dark")
+        assert page.evaluate("localStorage.getItem('llm-vis-theme')") is None
+
+        page.emulate_media(color_scheme="dark")
+        expect(page.locator("html")).to_have_attribute("data-theme", "dark")
+        page.emulate_media(color_scheme="light")
+        expect(page.locator("html")).to_have_attribute("data-theme", "dark")
+        expect(page.locator("#theme-toggle")).to_have_attribute(
+            "aria-pressed", "false"
+        )
+        _assert_browser_clean(browser_errors)
+
+
+def test_report_mounts_with_dark_fallback_when_match_media_is_unavailable(
+    chromium: Browser,
+    qwen_report: Path,
+) -> None:
+    without_match_media = """
+        Object.defineProperty(window, 'matchMedia', {
+            configurable: true,
+            value: undefined
+        });
+    """
+    with _open_report(
+        chromium,
+        qwen_report,
+        color_scheme="light",
+        init_script=without_match_media,
+    ) as (page, browser_errors):
+        assert page.evaluate("typeof window.matchMedia") == "undefined"
+        expect(page.locator("html")).to_have_attribute("data-theme", "dark")
+        expect(page.locator("#model-dag")).to_have_attribute(
+            "data-dag-mounted", "true"
+        )
+        expect(page.locator("#model-dag .llm-dag-node")).not_to_have_count(0)
+        expect(page.locator("#model-dag .llm-dag-minimap")).to_be_visible()
+
+        page.locator("#theme-toggle").click()
+        expect(page.locator("html")).to_have_attribute("data-theme", "light")
+        expect(page.locator("#model-dag")).to_have_attribute(
+            "data-dag-mounted", "true"
+        )
+        _assert_browser_clean(browser_errors)
+
+
+def test_report_mounts_when_match_media_factory_throws(
+    chromium: Browser,
+    qwen_report: Path,
+) -> None:
+    throwing_match_media = """
+        window.matchMedia = () => {
+            throw new DOMException('media query denied by test', 'SecurityError');
+        };
+    """
+    with _open_report(
+        chromium,
+        qwen_report,
+        color_scheme="light",
+        init_script=throwing_match_media,
+    ) as (page, browser_errors):
+        assert page.evaluate("typeof window.matchMedia") == "function"
+        expect(page.locator("html")).to_have_attribute("data-theme", "dark")
+
+        toggle = page.locator("#theme-toggle")
+        expect(toggle).to_be_visible()
+        expect(toggle).to_have_attribute("aria-label", "Use light theme")
+        scenario = page.locator("#scenario-select")
+        expect(scenario).to_be_visible()
+        expect(scenario.locator("option")).to_have_count(2)
+        scenario.select_option(index=1)
+        expect(scenario).to_have_value(
+            page.locator("#scenario-select option").nth(1).get_attribute("value") or ""
+        )
+
+        expect(page.locator("#model-dag")).to_have_attribute(
+            "data-dag-mounted", "true"
+        )
+        expect(page.locator("#model-dag .llm-dag-node")).not_to_have_count(0)
+        expect(page.locator("#model-dag .llm-dag-minimap")).to_be_visible()
+        toggle.click()
+        expect(page.locator("html")).to_have_attribute("data-theme", "light")
+        expect(page.locator("#model-dag")).to_have_attribute(
+            "data-dag-mounted", "true"
+        )
+        _assert_browser_clean(browser_errors)
+
+
+def test_report_and_dag_support_legacy_match_media_listeners(
+    chromium: Browser,
+    qwen_report: Path,
+) -> None:
+    legacy_match_media = """
+        window.__legacyMediaQueries = [];
+        window.matchMedia = query => {
+            const record = {
+                query,
+                matches: query.includes('prefers-color-scheme: light'),
+                listeners: [],
+                removed: 0
+            };
+            const result = {
+                media: query,
+                get matches() { return record.matches; },
+                addListener(listener) { record.listeners.push(listener); },
+                removeListener(listener) {
+                    record.listeners = record.listeners.filter(item => item !== listener);
+                    record.removed += 1;
+                }
+            };
+            record.emit = matches => {
+                record.matches = matches;
+                for (const listener of [...record.listeners]) {
+                    listener({matches, media: query});
+                }
+            };
+            window.__legacyMediaQueries.push(record);
+            return result;
+        };
+    """
+    with _open_report(
+        chromium,
+        qwen_report,
+        init_script=legacy_match_media,
+    ) as (page, browser_errors):
+        expect(page.locator("html")).to_have_attribute("data-theme", "light")
+        expect(page.locator("#model-dag")).to_have_attribute(
+            "data-dag-mounted", "true"
+        )
+        registered = page.evaluate(
+            """() => window.__legacyMediaQueries
+                .filter(item => item.listeners.length > 0)
+                .map(item => item.query)"""
+        )
+        assert "(prefers-color-scheme: light)" in registered
+        assert "(max-width: 720px)" in registered
+        light_background = page.evaluate(
+            "getComputedStyle(document.querySelector('#model-dag')).backgroundColor"
+        )
+
+        page.evaluate(
+            """() => {
+                for (const item of window.__legacyMediaQueries) {
+                    if (item.query === '(prefers-color-scheme: light)') item.emit(false);
+                }
+            }"""
+        )
+        expect(page.locator("html")).to_have_attribute("data-theme", "dark")
+        page.wait_for_function(
+            """light => getComputedStyle(
+                document.querySelector('#model-dag')
+            ).backgroundColor !== light""",
+            arg=light_background,
+        )
+
+        page.evaluate("window.LLMVisDAG.get('model-dag').destroy()")
+        removed = page.evaluate(
+            """() => window.__legacyMediaQueries
+                .reduce((total, item) => total + item.removed, 0)"""
+        )
+        assert removed >= 2
+        _assert_browser_clean(browser_errors)
+
+
+def test_dag_local_theme_override_wins_over_page_theme(
+    chromium: Browser,
+    qwen_report: Path,
+) -> None:
+    with _open_report(
+        chromium,
+        qwen_report,
+        color_scheme="light",
+    ) as (page, browser_errors):
+        dag = page.locator("#model-dag")
+        expect(page.locator("html")).to_have_attribute("data-theme", "light")
+        light_background = page.evaluate(
+            "getComputedStyle(document.querySelector('#model-dag')).backgroundColor"
+        )
+
+        dag.evaluate("element => { element.dataset.theme = 'dark'; }")
+        page.wait_for_function(
+            """light => getComputedStyle(
+                document.querySelector('#model-dag')
+            ).backgroundColor !== light""",
+            arg=light_background,
+        )
+        dark_background = page.evaluate(
+            "getComputedStyle(document.querySelector('#model-dag')).backgroundColor"
+        )
+        expect(page.locator("html")).to_have_attribute("data-theme", "light")
+
+        page.evaluate(
+            """() => {
+                document.documentElement.dataset.theme = 'dark';
+                document.querySelector('#model-dag').dataset.theme = 'light';
+            }"""
+        )
+        page.wait_for_function(
+            """light => getComputedStyle(
+                document.querySelector('#model-dag')
+            ).backgroundColor === light""",
+            arg=light_background,
+        )
+        assert dark_background != light_background
+        expect(dag).to_have_attribute("data-dag-mounted", "true")
+        _assert_browser_clean(browser_errors)
+
+
+def test_dag_semantic_tokens_and_markers_meet_contrast_in_both_themes(
+    chromium: Browser,
+    qwen_report: Path,
+) -> None:
+    with _open_report(
+        chromium,
+        qwen_report,
+        color_scheme="light",
+    ) as (page, browser_errors):
+        _node(page, "Hybrid Decoder").dblclick()
+        expect(_selected_view(page)).to_have_text(
+            "Gated DeltaNet Linear Attention representative"
+        )
+        expect(
+            page.locator("#model-dag .llm-dag-parent-node.is-expanded-parent")
+        ).to_have_count(1)
+
+        for theme in ("light", "dark"):
+            expect(page.locator("html")).to_have_attribute("data-theme", theme)
+            result = _dag_semantic_token_contrast(page)
+            ratios = result["ratios"]
+            assert isinstance(ratios, dict)
+            for name, value in ratios.items():
+                assert float(value) >= 3.0, f"{theme}:{name}={value}"
+            for group_name in (
+                "edgeTokenMatches",
+                "markerTokenMatches",
+                "portTokenMatches",
+                "parentTokenMatches",
+            ):
+                matches = result[group_name]
+                assert isinstance(matches, dict)
+                assert all(matches.values()), f"{theme}:{group_name}={matches}"
+            if theme == "light":
+                marker_before = page.evaluate(
+                    """getComputedStyle(document.querySelector(
+                        '#model-dag .llm-dag-arrow[data-edge-kind="data"]'
+                    )).fill"""
+                )
+                page.locator("#theme-toggle").click()
+                page.wait_for_function(
+                    """before => getComputedStyle(document.querySelector(
+                        '#model-dag .llm-dag-arrow[data-edge-kind="data"]'
+                    )).fill !== before""",
+                    arg=marker_before,
+                )
+
+        _assert_browser_clean(browser_errors)
+
+
+def test_qwen_theme_switch_preserves_dag_heat_and_interaction_state(
+    chromium: Browser,
+    qwen_report: Path,
+) -> None:
+    with _open_report(
+        chromium,
+        qwen_report,
+        color_scheme="light",
+    ) as (page, browser_errors):
+        expect(page.locator("html")).to_have_attribute("data-theme", "light")
+        page.locator("#scenario-select").select_option(index=1)
+        page.locator("#heatmap-mode").select_option("memory")
+
+        hybrid_decoder = _node(page, "Hybrid Decoder")
+        _center_node(page, hybrid_decoder)
+        hybrid_decoder.dblclick()
+        expect(_selected_view(page)).to_contain_text(
+            "Gated DeltaNet Linear Attention representative"
+        )
+        page.locator("#search").fill("Q RMSNorm")
+        expect(_selected_view(page)).to_contain_text(
+            "Full Attention · primitive operators"
+        )
+        match = page.locator(
+            "#model-dag .llm-dag-node.is-match", has_text="Q RMSNorm"
+        )
+        expect(match).to_have_count(1)
+        match.click()
+        expect(page.locator("#inspector-drawer")).to_have_attribute(
+            "aria-hidden", "false"
+        )
+        page.locator("#layer-panel summary").click()
+        expect(page.locator("#layer-panel")).to_have_attribute("open", "")
+
+        state_before = _theme_interaction_snapshot(page)
+        light_styles = _theme_computed_styles(page)
+        light_outline = _minimap_outline_contrast(page)
+        contrast = _light_theme_contrast_ratios(page)
+        assert contrast["bodyText"] >= 4.5
+        assert contrast["controlText"] >= 4.5
+        assert contrast["dagText"] >= 4.5
+        assert contrast["nodeTitle"] >= 4.5
+        assert contrast["dataEdge"] >= 3.0
+        assert contrast["controlBorder"] >= 3.0
+        assert contrast["lineStrong"] >= 3.0
+        assert contrast["mutedSoftText"] >= 4.5
+        assert light_outline["heatKnown"] == "true"
+        assert float(light_outline["strokeWidth"]) >= 1.0
+        assert float(light_outline["ratio"]) >= 3.0
+
+        page.locator("#theme-toggle").click()
+        expect(page.locator("html")).to_have_attribute("data-theme", "dark")
+        page.wait_for_function(
+            """previous => getComputedStyle(document.querySelector(
+                '#model-dag .llm-dag-node[data-heat-known="true"] '
+                    + '.llm-dag-node-card'
+            )).fill !== previous""",
+            arg=light_styles["knownHeat"],
+        )
+        state_after = _theme_interaction_snapshot(page)
+        dark_styles = _theme_computed_styles(page)
+        dark_outline = _minimap_outline_contrast(page)
+
+        assert state_after == state_before
+        assert dark_outline["heatKnown"] == "true"
+        assert dark_outline["strokeWidth"] == light_outline["strokeWidth"]
+        assert float(dark_outline["ratio"]) >= 3.0
+        for key in (
+            "bodyBackground",
+            "bodyText",
+            "dagBackground",
+            "nodeHeader",
+            "nodeTitle",
+            "dataEdge",
+            "minimapNode",
+            "knownHeat",
+        ):
+            assert dark_styles[key] != light_styles[key], key
+        _assert_browser_clean(browser_errors)
+
+
+@pytest.mark.parametrize(
+    ("report_fixture", "model_case"),
+    [
+        ("glm_report", "glm_moe"),
+        ("qwen_profiled_report", "qwen_pressure"),
+        ("generic_report", "generic_unknown"),
+    ],
+)
+def test_model_heat_semantics_survive_light_dark_round_trip(
+    chromium: Browser,
+    request: pytest.FixtureRequest,
+    report_fixture: str,
+    model_case: str,
+) -> None:
+    report = request.getfixturevalue(report_fixture)
+    with _open_report(
+        chromium,
+        report,
+        color_scheme="light",
+    ) as (page, browser_errors):
+        if model_case == "glm_moe":
+            _node(page, "Sparse DSA + MoE").dblclick()
+            expect(_selected_view(page)).to_have_text(
+                "GLM Sparse DSA + MoE representative"
+            )
+        elif model_case == "qwen_pressure":
+            expect(page.locator("#heatmap-mode")).to_have_value("pressure")
+            expect(page.locator("#model-dag .llm-dag-heat-title")).to_have_text(
+                "Theoretical pressure"
+            )
+        else:
+            expect(_selected_view(page)).to_have_text("Config-only model skeleton")
+
+        state_before = _theme_interaction_snapshot(page)
+        semantics_before = _heat_semantics_snapshot(page)
+        palette_before = _heat_palette_snapshot(page)
+        node_heat = semantics_before["nodeHeat"]
+        assert isinstance(node_heat, list)
+        known_count = sum(item[1] == "true" for item in node_heat)
+        if model_case == "qwen_pressure":
+            assert semantics_before["mode"] == "pressure"
+            assert semantics_before["pressureDisabled"] is False
+            assert known_count > 0
+        else:
+            assert semantics_before["pressureDisabled"] is True
+            assert known_count == 0
+
+        page.locator("#theme-toggle").click()
+        expect(page.locator("html")).to_have_attribute("data-theme", "dark")
+        page.wait_for_function(
+            """before => {
+                const node = document.querySelector(
+                    `#model-dag .llm-dag-node[data-node-id="${before.nodeId}"]`
+                );
+                return getComputedStyle(
+                    node.querySelector('.llm-dag-node-card')
+                ).fill !== before.nodeFill;
+            }""",
+            arg=palette_before,
+        )
+        state_dark = _theme_interaction_snapshot(page)
+        semantics_dark = _heat_semantics_snapshot(page)
+        palette_dark = _heat_palette_snapshot(page)
+        assert state_dark == state_before
+        assert semantics_dark == semantics_before
+        assert palette_dark["tokens"] != palette_before["tokens"]
+        assert palette_dark["nodeFill"] != palette_before["nodeFill"]
+        assert palette_dark["minimapFill"] != palette_before["minimapFill"]
+
+        page.locator("#theme-toggle").click()
+        expect(page.locator("html")).to_have_attribute("data-theme", "light")
+        page.wait_for_function(
+            """before => {
+                const node = document.querySelector(
+                    `#model-dag .llm-dag-node[data-node-id="${before.nodeId}"]`
+                );
+                return getComputedStyle(
+                    node.querySelector('.llm-dag-node-card')
+                ).fill === before.nodeFill;
+            }""",
+            arg=palette_before,
+        )
+        assert _theme_interaction_snapshot(page) == state_before
+        assert _heat_semantics_snapshot(page) == semantics_before
+        assert _heat_palette_snapshot(page) == palette_before
+        _assert_browser_clean(browser_errors)
+
+
 def test_qwen_key_controls_fit_without_horizontal_overflow_at_700px(
     chromium: Browser,
     qwen_report: Path,
 ) -> None:
-    with _open_report(chromium, qwen_report, width=700, height=900) as (
+    with _open_report(
+        chromium,
+        qwen_report,
+        width=700,
+        height=900,
+        color_scheme="dark",
+    ) as (
         page,
         browser_errors,
     ):
         for control in (
             page.locator("#scenario-select"),
             page.locator("#search"),
+            page.locator("#theme-toggle"),
             page.locator("#heatmap-mode"),
             page.locator("#model-dag .llm-dag-view-select"),
             page.get_by_role("button", name="Collapse to parent graph"),
@@ -399,6 +1231,11 @@ def test_qwen_key_controls_fit_without_horizontal_overflow_at_700px(
         expect(parent_map.locator(".llm-dag-parent-node")).to_have_count(11)
         parent_map.press("Enter")
         expect(_selected_view(page)).to_have_text("Qwen model DAG")
+        assert page.evaluate("document.documentElement.scrollWidth") <= 700
+
+        expect(page.locator("html")).to_have_attribute("data-theme", "dark")
+        page.locator("#theme-toggle").click()
+        expect(page.locator("html")).to_have_attribute("data-theme", "light")
         assert page.evaluate("document.documentElement.scrollWidth") <= 700
 
         _assert_browser_clean(browser_errors)

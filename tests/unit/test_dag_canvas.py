@@ -210,6 +210,75 @@ def test_assets_expose_offline_interaction_api_and_distinct_edge_patterns() -> N
     assert "@import" not in assets
 
 
+def test_assets_expose_real_dark_light_palettes_and_repaint_without_navigation() -> None:
+    assert '.llm-dag[data-theme="dark"]' in DAG_CANVAS_CSS
+    assert '[data-theme="light"] .llm-dag:not([data-theme="dark"])' in DAG_CANVAS_CSS
+    assert '.llm-dag[data-theme="light"]' in DAG_CANVAS_CSS
+    assert ":root:not([data-theme]) .llm-dag:not([data-theme])" in DAG_CANVAS_CSS
+    assert "@media (prefers-color-scheme: light)" in DAG_CANVAS_CSS
+    for token in (
+        "--dag-bg",
+        "--dag-panel",
+        "--dag-text",
+        "--dag-focus",
+        "--dag-node",
+        "--dag-node-header",
+        "--dag-node-title",
+        "--dag-port-input",
+        "--dag-port-output",
+        "--dag-edge-data",
+        "--dag-edge-state",
+        "--dag-edge-route",
+        "--dag-edge-control",
+        "--dag-heat-low-rgb",
+        "--dag-heat-mid-rgb",
+        "--dag-heat-high-rgb",
+        "--dag-heat-unknown",
+        "--dag-heat-not-applicable",
+        "--dag-minimap-node",
+        "--dag-minimap-node-outline",
+        "--dag-minimap-edge",
+        "--dag-minimap-viewport-fill",
+        "--dag-minimap-viewport-stroke",
+        "--dag-minimap-heat-unknown",
+        "--dag-parent-map-bg",
+        "--dag-parent-expanded",
+    ):
+        assert DAG_CANVAS_CSS.count(token) >= 2, token
+
+    assert ".llm-dag-arrow { fill: var(--dag-edge-data); }" in DAG_CANVAS_CSS
+    for kind in ("state", "route", "control"):
+        assert f'.llm-dag-arrow[data-edge-kind="{kind}"]' in DAG_CANVAS_CSS
+    assert "`--dag-edge-${kind}`" in DAG_CANVAS_JS
+
+    assert "window.addEventListener('llm-vis:theme-change', handleThemeChange)" in (
+        DAG_CANVAS_JS
+    )
+    assert "new MutationObserver(handleThemeChange)" in DAG_CANVAS_JS
+    assert "attributeFilter: ['data-theme']" in DAG_CANVAS_JS
+    assert "function syncThemePaint()" in DAG_CANVAS_JS
+    assert "function refreshHeatPalette()" in DAG_CANVAS_JS
+    assert "const stops = heatPalette" in DAG_CANVAS_JS
+    assert "syncThemePaint();" in DAG_CANVAS_JS
+    assert "window.removeEventListener('llm-vis:theme-change', handleThemeChange)" in (
+        DAG_CANVAS_JS
+    )
+    assert "stroke: var(--dag-minimap-node-outline);" in DAG_CANVAS_CSS
+    assert "vector-effect: non-scaling-stroke;" in DAG_CANVAS_CSS
+
+
+def test_media_query_adapter_handles_legacy_and_throwing_factories() -> None:
+    assert "const safeMatchMedia = (query, nativeFactory) =>" in DAG_CANVAS_JS
+    assert "nativeMedia = nativeFactory()" in DAG_CANVAS_JS
+    assert "catch (_error) {\n      return mediaFallback(query);\n    }" in DAG_CANVAS_JS
+    assert "typeof nativeMedia.addListener === 'function'" in DAG_CANVAS_JS
+    assert "nativeMedia.addListener(listener)" in DAG_CANVAS_JS
+    assert "typeof nativeMedia.removeListener === 'function'" in DAG_CANVAS_JS
+    assert "nativeMedia.removeListener(listener)" in DAG_CANVAS_JS
+    assert "get matches()" in DAG_CANVAS_JS
+    assert "catch (_error) { return false; }" in DAG_CANVAS_JS
+
+
 def test_payload_is_deterministic_and_script_closing_sequence_is_safe() -> None:
     first = render_dag_canvas({"views": [], "label": "</script><b>unsafe</b>"})
     second = render_dag_canvas({"label": "</script><b>unsafe</b>", "views": []})
