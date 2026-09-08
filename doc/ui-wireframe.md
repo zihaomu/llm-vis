@@ -1,9 +1,9 @@
-# LLM-Vis M0 低保真 UI Wireframe
+# LLM-Vis M0–M3.13 UI Wireframe
 
-- 状态：M0 可核验交互规格
+- 状态：M0–M3.13 可核验交互规格；M3.13 工程完成 / 真人验收待办
 - 日期：2026-08-29
-- 最后更新：2026-08-31；最后完整浏览器验收：2026-08-30
-- 实现状态：M0–M3.7 与 M3.10 自包含离线 UI 已实现并验收；M3.8/M3.9 功能与自动化已通过、最终 `file://` 页面待手工确认。M3.10 已把同一中央 DAG 切换为从上到下阅读、单击结构化解释与去抖双击下钻；直属母图上下文、按需 Browse/Inspector/精确 Layers/Supporting analysis 保持不变。官方 Model Explorer consumer 仍为 Partial，M4 timeline 未实现
+- 最后更新：2026-09-08；最后工程浏览器验收：M3.13（真实 Chromium 21 passed）；最后全部退出的里程碑：M3.12（2026-09-01）
+- 实现状态：M0–M3.12 自包含离线 UI 已实现并全部验收；M3.13 Graph Clarity & Progressive Disclosure **工程完成 / 真人验收待办**，CLAR-01～CLAR-08、CLAR-10 已通过工程/真实 Chromium 验收，CLAR-09 的 5 名目标初学者任务尚未执行。M3.13 继续使用同一 GraphView/DAG，把主数据流固定在中央纵轴、把分支/state/route 放入稳定侧 lane，并让节点、边、heat 与 minimap 按需披露。官方 Model Explorer consumer 仍为 Partial，M4 timeline 未实现
 
 ## 1. 目标
 
@@ -22,22 +22,25 @@
 ## 2. 全局框架
 
 ```text
-┌ LLM-Vis / Model · rev ───────── [Scenario ▾] [Search graph/layer/ID] [Report status] ┐
+┌ LLM-Vis / Model · rev ─────── [Scenario ▾] [Search graph/layer/ID] [Theme] [Status] ┐
 ├─────────────────────────────────────────────────────────────────────────────────────┤
-│ Model graph · L0→L1              [Theory heat ▾] [Browse] [Inspector] [Analysis] │
+│ Model graph · L0→L1       [Structure] [Compute] [Memory] [Pressure*] [Inspector] │
 │ › Text decoder layers · [L×3 → A] ×16 · 64 exact layers · L/A 图例 · 非循环│
-│   （精确 64/78 层默认隐藏；首次展开后单行横向滚动）                           │
 │ ┌ Back · View · Breadcrumb ─────────────────────────────── −  +  Fit · Read-only ┐ │
-│ │                                                                               │ │
-│ │                         CENTRAL DAG CANVAS                                    │ │
-│ │                                  Input                                        │ │
-│ │                                    ↓                                          │ │
-│ │                               Embedding                                       │ │
-│ │                                    ↓                                          │ │
-│ │                 state/route → Decoder Pattern → optional branches             │ │
-│ │                                    ↓                                          │ │
-│ │                              Norm → Head → Logits                              │ │
-│ │                                                     minimap                   │ │
+│ │                              CENTRAL DAG CANVAS                               │ │
+│ │        STATE / SUPPORTING LANE    MAIN AXIS          OPTIONAL / ROUTE LANE    │ │
+│ │                                      Input                                    │ │
+│ │                                        ↓                                      │ │
+│ │                                  Token Embedding         Vision → Projector   │ │
+│ │                                        ↓                         │            │ │
+│ │          KV / recurrent state ↔ Decoder Pattern ←────────┘                    │ │
+│ │                                        ├────────────────→ MTP (conditional)   │ │
+│ │                                        ↓                                      │ │
+│ │                                   Final Norm                                  │ │
+│ │                                        ↓                                      │ │
+│ │                                     LM Head                                   │ │
+│ │                                        ↓              minimap（仅按需）       │ │
+│ │                                      Logits           parent（仅 child）      │ │
 │ └───────────────────────────────────────────────────────────────────────────────┘ │
 ├─────────────────────────────────────────────────────────────────────────────────────┤
 │ › Supporting analysis（默认折叠：Capture / Structure / Cost / Roofline / Runtime） │
@@ -45,7 +48,10 @@
 
 [Browse]    → 左侧按需抽屉：Definitions；Diagnostics 默认二次折叠
 [Inspector] → 右侧按需抽屉：Explain/Tensors/Cost/Runtime/Provenance/Coverage
+* Pressure 仅在匹配 HardwareProfile 时可用；首次打开固定为 Structure / heat Off。
 ```
+
+上图是 M3.13 已落地的工程契约；CLAR-01～CLAR-08、CLAR-10 已通过，CLAR-09 真人任务仍待验收，因此不代表 M3.13 已全部完成。`MAIN AXIS` 来自同一 GraphView 中可证明的主要 activation 路径；侧 lane 只是布局分区，不创建新的 Tensor、执行顺序或控制关系。
 
 不可隐藏的全局上下文：模型与 revision、Scenario、当前 L0/L1 层级。Metric origin、Coverage 与零执行状态可收纳到 Report status/Inspector，但不能删除或改写。默认首屏不得同时常驻 Browse、Inspector、Layer 全量按钮和分析表格；信息完整性通过按需抽屉与折叠区保留。
 
@@ -55,7 +61,7 @@ M3.9 的启动面是 `llm-vis view INPUT`，不是浏览器表单。CLI 已统�
 
 用户不指定 `--output` 时，CLI 只在确认当前工作目录位于 LLM Vis Git checkout（Git marker 与项目身份均匹配）后，才在仓库根目录的 `artifacts/generated/<model-slug>-<config-hash8>` 生成 artifact；同名目录已存在时依次使用 `-2`、`-3`，不覆盖旧结果。仓库外省略 `--output` 会返回带修复提示的错误，不向无关 cwd 写文件。CLI 输出 artifact/report 绝对路径并默认调用系统浏览器；`--no-open` 可关闭打开。打开失败只产生 warning，不丢失已生成 artifact。用户显式传入的 `--output` 路径及其既有行为不变，并可在仓库外使用。
 
-离线报告沿用现有 graph-first 页面，主图标题下增加紧凑证据栏：`Target input: config.json only`、source kind/requested+resolved revision、config SHA-256、`Known adapter` 或 `Unsupported · opaque`、当前 view evidence，以及 `no target weights · no model code · no full forward`。证据栏不增加第二张图：
+离线报告沿用现有 graph-first 页面，并保留这些证据事实：`Target input: config.json only`、source kind/requested+resolved revision、config SHA-256、`Known adapter` 或 `Unsupported · opaque`、当前 view evidence，以及 `no target weights · no model code · no full forward`。M3.13 起它们收纳在一步可打开的 `Report status` 中，不再常驻主图标题下，也不增加第二张图：
 
 - `Known adapter`：显示 adapter 名、requested/resolved revision、config hash 与 coverage，中央位置直接显示已有同一 L0→L1→operator DAG；
 - `Partial`：已知区域继续使用同一 DAG，证据不足的节点为 opaque/Unknown，页头显示范围而不用绿色“完成”掩盖；
@@ -80,7 +86,7 @@ Decoder instances: 64
 State summary: Linear layers → recurrent state (48); Full Attention → KV cache (16)
 ```
 
-L0 节点至少显示：Definition label、instance count、semantic kind、是否 conditional/opaque、来源和 Coverage badge。GLM 的专家显示为：
+L0 必须让用户取得 Definition label、instance count、semantic kind、conditional/opaque、来源和 Coverage 等事实；M3.13 默认卡片只常驻名称/用途、紧凑 I/O、重复/conditional/opaque 状态与下钻提示，来源和完整 Coverage 转入 Inspector/Report status。GLM 的专家显示为：
 
 ```text
 Dense Block × 3 → Sparse Block × 75
@@ -133,7 +139,7 @@ Panels:  [Browse] [Inspector] [Analysis]                         Minimap
 | `state_read` | KV/recurrent state 从独立 state rail 进入 Block | 轨道线 + `read` |
 | `state_write` | Block 更新 KV/recurrent state rail | 轨道线 + `write` |
 
-每条线必须连接明确的 `source_port_id → target_port_id`，固定以三行显示 kind/Tensor 名、紧凑 shape 和 dtype；不可证明的 shape/dtype 显示 `Unknown` 与原因，不猜测。Weight 边保留在 Model Map 事实层中，默认不进入主数据流画布。state rail 表达“本步读/写外部状态”，不用跨 token 回边破坏单步 DAG。不得为 MTP 伪造 decoder control Tensor；已验收的支路是 `decoder hidden → MTP → MTP Draft Logits`，conditional 作为节点属性保留。
+每条线必须连接明确的 `source_port_id → target_port_id`。M3.13 默认只常驻必要的紧凑 shape，hover/focus/selection 时再披露 kind/Tensor 名和 dtype；三项事实及完整 `source_port_id → target_port_id` 关系仍保留在 DOM accessible name/Inspector。不可证明的 shape/dtype 显示 `Unknown` 与原因，不猜测。Weight 边保留在 Model Map 事实层中，默认不进入主数据流画布。state rail 表达“本步读/写外部状态”，不用跨 token 回边破坏单步 DAG。不得为 MTP 伪造 decoder control Tensor；已验收的支路是 `decoder hidden → MTP → MTP Draft Logits`，conditional 作为节点属性保留。
 
 只有 `drilldown_view_id` 指向实际存在 view 的节点才显示 `N nodes ↓` 角标。角标有至少 28×28 的触摸/点击区，单击角标直接进入 primary child；M3.10 起整张卡片单击自动打开结构化 Explain，双击或键盘 Enter 下钻，叶节点的 Enter/Space 只解释。节点的可访问名称和 `aria-keyshortcuts` 必须说明该差异，画布状态栏同时显示当前可下钻节点数。叶节点不显示角标且双击不跳转，避免让用户猜哪些节点可以打开。
 
@@ -166,7 +172,7 @@ Full Attention operators
 - child boundary 是可见的输入/输出/state rail；其端口与父 compound port 由正式 binding 对应。父 input 对应 child boundary output，父 output 对应 child boundary input，shape/dtype/role/TensorSpec 必须相同。
 - 热图统计集合是当前 view 的 `cost_frontier_node_ids`。边界/container 不进入分母；父节点在 child view 中不可见且不参与合计；Unknown/Excluded 仍显示灰色原因，但不作为 0 参与排序。
 - Full Attention/FFN 的 Cost Inspector 显示 parent total、known child subtotal、unattributed remainder、coverage 与公式范围。`unattributed=0` 只有在已知子项确实与父公式相等时显示；未知项永不通过减法或默认值伪造成 0。
-- GLM Router/TopK/Expert 只显示静态结构。`runtime_route_known=false`、`selected_expert_ids=null` 与 `experts_materialized=0` 必须可从卡片/Inspector 读取；不得绘制某个 token 实际去了哪个专家。
+- GLM Router/TopK/Expert 只显示静态结构。`runtime_route_known=false`、`selected_expert_ids=null` 与 `experts_materialized=0` 必须可从 Inspector/序列化 artifact 读取；不得绘制某个 token 实际去了哪个专家。
 
 ## 5. L2：两种必须区分的状态
 
@@ -243,6 +249,54 @@ M3.5 画布的节点、端口和边都是可选对象。M3.10 起，真实鼠标
 - Qwen Hybrid Decoder 的 Explain 同时列出 Linear Attention 和 Full Attention 两个实际 child view；双击只进入稳定 primary，alternate 通过明确按钮进入。任何 child 列表都从可解析 GraphView 关系派生，不从 Model Map `children/child_ids` 猜测。
 - opaque 区域必须显示 `Unknown — opaque evidence boundary`；GLM DSA、actual expert route/IDs/weights 与 Linear delta core 不因解释 UI 而获得虚构公式。
 
+### 4.4 M3.13 图清晰度与渐进披露契约（工程完成 / 真人验收待办）
+
+M3.13 不增加“新手图”和“专家图”切换。所有用户始终查看同一个 DAG、相同 GraphView 和 stable ID；新手需要的不是更少的事实，而是先看到主路径、在需要时再取得细节。以下工程状态已由 CLAR-01～CLAR-08、CLAR-10 验收；CLAR-09 仍必须由真人任务完成，不能因自动化通过而标记整个里程碑完成。
+
+#### 中心主轴与侧 lane
+
+- root 与 child view 都保留 `DOWN`。主要 activation 路径的节点按中心线对齐；分支节点不能仅因宽度不同把主轴逐层推向左右。
+- 主轴只来自已有端口与 data edge 的可证明路径。Qwen L0 固定优先显示 `Input → Token Embedding → Hybrid Decoder → Final Norm → LM Head → Logits`；其他 view 按各自边与 semantic role 选择，不用 DOM 顺序或标签字符串伪造拓扑。
+- Vision/Projector、MTP 和 conditional 输出进入外侧 supporting lane；KV/recurrent state 使用 state lane；Router/TopK control/route 与非主轴 Expert/Shared Expert 分支使用 supporting lane，而可证明主数据流上的 Expert/Shared Expert/Combine 等 MoE 计算节点可留在主轴。lane 选择必须确定性，同一个 view 重绘、主题或 Scenario 切换后不漂移。
+- 侧 lane 的边在其真实连接 rank 回到主轴，使用外侧正交走廊；边、label 与 marker 不穿过非端点卡片。分支太宽时扩展画布而不是挤碎主轴节点。
+
+#### 节点披露
+
+默认卡片的阅读预算是四类信息，不强制把每类机械地占一行：
+
+```text
+Hybrid Decoder ×64
+Transforms token features
+[B,T,5120] → [B,T,5120]
+Open 10 nodes ↓
+```
+
+- 常驻：人可读 label/用途、紧凑主要 I/O、repeat/conditional/opaque，以及仅在存在真实 child 时出现的下钻 affordance。
+- 选择态：保持卡片紧凑，同时高亮上下游并在 Explain 自动显示用途、教学简式公式和完整 I/O 概要。
+- 深层信息：完整 dtype/shape、所有 port/TensorSpec、origin/evidence、coverage、cost/reconciliation、Diagnostic 只进入相应 Inspector tab；从首屏移走不等于从 artifact 删除。
+- Unknown、opaque、conditional 与可下钻能力必须有文字/符号，不只靠颜色。结构卡边界默认实线；opaque 可保留结构证据虚线，heat known/partial/unknown/not-attributable 不改变边框线型。
+
+#### 边披露
+
+- 默认每条边只显示方向和必要的紧凑 shape；重复 shape 可在不产生歧义时省略。edge kind 仍由 line/marker 提供非颜色区别，但 `data`、tensor 名、dtype 和端口名不全部常驻。
+- 鼠标 hover、键盘 focus、选择 edge/port/node 或上下游路径高亮时，在不遮挡节点的 label slot 显示 tensor 名、dtype 与 kind。完整端口关系留在 Tensors Inspector；focus 与 hover 的信息等价，不能要求键盘用户使用 pointer。
+- 完整 TensorSpec 始终由 Tensors Inspector 提供。标签显示/隐藏只改变 DOM 展示，不改变 edge ID、端点、kind、shape 或可达性。
+
+#### Structure、heat 与 minimap
+
+- 首次打开以及打开新报告的默认分析状态为 `Structure` / heat `Off`；Prefill/Decode Scenario 仍已选中，Compute/Memory 数据仍已计算，只是不抢占结构首屏。
+- Compute、Memory 和 Structure 是可见的一键动作。Pressure 只有匹配 HardwareProfile 时可用；从 heat 返回 Structure 只清除视觉着色，不清除 Scenario、selection、search 或 viewport。
+- Known heat 用 fill 强度；Partial 用 badge；Unknown 用中性 fill + `?`/文字；not-attributable 保持 Structure 外观并只在选择态解释。不同虚线不能再表示这四类 heat 状态。
+- current minimap 在当前 scale 下 graph bounds 超出可见 viewport 时出现；默认 Fit 且全图完整可见时隐藏。Parent context 只存在于非 root view，桌面显示紧凑位置，`≤720px` 默认折叠为明确的 parent/return 控件。
+- current minimap 只定位当前 viewport，Parent context 只说明当前 child 在直属母图的位置；两者不能合并成一个含糊缩略图。条件隐藏不得删除其状态，重新出现时仍恢复同一 viewport/parent focus。
+
+#### 交互与稳定性
+
+- 单击节点选择并打开 Explain；双击、下钻 badge 或 Enter 只在真实 primary child 存在时进入；alternate child 使用明确按钮。leaf/opaque 的双击或 Enter 只解释，不能跳到空图。
+- 所有可下钻卡都显示无需阅读帮助即可理解的 `Open N nodes ↓` 或等价文案；pointer cursor、focus ring 与 accessible name/`aria-keyshortcuts` 同步说明动作。
+- hover/focus 披露、Inspector、Structure/heat、下钻/返回、搜索、Scenario、theme 与 layer 操作不重建事实图；view/node/port/edge ID 与拓扑不变，并继续恢复 per-view selection/viewport。
+- Dark/Light、1280px/700px、自包含离线与零权重/零 remote code/零完整 forward 边界继续适用。
+
 ## 8. Scenario 与 workload diff
 
 Scenario selector 显示：
@@ -278,7 +332,7 @@ Theoretical lower bounds — not a latency estimate.
 
 没有用户提供且 dtype 匹配的 HardwareProfile 时，lower bounds 和 bottleneck 为 Unknown；不得填入默认 GPU。
 
-主图提供 `Pressure / Compute / Memory / Off` 理论热力层：Compute 使用可归因的公式 FLOPs，Memory 使用 logical minimum bytes，Pressure 使用 `max(FLOPs/peak, logical bytes/bandwidth)`。强度只在“当前 Scenario + 当前 view + 当前 mode”内按 `raw / hottest known node` 归一化，不允许跨 view、跨场景比较；legend 固定显示公式、HardwareProfile 名称/ID/provenance、known/total coverage、`Unknown is not zero` 和 `not measured latency`。切换 Scenario 只重算热力值，不改变 view/node ID 或选择。
+主图提供 `Structure / Compute / Memory / Pressure` 四个可见入口，`Structure` 对应 heat `Off`：Compute 使用可归因的公式 FLOPs，Memory 使用 logical minimum bytes，Pressure 使用 `max(FLOPs/peak, logical bytes/bandwidth)`。强度只在“当前 Scenario + 当前 view + 当前 mode”内按 `raw / hottest known node` 归一化，不允许跨 view、跨场景比较；legend 固定显示公式、HardwareProfile 名称/ID/provenance、known/total coverage、`Unknown is not zero` 和 `not measured latency`。切换 Scenario 只重算热力值，不改变 view/node ID 或选择。
 
 热力层必须复用 Cost Metric 的显式归属规则，而不是直接按 `subject_ids` 盲连：L0 仅 decoder pattern 聚合成员 Instance；L1 仅 Attention 对应 `*.attention`、FFN 对应 `*.ffn`。Norm、Residual、输入输出等无独立子项指标的节点显示灰色 `not attributable`；metric 缺失、opaque 或硬件不匹配显示灰色斜纹 `Unknown` 并给出原因。Qwen 当前可显示公式热度；GLM DSA/MoE executed FLOPs/bytes 未知时全图保持 Unknown，禁止用 active parameters、weights storage 或 0 代替。颜色不能覆盖白色选择描边或上下游路径描边，tooltip/Inspector 必须同时给出数值、origin、coverage 和公式证据。
 
@@ -363,6 +417,21 @@ M3.6 直接采用以下退出编号：
 | OP-09 | 展开、折叠、搜索、选择、切 Scenario | 当前稳定结构 ID 不变；各 view viewport/selection 可恢复 | **PASS** |
 | OP-10 | 检查 Report status/Provenance | weights/model construction/full forward/remote code 仍全为 false | **PASS** |
 
+M3.13 直接采用以下退出编号；工程项已有实现证据，真人任务单独保留：
+
+| ID | 初学者/浏览器操作 | 通过条件 | M3.13 状态 |
+|---|---|---|---|
+| CLAR-01 | 打开 Qwen、GLM、generic 各级验收 view | 可证明的主 activation 路径在纵向中央连续可读；Fit 下顺序正确且无节点/标签遮挡主轴 | **PASS（工程/浏览器）** |
+| CLAR-02 | 查看 Vision/MTP、KV/recurrent state 与非主轴 Router/Expert 分支并重复打开同一 view | 分支进入固定侧 lane，可证明主数据流上的 MoE 节点可留在主轴；edge 不穿越非端点节点，重绘坐标/lane 确定性一致 | **PASS（工程/浏览器）** |
+| CLAR-03 | 首次查看卡片，再单击并遍历 Inspector | 首屏只有名称/用途、紧凑 I/O、状态与下钻提示；完整 Tensor/evidence/cost/Unknown 信息无损可取 | **PASS（工程/浏览器）** |
+| CLAR-04 | 用鼠标 hover、键盘 focus、选择 edge/port/node | 默认 edge 仅常驻必要 shape；交互时披露 name/dtype/kind，完整端口关系留在 Inspector，键盘等价且 label 不遮挡图 | **PASS（工程/浏览器）** |
+| CLAR-05 | 首次打开，再单击 Compute/Memory/Structure/Pressure | 默认为 Structure/Off；heat 一键进入和返回，Pressure 正确门控，节点 heat status 不使用多种虚线边框 | **PASS（工程/浏览器）** |
+| CLAR-06 | Fit、小图平移/缩放、进入 child，并在 1280px/700px 查看 | current minimap 只在当前 scale 下图范围超出 viewport 时出现，Parent 只在 child 出现；两者职责明确且不挡主轴 | **PASS（工程/浏览器）** |
+| CLAR-07 | 不阅读帮助，识别 compound 并单击/双击/badge/Enter，随后返回 | 下钻 affordance 可发现；单击 Explain、有效 compound 下钻、leaf/opaque 不假跳转、返回聚焦父节点 | **PASS（工程/浏览器）** |
+| CLAR-08 | 依次执行披露、下钻/返回、搜索、Scenario、heat、theme、layer | view/node/port/edge stable ID、拓扑、selection 与 per-view viewport 契约不变 | **PASS（工程/浏览器）** |
+| CLAR-09 | 至少 5 名仅了解 GEMM/Attention 的首次用户无图例培训完成任务 | ≥80% 在 10 秒内读出 Input/重复核心/Output，并在 30 秒内完成一次 Attention/FFN 下钻；归档中位数、错误与阻塞点 | 待用户任务验收；自动化不可替代 |
+| CLAR-10 | 对最终 Qwen/GLM/generic 报告执行 Dark/Light、1280px/700px Chromium 与安全回归 | 无关键遮挡/横向溢出/console/pageerror；单文件无远程资源，weights/remote code/full forward 均为 false | **PASS（工程/浏览器）** |
+
 ## 12. 当前实现证据与缺口
 
 当前离线 HTML 已收敛为 graph-first 结构：顶栏只保留模型/revision、Scenario、唯一全局搜索与 Report status；中央 DAG 默认占满可用宽度；Definition/Diagnostic 位于 Browse 抽屉，六页 Inspector 位于右抽屉，64/78 层 Layer Strip 和所有 Supporting analysis 默认折叠。Definition、Semantic/LogicalOp、capture、逐层 captured/config/opaque、异常层、成本、热点、roofline、workload diff 与 Runtime Unknown 证据均仍保留，但不再同时铺满首屏。2026-08-30 的最终 M0–M3 浏览器验收确认：Qwen layer.0 整层可同时看到 Dense 与 Linear State 两种代表体，但具体 Dense FFN 节点只显示 Dense capture SourceArtifact，Linear Attention 节点只显示 Linear State source；layer.1 config-only 只显示 config source，不串入任何 Tiny capture。捕获 Tensor 逐项显示 `origin=capture`、`materialized=false` 和唯一 source。layer.3 仍显示 `full_attention · captured · anomaly=false`；Cost 可读取离线 Symbol 绑定，Provenance 固定显示零权重/零完整 forward。Report status 把结构范围与成本指标可用性分开，例如 GLM 显示 `structure 78/82 · 95.1% | cost 3/8 known`，不再用平均 metric coverage 冒充 decoder layer 覆盖率。GLM 的 executed FLOPs/bytes、roofline 与 Runtime 均显示 Unknown/null/0% coverage，不参与热点排名，也不以 0 代替。对应自动化见 [离线 artifact 集成测试](../tests/integration/test_inspect_artifact.py)、[M3 报告测试](../tests/integration/test_m3_report.py)、[capture 报告测试](../tests/integration/test_capture_cli_report.py)和 [Model Explorer adapter 集成测试](../tests/integration/test_model_explorer_adapter.py)。
@@ -371,6 +440,6 @@ M3.5 浏览器验收进一步确认：Qwen L0 为 11 node/19 port/10 edge，Line
 
 M3.6 浏览器验收确认：Qwen Full Attention 展开为 32 node/36 edge，包含 Q/K/V/O GEMM、Q/K/V reshape+transpose、4→24 GQA KV-head Broadcast、QKᵀ/P×V MatMul、Softmax、RMSNorm、RoPE、cache append、context transpose 与 output gate；FFN 展开为三个 GEMM、SiLU、Multiply；Linear Attention 的 4 条 recurrent-state 边接入 Conv/opaque delta core。Softmax 搜索与 prefill→decode 切换保持相同 node ID；端口选择在 `Collapse`→重新展开后恢复，随后选择 node 会清除 port 描边；operator views 不作为 View 下拉框常驻项，当前 child 只显示一个 `↳` 临时项。Cost Inspector 显示 FLOPs `complete/signed_remainder=0/inconsistent=false` 与 logical bytes `partial/signed_remainder>0/unknown_is_zero=false`；热图只显示当前 frontier（Pressure `4/28 known`，Compute `6/28 known`）。GLM Sparse view 为 14 node/19 edge，显示 Router GEMM、TopK indices、`[B,T,8] float32` routing weights→Combine、route/control、virtual Expert/Shared Expert；Expert child view 显示 Gather/Scatter 与三个 GEMM，且不产生 runtime route/weight value；DSA 没有下钻入口，GLM frontier 保持 `0/10 known`。跨 view Inspector 残留已修复；两页 console 均无 warning/error。27/27 checked-in 资产检查和 Python 3.9/3.12 各 192 项通过。
 
-M3.7 的直属母图、current minimap、per-view viewport/selection、结构 parent focus 和 700px 折叠路径已完成 CTX-01～CTX-10 浏览器验收。M3.8 功能与自动化已完成：Python 3.9/3.12 各 198、Ruff、27/27 verifier、golden current；重生成的 Qwen/GLM 报告分别内嵌 `[L×3 → A] ×16`/`D×3 → M×75`，JavaScript syntax 与 safety flags 通过。自动浏览器因 URL policy 拒绝重载本地 `file://` 页面，因此没有绕过策略；LAY-UI-01～06 的最终目视/交互状态保留为用户手动刷新退出项。M3.9 One-Input CLI、generic C0/opaque GraphView 和 Source/Evidence HTML 已有自动化证据；最终 `file://` 页面的实际展示仍保留为手工退出项，且不声称有浏览器启动页。M3.10 EXP-01～EXP-10 已完成：所有 view 从上到下，单击 Explain、去抖双击、真实 child 选择、Softmax 教学公式、DSA opaque 边界及 Parent/current minimap 经 Qwen/GLM 浏览器验证；跨 rank 边使用稳定左右 lane，Qwen 7 个与 GLM 6 个 view 的几何采样均为 0 条 edge/label 穿过非端点卡片；700×900 窄屏无横向溢出，console 0 warning/error；Python 3.9/3.12 各 260、Ruff、27/27 verifier 与两页 JavaScript syntax 通过。
+M3.7 的直属母图、current minimap、per-view viewport/selection、结构 parent focus 和 700px 折叠路径已完成 CTX-01～CTX-10 浏览器验收。M3.8/M3.9 早期遗留的最终 `file://` 页面退出已经由 M3.11 真实 Playwright Chromium 回归关闭；M3.10 EXP-01～EXP-10 已完成：所有 view 从上到下，单击 Explain、去抖双击、真实 child 选择、Softmax 教学公式、DSA opaque 边界及 Parent/current minimap 经 Qwen/GLM 浏览器验证。M3.11 又覆盖 Qwen/GLM/generic E2E、默认 Scenario/Pressure 门控与 700px；M3.12 完成 Dark/Light、状态无损、对比度与三模型往返的 17 项 Chromium 验收。M3.13 的工程退出由常规 pytest 280 passed/21 skipped、真实 Chromium 21 passed、milestone verifier 27/27、Ruff 与 diff-check 支撑；CLAR-01～CLAR-08、CLAR-10 已 PASS。详细计数与最终证据以主计划对应里程碑为准。
 
-仍未完成的还有 M3.8 最终手动浏览器退出、M3.9 IMP-08 真实 `file://` 页面手工退出、本里程碑外的官方 Model Explorer consumer 真实加载/交互验收、面向 10k 原始 op 图的性能测试，以及 M4 trace timeline。官方 consumer 与超大 raw-op 图继续按 [DR-0003](decisions/DR-0003-model-explorer-bounded-spike.md) 标为 Partial；它们不应与已经通过的 M0–M3.7 自包含离线 DAG、已经通过自动化的 M3.8/M3.9 功能混为一谈。
+当前尚未完成的是 M3.13 CLAR-09 的 5 名目标初学者真人任务、官方 Model Explorer consumer 真实加载/交互验收、面向 10k 原始 op 图的性能测试，以及 M4 trace timeline。中心主轴、渐进披露等工程项已经通过，但真人任务不能由 DOM/Chromium 自动化替代，因此 M3.13 整体仍为“工程完成 / 真人验收待办”；官方 consumer 与超大 raw-op 图继续按 [DR-0003](decisions/DR-0003-model-explorer-bounded-spike.md) 标为 Partial。

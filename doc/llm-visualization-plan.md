@@ -9,8 +9,8 @@
 ## 实施状态（实时维护）
 
 > 最后更新：2026-09-08
-> 当前阶段：**M3.12 Dual Theme UI 与默认 artifact repository-local maintenance 已完成；M4a 继续因 AMD reference stack 未冻结而保持 Blocked**
-> 状态规则：只有对应机器退出清单全部通过后才标记为完成；代码存在但尚未验收时保持“实施中”。
+> 当前阶段：**M3.13 Graph Clarity & Progressive Disclosure 工程完成 / 真人验收待办；M4a 继续因 AMD reference stack 未冻结而保持 Blocked**
+> 状态规则：只有对应工程检查和明确要求的真人退出任务全部通过后才标记为完成；代码存在但尚未验收时保持“实施中”或“工程完成 / 真人验收待办”。
 
 | 里程碑 | 状态 | 当前证据 | 下一退出检查 |
 |---|---|---|---|
@@ -26,6 +26,7 @@
 | M3.10 | **完成** | GraphView 正式切换为 `DOWN`；主图、端口、连线、minimap 与 Parent context 统一为上入下出；节点单击解释、去抖双击下钻、结构化用途/简式公式/I/O/child view 已落地 | EXP-01～EXP-10 PASS；Python 3.9/3.12 各 260、Ruff、27/27 verifier、Qwen/GLM acceptance、JavaScript 与 1280/700px 浏览器通过 |
 | M3.11 | **完成** | 默认 preset/Pressure 门控、Layer 防伪、真实 Chromium CI、Qwen/GLM/generic E2E、三份 acceptance、Apache-2.0/社区文档及 PEP 639 包元数据全部交付 | RC-01～RC-10 PASS；Python 3.9/3.12 各 266、Chromium 5、Ruff、golden、27/27、Twine、wheel/sdist 与无 Torch/NumPy 隔离安装通过；PyPI/GitHub Release/tag 明确不在本里程碑内 |
 | M3.12 | **完成** | 页面与 DAG 已使用两套实际语义 palette；system/storage/matchMedia 异常降级、可访问切换、状态无损、四类边/port/marker/minimap/parent/heat 对比度及三模型往返均由真实 Chromium 覆盖 | THM-01～THM-10 PASS；Python 3.9/3.12 各 268、Chromium 17、Ruff、golden、27/27 verifier 与 Qwen/GLM/generic 最终报告通过；继续保持零执行边界 |
+| M3.13 | **工程完成 / 真人验收待办** | 同一 DAG 上的中心主轴、固定侧 lane、节点/边渐进披露、默认 Structure 与一键 heat、按需 minimap 已实现；CLAR-01～CLAR-08、CLAR-10 已通过工程/真实 Chromium 验收 | 执行并归档 CLAR-09：至少 5 名目标初学者的无培训任务测试；自动化不可替代 |
 | 2026-09-08 maintenance | **完成** | 默认输出仅限已确认的 LLM Vis Git checkout 根 `artifacts/generated/<slug>-<hash8>`；冲突分配 `-2`/`-3`，仓库外要求显式 `--output` | 当前环境与 Python 3.9 隔离定向各 19 项、全量 Python 276 passed/17 browser-opt-in skipped、真实 Chromium 17、27/27 verifier、Ruff 与 diff-check 通过；真实 CLI base/`-2` 均 Git ignored 且 safety flags 为 false |
 
 ### 已冻结的执行边界
@@ -77,6 +78,8 @@
 | 2026-09-01 | 正式启动 M3.12 Dual Theme UI | 冻结两套真实语义 palette、首次 `prefers-color-scheme`、显式偏好本地持久化、无闪烁首屏、可访问切换、DAG/minimap/parent/heat 全覆盖、交互状态无损、浅色对比度与桌面/700px Chromium 验收；仍是单文件离线报告，不新增网络、权重、remote code 或 forward |
 | 2026-09-01 | 完成 M3.12 Dual Theme UI 与 THM-01～THM-10 | 页面/DAG semantic token、system-first-use、storage/matchMedia 缺失/抛错/legacy 降级、键盘与 ARIA、主题事件和 rAF 热图重绘完成；Qwen Memory、profiled Pressure、GLM MoE 与 generic Unknown 往返状态不变，页面文字 ≥4.5:1、关键图形 ≥3:1；Python 3.9/3.12 各 268、真实 Chromium 17、Ruff、golden、27/27 verifier 通过，三份 acceptance 已重生成且保持零权重/remote code/full forward |
 | 2026-09-08 | 完成默认 artifact 位置 maintenance | 不再把持久报告写入系统 temp；未显式传入 `--output` 时，仅在 Git marker 与项目身份确认当前位于 LLM Vis checkout 后写入仓库根 `artifacts/generated/<slug>-<hash8>`，冲突使用 `-2`/`-3` 且不覆盖；仓库外返回可操作错误并要求显式 `--output`，后者保持原契约。当前环境与 Python 3.9 隔离定向各 19 项、全量 Python 276 passed/17 browser-opt-in skipped、真实 Chromium 17、27/27 verifier、Ruff 与 diff-check 通过；真实 CLI 生成 `qwen2-c66f60bb`/`qwen2-c66f60bb-2`，均被 Git ignore 且 safety flags 为 false。 |
+| 2026-09-08 | 正式启动 M3.13 Graph Clarity & Progressive Disclosure | 冻结“同一 DAG、结构优先、局部披露”原则：主数据流占据纵向中心轴，Vision/MTP/state/route 等进入稳定侧 lane；节点与边首屏只保留理解路径所需信息，完整 tensor/evidence/cost 仍可在选择态与 Inspector 中取得；默认 Structure，一键切换 Compute/Memory/Pressure；current/parent minimap 按真实导航需要出现。启动时 CLAR-01～CLAR-10 均待实现与验收；完成状态见下一行，零权重、零 remote code、零完整模型 forward 边界不变。 |
+| 2026-09-08 | 完成 M3.13 工程实现与 CLAR-01～CLAR-08、CLAR-10 退出 | Qwen/GLM/generic 的中心主轴与侧 lane、紧凑节点卡、edge 渐进披露、Structure 默认态、一键 heat、HardwareProfile-only Pressure、按需 current minimap、child-only Parent context、下钻/稳定身份及零执行边界已落地；当前环境与带 `capture` extra 的 Python 3.9 隔离环境均为 280 passed/21 skipped，真实 Chromium 21 passed，milestone verifier 27/27，Ruff 与 diff-check 通过。CLAR-09 的 5 名初学者真人任务仍待执行，不能由自动化替代。 |
 
 ## 0. 执行摘要
 
@@ -1691,7 +1694,7 @@ One-Input 统一接受五类形式：
 - 顶栏提供键盘可达、带清晰 accessible name/状态的主题按钮。用户显式选择写入同源 `localStorage`，刷新及再次打开同一报告时恢复；存储被禁用、值非法或读写抛错时安全降级，不阻止报告启动。
 - 主题切换只更新视觉 token 与需要重绘的热力 palette，不重建 DAG、不重新 `openView`。当前 GraphView、节点身份/选择、viewport transform、搜索、Scenario、heat mode、layer disclosure、Inspector、parent/minimap 状态均保持不变。
 - Compute/Memory/Pressure 使用主题适配后的同一语义梯度；数值、排序、`data-heat-known`、Unknown/not-attributable、Pressure HardwareProfile 门控及“非实测 latency”说明不随主题改变。仅为可读性改变颜色表示。
-- Light 主题关键正文/控件文字相对背景对比度目标至少 4.5:1；大号文字、边、端口、focus ring 和其他必要非文本交互图形至少 3:1。Unknown 除灰色外继续保留文字、虚线或状态属性，不依赖颜色单独传达含义。
+- Light 主题关键正文/控件文字相对背景对比度目标至少 4.5:1；大号文字、边、端口、focus ring 和其他必要非文本交互图形至少 3:1。Unknown 除灰色外继续保留文字或状态属性，不依赖颜色单独传达含义；M3.12 当时允许的 heat node dash 自 M3.13 起由 badge/文字取代，opaque 的结构证据虚线不受影响。
 - 所有主题代码、字体与图形继续内嵌在单文件报告中；不得增加远程 CSS/脚本、遥测、cookie、任意网络访问或不可信 HTML 注入。继续保持零权重、零 remote code、零目标/完整模型 `forward()`。
 
 稳定 DOM/事件契约：主题按钮为 `#theme-toggle`；当前生效值写入 `document.documentElement.dataset.theme`，且只允许 `dark|light`；显式偏好键为 `llm-vis-theme`。按钮 `aria-label` 描述下一动作，`aria-pressed="true"` 表示当前 Light；切换后派发 `llm-vis:theme-change`，detail 至少包含 `{theme, source}`。DAG 的主题刷新只消费上述页面契约，不拥有第二份偏好状态。
@@ -1707,11 +1710,57 @@ One-Input 统一接受五类形式：
 | THM-05 | 切换主题前后当前 view/node stable ID、selection、viewport transform、搜索、Scenario、heat mode、layer/Inspector/parent 状态完全不变。 | **PASS**：Qwen 下钻、搜索、选择、缩放、Layer/Inspector/parent 与 Scenario/Memory 的切换前后快照完全相同 |
 | THM-06 | 节点、port、data/state/route/control edge、箭头、current minimap、parent map 和 focus/selection 在两主题均清晰；主题切换不改变节点/边数量与拓扑。 | **PASS**：四类 edge/marker、两类 port、focus/selection、上下游及 current/parent map computed paint 与 token 一致且图拓扑不变 |
 | THM-07 | Compute/Memory/Pressure/Unknown 的语义值、known/status 属性、排序与 HardwareProfile 门控在主题切换前后不变；Light 只替换可视 palette。 | **PASS**：Qwen Memory、profiled Pressure、GLM MoE 与 generic Unknown 完成 Light→Dark→Light 往返，heat/mode/gate/known/status 精确恢复 |
-| THM-08 | Light 的关键文字达到 4.5:1，边/port/focus 等必要图形达到 3:1；Unknown/状态不只靠颜色表达。 | **PASS**：实际 computed text ≥4.5:1；边、port、focus、minimap outline 与 parent map 关键图形 ≥3:1；Unknown 继续保留文字与 dash/status |
+| THM-08 | Light 的关键文字达到 4.5:1，边/port/focus 等必要图形达到 3:1；Unknown/状态不只靠颜色表达。 | **PASS（M3.12 历史证据）**：实际 computed text ≥4.5:1；边、port、focus、minimap outline 与 parent map 关键图形 ≥3:1；Unknown 保留文字/status；当时 heat dash 已由 M3.13 badge 契约取代 |
 | THM-09 | 1280px 与 700px 的 Dark/Light 页面均无横向溢出或关键遮挡，主题按钮、Inspector、child、layer、parent/minimap 可操作，console/pageerror 为空。 | **PASS**：真实 Chromium 覆盖桌面与 700px、主题按钮、下钻/返回、Inspector、Layer、parent/current minimap；无横向溢出且 0 error |
 | THM-10 | 最终 Qwen、GLM、generic 自包含报告和 Python 3.9/3.12 全套回归通过；HTML 仍无远程资源，并继续零权重、零 remote code、零目标/完整模型 forward。 | **PASS**：Python 3.9/3.12 各 268、Chromium 17、Ruff、golden、27/27 verifier 通过；三份最终报告已重生成且 safety flags 全 false |
 
 明确不在 M3.12 范围内：自动主题定时调度、自定义 palette 编辑器、云端同步主题、改变热力算法/成本数值、重新设计 GraphView schema、导入 runtime trace、执行模型或引入远程前端依赖。
+
+### M3.13：Graph Clarity & Progressive Disclosure
+
+> 实施状态：**工程完成 / 真人验收待办（2026-09-08）**。CLAR-01～CLAR-08、CLAR-10 已通过工程与真实 Chromium 验收；CLAR-09 的 5 名目标初学者任务尚未执行，因此 M3.13 不标记为全部完成。M3.13 不另建 Beginner/Expert 模式，也不复制、裁剪或改写 Model Map/GraphView 事实；初学者和熟练用户查看同一份 DAG、同一组稳定 ID。它只收敛首屏布局和披露时机，使用户先读懂“输入 → 核心重复模块 → 输出”，再通过选择、下钻和 Inspector 获取完整证据。
+
+交付范围：
+
+- 将每个 view 的主要 activation 数据流编排为从上到下的中央主轴。Qwen L0 的首要阅读路径为 `Input → Token Embedding → Hybrid Decoder → Final Norm → LM Head → Logits`；GLM/generic 使用各自可证明的主数据流，不因追求整齐而伪造边、重排执行语义或隐藏 opaque 边界。
+- Vision/Projector、MTP、KV cache、recurrent state，以及不属于主要 activation path 的 Router/TopK/Expert 分支进入可预测的侧 lane；位于可证明主数据流上的 Expert/Shared Expert/Combine 等 MoE 计算节点仍可成为主轴节点。分支从与主轴相接的语义位置出入，state read/write 与 route/control 保留文字或形状编码，避免跨越中央节点；同一 GraphView 和相同输入必须得到确定性布局。
+- 默认节点卡收敛为四类核心信息：易懂名称/用途、主要输入输出摘要、重复或 conditional/opaque 状态、明确的下钻提示。`origin`、完整 evidence、完整 dtype/shape、Tensor ID、cost provenance 和诊断不得丢失，但默认转入选择态 Explain/Tensors/Cost/Provenance/Coverage，不常驻每张卡片。
+- 边采用渐进披露：默认只保留理解拓扑所需的线、方向和必要的紧凑 shape；hover、focus、选择或路径高亮时再显示关联 tensor 的名称、dtype 与 edge kind，完整端口关系始终可在 Tensors Inspector 取得。标签不得遮挡节点；data/state/route/control 的线形/marker 仍提供非颜色编码，但默认不为每条边常驻重复 kind 文案。
+- 初始分析模式改为 `Structure`（heat `Off`），不在首次打开时用热力填充或证据线型压过结构。Compute/Memory 是单次点击即可进入的一等入口；Pressure 仍只在存在匹配 HardwareProfile 时启用。M3.11 的 Prefill/Decode preset 与理论成本继续随报告提供，本项只取代“首次打开即着热”的视觉默认值，不删除任何成本能力。
+- 热图不再用多种相似虚线承担 `known/partial/unknown/not-attributable`：结构节点默认保持稳定实线边界，只有 opaque 继续使用自身的结构证据样式；Known 用填充表达强度，Partial 用明确 badge，Unknown 用中性填充和 `?`/文字，not-attributable 保持普通结构外观并在选择态解释。图例必须继续声明 `Unknown is not zero` 与当前 visible frontier。
+- current minimap 只在当前 scale 下图的范围超出可见视口、确有定位价值时出现；Parent context 只在非 root view 出现，桌面可提供紧凑预览，窄屏默认折叠为返回/上下文入口。两者仍承担不同职责，不重复显示同一信息，也不能挡住主轴。
+- 单击节点继续选择并显示 Explain；有真实 child view 的节点通过可见 badge、文案、指针/focus 状态说明可下钻，双击、badge 或键盘 Enter 进入子图；叶节点/opaque 双击只解释。下钻、返回、搜索、Scenario、Structure/heat 切换和主题切换均不得改变 GraphView/node/port/edge stable ID。
+- 披露是可逆的视觉状态，不得从 DOM 文案反向生成结构事实。收起标签、关闭 Inspector 或返回 Structure 后，原 view、selection、viewport、search、Scenario、layer、parent/minimap 状态按契约保存；未知信息保持 Unknown，隐藏不等于 0 或不存在。
+- 全过程保持自包含 `file://` 报告、Dark/Light 主题与键盘操作；不得新增网络依赖、权重读取、Hugging Face remote code、目标模型构造或完整模型 `forward()`。
+
+默认披露矩阵：
+
+| 对象 | Structure 首屏 | hover/focus/selection | Inspector / child view |
+|---|---|---|---|
+| Node | 名称/用途、紧凑 I/O、重复/conditional/opaque、可下钻提示 | 当前节点与上下游、状态 badge、必要的完整 I/O 提示 | 教学简式公式、全部 ports/TensorSpec、evidence、coverage、cost；compound 可进入同一画布 child DAG |
+| Data edge | 方向与必要的紧凑 shape；冗余标签省略 | tensor 名、dtype 与 kind | 完整端口关系、TensorSpec、origin、coverage |
+| State/route/control edge | 方向、必要 shape 及 line/marker 的非颜色区别；不常驻重复 kind 文案 | tensor 名、dtype、`read`/`write`/`route`/`control` 与关联端点 | provenance 与 Unknown/静态路由边界 |
+| Heat | 默认 `Structure`/`Off`，节点保留结构外观 | 一键 Compute/Memory；有 profile 才可 Pressure | 数值、公式、coverage、frontier 与非实测声明 |
+| Minimap/context | 只在存在导航价值时显示/可展开 | 当前视口或父节点位置高亮 | 返回、定位与 per-view 状态恢复；不承载结构事实 |
+
+初学者验收任务采用第一次接触 LLM-Vis、只具备 GEMM/Attention 基础概念的参与者。不给线型/颜色图例培训，用户应能先沿主轴回答输入、重复核心模块和输出，再发现可下钻节点并查看一个复合模块的内部基础算子；主观任务不以自动化 DOM 断言冒充通过，测试人数、完成时间、错误和观察记录必须归档。
+
+退出条件（工程项已验收，真人任务待办）：
+
+| ID | 验收条件 | 当前状态 |
+|---|---|---|
+| CLAR-01 | Qwen、GLM 与 generic 每个验收 view 均有确定性的纵向主轴；主轴节点中心偏差、顺序和连接符合各自可证明数据流，默认 Fit 下无节点/标签遮挡主轴。 | **PASS（工程/浏览器）** |
+| CLAR-02 | Vision/MTP/state 与非主轴 route/control/MoE 分支使用稳定侧 lane；可证明主数据流上的 MoE 节点可留在主轴；data/state/route/control 边不穿过非端点节点，重复渲染的节点坐标和 lane 选择一致。 | **PASS（工程/浏览器）** |
+| CLAR-03 | 默认节点卡只显示冻结的核心信息；完整 shape/dtype/evidence/cost 仍可经选择态和六页 Inspector 无损访问，Unknown/opaque/conditional 不因精简而消失。 | **PASS（工程/浏览器）** |
+| CLAR-04 | 默认边只常驻必要 shape；hover/focus/selection/路径高亮能披露 tensor 名、dtype 与 kind，键盘用户获得等价信息，完整端口关系保留在 Inspector，且标签不遮挡节点或必要连线。 | **PASS（工程/浏览器）** |
+| CLAR-05 | 新报告首次进入 `Structure`/heat `Off`；一次点击可进入 Compute/Memory、一次点击可返回 Structure，Pressure 继续由 HardwareProfile 门控；节点 heat status 不使用多种虚线边框表达。 | **PASS（工程/浏览器）** |
+| CLAR-06 | current minimap 仅在当前 scale 下图范围超出可见 viewport 时显示，Parent context 仅在 child view 出现；桌面与 700px 下不挡主图且返回/定位职责可区分。 | **PASS（工程/浏览器）** |
+| CLAR-07 | 可下钻节点无需预先阅读帮助即可由 badge/文案/focus 发现；单击 Explain，双击/badge/Enter 下钻，leaf/opaque 不产生假跳转，返回聚焦原父节点。 | **PASS（工程/浏览器）** |
+| CLAR-08 | 渐进披露、下钻/返回、搜索、Scenario、heat、theme 和 layer 操作前后 stable view/node/port/edge ID、拓扑、selection 与 per-view viewport 契约不变。 | **PASS（工程/浏览器）** |
+| CLAR-09 | 至少 5 名符合目标画像的初学者在无界面图例培训下完成 Input→核心重复模块→Output 定位和一次 Attention/FFN 下钻；记录中位完成时间、错误与阻塞点，目标为 10 秒内读出主轴、30 秒内完成下钻，成功率至少 80%。 | 待用户任务验收；不得用自动化替代 |
+| CLAR-10 | Qwen、GLM、generic 在 Dark/Light、1280px/700px 的真实 Chromium 回归通过，console/pageerror 为空；自包含报告无远程资源，safety flags 继续为零权重、零 remote code、零完整 forward。 | **PASS（工程/浏览器）** |
+
+明确不在 M3.13 范围内：创建 Beginner/Expert 两份 DAG、修改 GraphView schema/事实、删除 Inspector 证据、自动推断任意未知模型内部、绘制真实 token expert route、改变成本公式或 visible frontier、导入 runtime trace、运行目标模型，以及为排版伪造控制流或 Tensor。
 
 ### M4a：AMD Runtime 关联（3–4 周）
 
@@ -1756,7 +1805,7 @@ One-Input 统一接受五类形式：
 
 ### 16.1 MVP 边界
 
-当前公开 MVP 是已完成的 M0–M3.12 端到端纵切：M3.11 收敛首发体验与发布工程，M3.12 补齐经过验收的 Dark/Light 双主题。当前能力包括 Tiny Dense + Qwen3.8/GLM-5.3 已知 adapter + `torch.export` 单一 Tiny 捕获后端 + 默认 prefill/decode 理论成本 + renderer-neutral recursive GraphView、自包含离线 DAG 前端、直属父图上下文导航、自解释 decoder pattern 摘要、One-Input Model Import、generic C0/opaque 降级及 Model Explorer-compatible JSON spike。GLM-5.3 在 MVP 只承担超大 MoE 的 config-level 宏观结构、递归静态 MoE/opaque DSA 语义 DAG、静态父图上下文与可证明静态成本验收，动态捕获延后到 M5。
+当前公开 MVP 是已完成的 M0–M3.12 端到端纵切，并包含 M3.13 已通过工程验收的图清晰度与渐进披露候选能力；由于 CLAR-09 的初学者真人任务尚未完成，M3.13 整体仍不标记为完成。M3.11 收敛首发体验与发布工程，M3.12 补齐经过验收的 Dark/Light 双主题，M3.13 工程实现补齐同一 DAG 的中央主轴/稳定侧 lane、节点与边渐进披露、Structure 默认态和按需 minimap。当前能力还包括 Tiny Dense + Qwen3.8/GLM-5.3 已知 adapter + `torch.export` 单一 Tiny 捕获后端 + 默认 prefill/decode 理论成本 + renderer-neutral recursive GraphView、自包含离线 DAG 前端、直属父图上下文导航、自解释 decoder pattern 摘要、One-Input Model Import、generic C0/opaque 降级及 Model Explorer-compatible JSON spike。GLM-5.3 在 MVP 只承担超大 MoE 的 config-level 宏观结构、递归静态 MoE/opaque DSA 语义 DAG、静态父图上下文与可证明静态成本验收，动态捕获延后到 M5。
 
 M4a 是 Infra/AMD 专业能力的第一道分水岭；M4b 才提供硬件 counter 级证据。没有精确 op-to-kernel 关联时，产品是结构与理论成本工具，不能称为完整性能诊断器。
 
@@ -1776,6 +1825,7 @@ M4a 是 Infra/AMD 专业能力的第一道分水岭；M4b 才提供硬件 counte
 | M3.10 | 所有 GraphView/port/edge/minimap top-down；单击 Explain、双击/按钮下钻、公式/opaque 边界、稳定身份与 1280/700px 浏览器回归 | **PASS**：EXP-01～EXP-10；Python 3.9/3.12、最终 Qwen/GLM 报告与真实浏览器通过 |
 | M3.11 | 默认 Prefill/Decode、HardwareProfile-only Pressure、Layer anomaly、防伪三模型 E2E、真实 Chromium CI 与发行包检查 | **PASS**：RC-01～RC-10；Python 3.9/3.12、Chromium 5、27/27、Twine 与隔离安装通过 |
 | M3.12 | 两套语义 palette、system-first-use、持久化/异常降级、可访问切换、状态无损、DAG/minimap/heat 同步、浅色对比度、Dark/Light 桌面与 700px Chromium、安全离线回归 | **PASS**：THM-01～THM-10；Python 3.9/3.12 各 268、Chromium 17、Ruff、golden、27/27 verifier 与三份最终报告通过 |
+| M3.13 | 中心主轴/侧 lane、节点与边渐进披露、默认 Structure/一键 heat、按需 minimap、下钻可发现性、初学者任务与稳定身份/安全回归 | **工程 PASS / 真人待验收**：CLAR-01～CLAR-08、CLAR-10 PASS；CLAR-09 的 5 名初学者任务待执行，自动化不可替代 |
 | M4a | marker→correlation→dispatch 映射测试；eager/compile 覆盖率按固定分母达标；无重复时间归属 | **Blocked：AMD reference stack 未冻结** |
 | M4b | 固定 Top-20 Kernel counter 导入；replay 路径哈希一致；counter wall time 不进入 latency | Blocked by M4a |
 | M5 | GLM 动态 fixture、第二 backend、cross-revision canonical matching、sandbox/禁用策略测试通过 | 未开始 |
@@ -2003,6 +2053,7 @@ M4a 是 Infra/AMD 专业能力的第一道分水岭；M4b 才提供硬件 counte
 - [x] M3.10 全图 Top→Bottom、单击 Explain、双击下钻与简式公式/稳定身份；
 - [x] M3.11 默认 Prefill/Decode、HardwareProfile-only Pressure、真实浏览器 CI 与公开发行工程；
 - [x] M3.12 Dark/Light 语义 palette、system/storage 安全降级、状态无损重绘与 THM-01～THM-10；
+- [ ] M3.13 中央主轴/侧 lane、节点与边渐进披露、默认 Structure/一键 heat、按需 minimap 与 CLAR-01～CLAR-10（CLAR-01～CLAR-08、CLAR-10 工程 PASS；CLAR-09 真人验收待办）；
 - [x] Layer Type Strip；
 - [x] Definition/Instance/Tensor/Metric/Diagnostic Inspector；
 - [x] workload switch；

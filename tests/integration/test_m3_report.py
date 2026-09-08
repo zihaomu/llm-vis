@@ -88,6 +88,16 @@ def test_m3_artifact_contains_hotspots_roofline_diff_and_offline_controls(
     assert 'id="coverage-badge"' in html
     assert 'id="model-dag"' in html
     assert 'id="heatmap-mode"' in html
+    assert 'class="heat-mode-state"' in html
+    assert 'id="heatmap-buttons" role="group"' in html
+    for heat_mode, label in (
+        ("off", "Structure"),
+        ("compute", "Compute"),
+        ("memory", "Memory"),
+        ("pressure", "Pressure"),
+    ):
+        assert f'data-heat-mode="{heat_mode}"' in html
+        assert f">{label}</button>" in html
     assert 'id="theme-toggle"' in html
     assert 'class="theme-toggle"' in html
     assert 'aria-pressed="false"' in html
@@ -111,12 +121,17 @@ def test_m3_artifact_contains_hotspots_roofline_diff_and_offline_controls(
     assert "window.addEventListener('storage'" in html
     assert "filter:invert(" not in html
     assert "filter: invert(" not in html
-    assert '<option value="pressure">Pressure</option>' in html
+    assert '<option value="off" selected>Structure</option>' in html
     assert '<option value="compute">Compute</option>' in html
     assert '<option value="memory">Memory</option>' in html
-    assert "Follow tensors from top to bottom" in html
-    assert "Single-click a node for its explanation and equation" in html
-    assert "double-click a node marked “N nodes ↓”" in html
+    assert '<option value="pressure">Pressure</option>' in html
+    assert '<div class="workspace-intro">' in html
+    assert '<strong>Click</strong> to explain' in html
+    assert '<strong>Double-click ↓</strong> to open a subgraph' in html
+    assert 'class="badges status-evidence"' in html
+    assert 'class="dag-evidence"' not in html
+    assert 'aria-label="Graph controls"' in html
+    assert 'aria-label="Color nodes by structure or theoretical cost"' in html
     assert "data-initial-view-id=" in html
     assert 'data-dag-action="fit"' in html
     assert 'class="llm-dag-minimap"' in html
@@ -127,6 +142,12 @@ def test_m3_artifact_contains_hotspots_roofline_diff_and_offline_controls(
     assert 'data-dag-action="toggle-parent-context"' in html
     assert "immediateParentContext" in html
     assert "is-expanded-parent" in html
+    assert "data-layout-lane" in html
+    assert "data-purpose" in html
+    assert "data-io-summary" in html
+    assert "data-conditional" in html
+    assert "data-status-summary" in html
+    assert "llm-dag-node-status" in html
     assert 'class="llm-dag-parent-map" role="button" tabindex="0"' in html
     assert "returnToParent('parent-context-map')" in html
     assert "window.matchMedia('(max-width: 720px)')" in html
@@ -155,8 +176,13 @@ def test_m3_artifact_contains_hotspots_roofline_diff_and_offline_controls(
     assert "Unknown is not zero" in html
     assert "not measured latency" in html
     assert "function setupHeatmapMode()" in html
+    assert "function syncHeatmapModeControls()" in html
+    assert "function activateHeatmapMode(mode)" in html
+    assert "button.onclick=()=>activateHeatmapMode(button.dataset.heatMode)" in html
     assert "if(hardwareProfile){pressure.disabled=false" in html
-    assert "select.value='pressure'" in html
+    assert "select.value='off'" in html
+    assert "title:'Structure'" in html
+    assert "data-presentation" in html
     assert 'id="heatmap-note" aria-live="polite"' in html
     assert '"hardwareProfile": {' in html
     assert '"id": "synthetic-bf16-report"' in html
@@ -204,7 +230,10 @@ def test_m3_artifact_contains_hotspots_roofline_diff_and_offline_controls(
         "renderDiagnostics();renderLayerSummary();"
         "renderGraphEvidence(graphView.views[0]);setupHeatmapMode();setupScenarios()" in html
     )
-    assert "setInspector(graphSelectionContext(detail),{reveal:detail?.reveal===true})" in html
+    assert (
+        "setInspector(graphSelectionContext(detail),"
+        "{reveal:detail?.reveal===true||detail?.type==='edge'})" in html
+    )
     assert "renderNodeExplanation" in html
     assert "Simplified equation" in html
     assert "What this node does" in html

@@ -579,15 +579,15 @@ def render_html(
     config_hash_title = html.escape(config_sha256)
     config_hash_short = html.escape(config_sha256[:8])
     heatmap_options = (
-        '<option value="pressure">Pressure</option>'
+        '<option value="off" selected>Structure</option>'
         '<option value="compute">Compute</option>'
         '<option value="memory">Memory</option>'
-        '<option value="off">Off</option>'
+        '<option value="pressure">Pressure</option>'
         if bundle.hardware_profile is not None
-        else '<option value="pressure" disabled>Pressure (requires HardwareProfile)</option>'
-        '<option value="compute" selected>Compute</option>'
+        else '<option value="off" selected>Structure</option>'
+        '<option value="compute">Compute</option>'
         '<option value="memory">Memory</option>'
-        '<option value="off">Off</option>'
+        '<option value="pressure" disabled>Pressure (requires HardwareProfile)</option>'
     )
     template = """<!doctype html>
 <html lang="en">
@@ -646,7 +646,7 @@ def render_html(
 }
 * { box-sizing: border-box; }
 body { margin:0; min-height:100vh; background:var(--bg); color:var(--text); }
-header { position:sticky; top:0; z-index:8; display:flex; align-items:center; justify-content:space-between; gap:16px; min-height:62px; padding:10px 16px; border-bottom:1px solid var(--line); background:var(--header-bg); backdrop-filter:blur(12px); }
+header { position:sticky; top:0; z-index:8; display:flex; align-items:center; justify-content:space-between; gap:12px; min-height:54px; padding:7px 12px; border-bottom:1px solid var(--line); background:var(--header-bg); backdrop-filter:blur(12px); }
 .identity,.primary-controls,.badges,.workspace-actions,.drawer-heading { display:flex; align-items:center; gap:9px; }
 .identity { min-width:0; flex:1 1 auto; }
 .brand { color:var(--blue); font-size:12px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; white-space:nowrap; }
@@ -658,36 +658,44 @@ h3 { font-size:13px; margin:18px 0 8px; color:var(--subheading); }
 .badge { border:1px solid var(--line); background:var(--item-bg); color:var(--text-secondary); border-radius:999px; padding:4px 9px; font-size:11px; }
 .badge.safe { border-color:var(--safe-line); color:var(--green); }
 .badge.warn { border-color:var(--warn-line); color:var(--amber); }
-.primary-controls { flex:0 1 auto; justify-content:flex-end; }
+.primary-controls { flex:0 1 auto; justify-content:flex-end; gap:7px; }
 .compact-control { display:flex; align-items:center; gap:6px; color:var(--muted); font-size:11px; white-space:nowrap; }
 .compact-control > span { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
 select,input { border:1px solid var(--line); background:var(--control-bg); color:var(--text); border-radius:7px; padding:7px 9px; }
 .global-search { width:min(300px,26vw); min-width:180px; }
 .status-menu { position:relative; }
-.status-menu summary,.workspace-action,.drawer-close,.theme-toggle { border:1px solid var(--line); background:var(--control-raised-bg); color:var(--text); border-radius:7px; padding:7px 10px; font:12px/1.2 inherit; cursor:pointer; list-style:none; }
+.status-menu summary,.workspace-action,.drawer-close,.theme-toggle { border:1px solid var(--line); background:var(--control-raised-bg); color:var(--text); border-radius:7px; padding:6px 9px; font:12px/1.2 inherit; cursor:pointer; list-style:none; }
 .status-menu summary::-webkit-details-marker { display:none; }
 .status-menu[open] summary,.workspace-action[aria-expanded="true"] { border-color:var(--blue); background:var(--control-active-bg); }
-.status-popover { position:absolute; right:0; top:calc(100% + 9px); display:grid; gap:7px; width:min(420px,88vw); padding:12px; border:1px solid var(--line); border-radius:10px; background:var(--popover-bg); box-shadow:0 18px 50px var(--shadow); }
+.status-popover { position:absolute; right:0; top:calc(100% + 7px); display:grid; gap:7px; width:min(460px,92vw); padding:11px; border:1px solid var(--line); border-radius:10px; background:var(--popover-bg); box-shadow:0 18px 50px var(--shadow); }
+.status-evidence { align-items:flex-start; flex-wrap:wrap; }
 .theme-toggle { display:inline-flex; align-items:center; justify-content:center; gap:6px; min-width:72px; white-space:nowrap; }
 .theme-toggle-icon { font-size:14px; line-height:1; }
 .status-popover .badge { display:block; width:max-content; max-width:100%; }
-main { padding:12px; }
+main { padding:10px; }
 section { min-width:0; background:var(--panel); border:1px solid var(--line); border-radius:11px; padding:14px; }
-.dag-panel { position:relative; padding:12px; min-height:calc(100vh - 86px); }
-.workspace-heading { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; margin:0 2px 10px; }
+.dag-panel { position:relative; padding:10px; min-height:calc(100vh - 74px); }
+.workspace-heading { display:flex; align-items:center; justify-content:space-between; gap:12px; margin:0 2px 7px; }
+.workspace-intro { min-width:0; }
 .workspace-title { display:flex; align-items:center; gap:8px; }
 .level-pill { border:1px solid var(--line-strong); border-radius:999px; padding:2px 7px; color:var(--accent-text); font:10px/1.3 ui-monospace,monospace; }
 .dag-panel > .llm-dag { padding:0; box-shadow:none; }
 .dag-panel #model-dag .llm-dag-search { display:none; }
-.dag-panel .llm-dag-stage { height:clamp(460px,calc(100vh - 230px),820px); }
-.dag-help { color:var(--muted); font-size:11px; margin:5px 0 0; }
-.dag-evidence { display:flex; align-items:center; flex-wrap:wrap; gap:6px; margin:7px 0 0; color:var(--muted); font-size:10px; }
-.dag-evidence .badge { padding:3px 7px; }
+.dag-panel .llm-dag-stage { height:clamp(500px,calc(100vh - 190px),860px); }
+.dag-help { color:var(--muted); font-size:10px; margin:3px 0 0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.dag-help strong { color:var(--text-secondary); font-weight:600; }
 .workspace-action { min-height:32px; }
 .workspace-actions { flex-wrap:wrap; justify-content:flex-end; }
-.heat-control { display:flex; align-items:center; gap:6px; color:var(--muted); font-size:11px; white-space:nowrap; }
-.heat-control select { min-height:32px; padding:5px 8px; font-size:11px; }
-.heat-note { max-width:160px; color:var(--muted); font-size:9px; line-height:1.2; white-space:normal; }
+.heat-control { display:flex; align-items:center; gap:5px; color:var(--muted); font-size:10px; white-space:nowrap; }
+.heat-segments { display:inline-grid; grid-auto-flow:column; border:1px solid var(--line); border-radius:7px; overflow:hidden; background:var(--control-bg); }
+.heat-mode-button { min-height:30px; border:0; border-left:1px solid var(--line); padding:5px 8px; background:transparent; color:var(--text-secondary); font:11px/1.2 inherit; cursor:pointer; }
+.heat-mode-button:first-child { border-left:0; }
+.heat-mode-button[aria-pressed="true"] { background:var(--control-active-bg); color:var(--accent-text); font-weight:700; }
+.heat-mode-button:disabled { color:var(--muted-soft); cursor:not-allowed; opacity:.62; }
+.heat-mode-button:not(:disabled):hover { background:var(--hover-bg); }
+.heat-mode-button:focus-visible { position:relative; z-index:1; outline:2px solid var(--focus); outline-offset:-2px; }
+.heat-mode-state { display:none; }
+.heat-note { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
 .workspace-action:hover,.drawer-close:hover,.theme-toggle:hover { border-color:var(--hover-line); background:var(--hover-bg); }
 .workspace-action:focus-visible,.drawer-close:focus-visible,.theme-toggle:focus-visible,.status-menu summary:focus-visible,.inspector-tab:focus-visible,.layer-panel > summary:focus-visible,.layer:focus-visible { outline:2px solid var(--focus); outline-offset:2px; }
 .layer-panel { margin-bottom:8px; border:1px solid var(--line); border-radius:8px; background:var(--subtle-bg); }
@@ -741,11 +749,11 @@ th { color:var(--subheading); font-weight:600; position:sticky; top:0; backgroun
 tr.clickable { cursor:pointer; }
 tr.clickable:hover { background:var(--row-hover-bg); }
 pre { margin:0; white-space:pre-wrap; overflow-wrap:anywhere; font:11px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace; color:var(--code-text); max-height:660px; overflow:auto; }
-.workspace-drawer { position:fixed; z-index:21; top:62px; bottom:0; display:flex; flex-direction:column; width:min(390px,92vw); padding:0; border:0; border-radius:0; background:var(--drawer-bg); box-shadow:0 0 60px var(--drawer-shadow); transition:transform .18s ease,visibility .18s ease; visibility:hidden; }
+.workspace-drawer { position:fixed; z-index:21; top:54px; bottom:0; display:flex; flex-direction:column; width:min(390px,92vw); padding:0; border:0; border-radius:0; background:var(--drawer-bg); box-shadow:0 0 60px var(--drawer-shadow); transition:transform .18s ease,visibility .18s ease; visibility:hidden; }
 .workspace-drawer.navigator { left:0; transform:translateX(-102%); }
 .workspace-drawer.inspector { right:0; transform:translateX(102%); }
 .workspace-drawer.is-open { transform:translateX(0); visibility:visible; }
-.drawer-header { display:flex; align-items:center; justify-content:space-between; gap:12px; min-height:62px; padding:11px 14px; border-bottom:1px solid var(--line); }
+.drawer-header { display:flex; align-items:center; justify-content:space-between; gap:12px; min-height:54px; padding:9px 14px; border-bottom:1px solid var(--line); }
 .drawer-heading { min-width:0; }
 .drawer-kicker { color:var(--blue); font:10px/1.2 ui-monospace,monospace; letter-spacing:.08em; text-transform:uppercase; }
 .drawer-close { width:32px; height:32px; padding:0; font-size:18px; }
@@ -775,7 +783,7 @@ pre { margin:0; white-space:pre-wrap; overflow-wrap:anywhere; font:11px/1.45 ui-
 .inspector-child:hover,.inspector-child:focus-visible { border-color:var(--child-hover-line); background:var(--child-hover-bg); }
 .inspector-child small { color:var(--muted); }
 .inspector-evidence { color:var(--muted)!important; font-size:10px!important; }
-.drawer-scrim { position:fixed; z-index:20; inset:62px 0 0; width:100%; height:calc(100% - 62px); border:0; padding:0; background:var(--scrim); backdrop-filter:blur(2px); cursor:pointer; }
+.drawer-scrim { position:fixed; z-index:20; inset:54px 0 0; width:100%; height:calc(100% - 54px); border:0; padding:0; background:var(--scrim); backdrop-filter:blur(2px); cursor:pointer; }
 .drawer-scrim[hidden] { display:none; }
 .inspector-tabs { display:grid; grid-template-columns:repeat(3,1fr); gap:5px; margin-bottom:9px; }
 .inspector-tab { border:1px solid var(--line); border-radius:6px; background:var(--tab-bg); padding:6px; font-size:11px; cursor:pointer; }
@@ -811,8 +819,10 @@ pre { margin:0; white-space:pre-wrap; overflow-wrap:anywhere; font:11px/1.45 ui-
   h1 { max-width:88vw; }
   main { padding:8px; }
   .workspace-heading { align-items:stretch; flex-direction:column; }
-  .workspace-actions { display:grid; grid-template-columns:1fr 1fr 1fr; }
-  .heat-control { grid-column:1/-1; justify-content:space-between; }
+  .workspace-actions { display:grid; grid-template-columns:repeat(3,1fr); }
+  .heat-control { grid-column:1/-1; min-width:0; justify-content:space-between; }
+  .heat-segments { flex:1 1 auto; }
+  .heat-mode-button { min-width:0; }
   .workspace-action { padding-inline:6px; }
   .layer-panel > summary { align-items:flex-start; }
   .layer-summary-main { flex-wrap:wrap; }
@@ -828,6 +838,7 @@ pre { margin:0; white-space:pre-wrap; overflow-wrap:anywhere; font:11px/1.45 ui-
   .analysis-shell > summary { align-items:flex-start; flex-direction:column; }
 }
 @media(max-width:480px) {
+  .workspace-actions { grid-template-columns:1fr 1fr; }
   .layer-panel > summary { gap:5px 7px; padding:7px 8px; }
   .layer-summary-main { gap:5px; }
   .layer-legend { gap:5px 7px; margin-left:22px; min-width:0; }
@@ -845,15 +856,15 @@ __DAG_ASSETS__
     <label class="compact-control"><span>Scenario</span><select id="scenario-select" aria-label="Scenario"></select></label>
     <label class="compact-control"><span>Find graph or structure</span><input class="global-search" id="search" type="search" placeholder="Search graph, layer or ID" aria-label="Find graph or structure"></label>
     <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Toggle color theme" aria-pressed="false"><span class="theme-toggle-icon" aria-hidden="true">◐</span><span class="theme-toggle-label">Theme</span></button>
-    <details class="status-menu"><summary>Report status</summary><div class="status-popover"><div class="badges"><span class="badge" id="capability-badge"></span><span class="badge" id="coverage-badge"></span><span class="badge safe">target config.json only · zero target weights · zero target forward</span><span class="badge warn">runtime trace: not imported</span></div></div></details>
+    <details class="status-menu"><summary>Report status</summary><div class="status-popover"><div class="badges status-evidence"><span class="badge" id="capability-badge"></span><span class="badge" id="coverage-badge"></span><span class="badge" id="source-evidence-badge"></span><span class="badge" title="Config SHA-256 __CONFIG_HASH_TITLE__">config __CONFIG_HASH_SHORT__</span><span class="badge" id="graph-evidence-badge"></span><span class="badge safe">Target input: config.json only · no target weights · no model code · no full forward</span><span class="badge warn">runtime trace: not imported</span></div></div></details>
   </div>
 </header>
 <main>
   <section class="dag-panel" aria-labelledby="graph-heading">
     <div class="workspace-heading">
-      <div><div class="workspace-title"><h2 id="graph-heading">Model graph</h2><span class="level-pill">Top → bottom DAG</span></div><p class="dag-help">Follow tensors from top to bottom. Single-click a node for its explanation and equation; double-click a node marked “N nodes ↓” to enter its child graph. Collapse returns to the parent.</p><p class="dag-evidence"><span class="badge safe">Target input: config.json only</span><span class="badge" id="source-evidence-badge"></span><span class="badge" title="Config SHA-256 __CONFIG_HASH_TITLE__">config __CONFIG_HASH_SHORT__</span><span class="badge" id="graph-evidence-badge"></span><span>no target weights · no model code · no full forward</span></p></div>
-      <div class="workspace-actions" aria-label="Workspace panels">
-        <label class="heat-control"><span>Theory heat</span><select id="heatmap-mode" aria-label="Theoretical bottleneck heatmap" aria-describedby="heatmap-note">__HEATMAP_OPTIONS__</select><span class="heat-note" id="heatmap-note" aria-live="polite"></span></label>
+      <div class="workspace-intro"><div class="workspace-title"><h2 id="graph-heading">Model graph</h2><span class="level-pill">Top → bottom</span></div><p class="dag-help"><strong>Click</strong> to explain · <strong>Double-click ↓</strong> to open a subgraph</p></div>
+      <div class="workspace-actions" aria-label="Graph controls">
+        <div class="heat-control"><span>Color</span><div class="heat-segments" id="heatmap-buttons" role="group" aria-label="Color nodes by structure or theoretical cost"><button class="heat-mode-button" type="button" data-heat-mode="off" aria-pressed="true">Structure</button><button class="heat-mode-button" type="button" data-heat-mode="compute" aria-pressed="false">Compute</button><button class="heat-mode-button" type="button" data-heat-mode="memory" aria-pressed="false">Memory</button><button class="heat-mode-button" type="button" data-heat-mode="pressure" aria-pressed="false" aria-describedby="heatmap-note" disabled>Pressure</button></div><select class="heat-mode-state" id="heatmap-mode" aria-hidden="true" tabindex="-1">__HEATMAP_OPTIONS__</select><span class="heat-note" id="heatmap-note" aria-live="polite"></span></div>
         <button class="workspace-action" type="button" data-drawer-target="navigator-drawer" aria-controls="navigator-drawer" aria-expanded="false">Browse</button>
         <button class="workspace-action" type="button" data-drawer-target="inspector-drawer" aria-controls="inspector-drawer" aria-expanded="false">Inspector</button>
         <button class="workspace-action" id="analysis-toggle" type="button">Analysis</button>
@@ -1055,10 +1066,20 @@ function scopedGraphMetrics(detail,node,view,subjectIds){
   return {metrics:[],scope:'not-attributable',unknown_reason:node.opaque?'Opaque internals prevent trustworthy component attribution.':'Available estimates are block aggregates and are not attributed to this synthetic semantic node.'};
 }
 function currentScenario(){const id=byId('scenario-select')?.value||'';return map.scenarios.find(item=>item.id===id)||null;}
+function syncHeatmapModeControls(){
+  const select=byId('heatmap-mode'),mode=select.value;
+  document.querySelectorAll('[data-heat-mode]').forEach(button=>{
+    const value=button.dataset.heatMode,option=[...select.options].find(item=>item.value===value),disabled=Boolean(option?.disabled),active=value===mode;
+    button.disabled=disabled;button.setAttribute('aria-pressed',String(active));
+    if(value==='pressure'&&disabled){button.setAttribute('aria-label','Pressure requires HardwareProfile');button.title='Add a matching HardwareProfile to enable theoretical Pressure.';}
+    else{button.setAttribute('aria-label',`${button.textContent} view`);button.title=active?`${button.textContent} view active`:`Show ${button.textContent} view`;}
+  });
+}
 function setupHeatmapMode(){
   const select=byId('heatmap-mode'),pressure=[...select.options].find(option=>option.value==='pressure'),note=byId('heatmap-note');
-  if(hardwareProfile){pressure.disabled=false;pressure.textContent='Pressure';select.value='pressure';note.textContent='';select.title='Pressure uses the explicit HardwareProfile embedded in this report.';return;}
-  pressure.disabled=true;pressure.textContent='Pressure (requires HardwareProfile)';select.value='compute';note.textContent='Pressure requires an explicit HardwareProfile.';select.title='Compute and Memory are formula estimates. Pressure is unavailable without an explicit HardwareProfile.';
+  select.value='off';
+  if(hardwareProfile){pressure.disabled=false;pressure.textContent='Pressure';note.textContent='';select.title='Structure is the default. Compute, Memory and HardwareProfile-backed Pressure are available.';syncHeatmapModeControls();return;}
+  pressure.disabled=true;pressure.textContent='Pressure (requires HardwareProfile)';note.textContent='Pressure requires an explicit HardwareProfile.';select.title='Structure is the default. Compute and Memory are formula estimates; Pressure requires a HardwareProfile.';syncHeatmapModeControls();
 }
 function graphMetricBinding(node,baseName){return (node?.metric_bindings||[]).find(binding=>binding.dimension===baseName)||null;}
 function metricNameForGraphNode(node,view,baseName){
@@ -1149,7 +1170,7 @@ function theoreticalNodeHeat(node,view,scenario,mode='pressure'){
   return {known:true,status:partial?'partial':'known',mode,label:'Theoretical pressure',raw_value:value,value,value_label:compactMagnitude(value,'seconds'),unit:'seconds',compute_lower_bound_seconds:computeBound,bandwidth_lower_bound_seconds:bandwidthBound,bottleneck_class:bottleneck,arithmetic_intensity_flops_per_byte:memory.value?compute.value/memory.value:null,coverage:Math.min(compute.coverage,memory.coverage),origin:`max(${compute.origin},${memory.origin})`,compute,memory,hardware_profile:profile,partial,is_latency_estimate:false};
 }
 function heatmapForView(view,scenario,mode){
-  if(!view||mode==='off')return {mode:'off',nodes:{},title:'Theoretical heat',basis:'Heat overlay is off.',coverageLabel:''};
+  if(!view||mode==='off')return {mode:'off',nodes:{},title:'Structure',basis:'Structure view; theoretical heat overlay is off.',coverageLabel:''};
   const frontierIds=new Set(view.cost_frontier_node_ids||[]),frontier=(view.nodes||[]).filter(node=>frontierIds.has(node.id));
   const frontierSet=new Set(frontier.map(node=>node.id));
   const results=frontier.map(node=>({node,result:theoreticalNodeHeat(node,view,scenario,mode)}));
@@ -1176,8 +1197,9 @@ function heatmapForView(view,scenario,mode){
 }
 function currentGraphView(){return window.LLMVisDAG?.get('model-dag')?.view||graphView.views[0]||null;}
 function renderHeatmap(scenario=currentScenario(),view=currentGraphView()){
-  const mode=byId('heatmap-mode')?.value||'pressure';
+  const mode=byId('heatmap-mode')?.value||'off';
   const config=heatmapForView(view,scenario,mode);
+  document.querySelector('.dag-panel')?.setAttribute('data-presentation',mode);
   window.LLMVisDAG?.setHeatmap('model-dag',config);
   return config;
 }
@@ -1259,7 +1281,7 @@ function graphSelectionContext(detail){
 window.llmVisInspect=detail=>{
   lastGraphDetail=detail;
   if(detail?.view?.id)graphDetailByView.set(detail.view.id,detail);
-  setInspector(graphSelectionContext(detail),{reveal:detail?.reveal===true});
+  setInspector(graphSelectionContext(detail),{reveal:detail?.reveal===true||detail?.type==='edge'});
 };
 function semanticContext(item){
   const instances=map.instances.filter(instance=>item.instance_ids.includes(instance.id));
@@ -1374,7 +1396,13 @@ function renderGraphEvidence(view){
 function renderScenario(){const id=byId('scenario-select').value,scenario=map.scenarios.find(item=>item.id===id);renderScenarioCard(scenario);renderCosts(scenario);renderHotspots(scenario);renderRoofline(scenario);renderDiff(scenario);renderRuntime(scenario);renderCoverageBadge(scenario);renderHeatmap(scenario);if(lastGraphDetail)setInspector(graphSelectionContext(lastGraphDetail),{reveal:false});}
 function scenarioOptionLabel(scenario){const preset=scenario.backend==='llm-vis-default-preset'?'Default preset · ':'';const phase=scenario.phase==='prefill'?'Prefill':scenario.phase==='decode'?'Decode':scenario.phase;return `${preset}${phase} · B${scenario.batch} T${scenario.new_tokens} L${scenario.past_tokens} · ${scenario.weight_format}`;}
 function setupScenarios(){const select=byId('scenario-select');clear(select);if(!map.scenarios.length){const option=document.createElement('option');option.textContent='No workload';option.value='';select.append(option);select.disabled=true;}else for(const scenario of map.scenarios){const option=document.createElement('option');option.value=scenario.id;option.textContent=scenarioOptionLabel(scenario);select.append(option);}select.onchange=renderScenario;renderScenario();}
-byId('heatmap-mode').onchange=event=>{if(event.target.value==='pressure'&&!hardwareProfile)event.target.value='compute';renderHeatmap();if(lastGraphDetail)setInspector(graphSelectionContext(lastGraphDetail),{reveal:false});};
+function activateHeatmapMode(mode){
+  const select=byId('heatmap-mode'),option=[...select.options].find(item=>item.value===mode);
+  if(!option||option.disabled)return false;
+  select.value=mode;syncHeatmapModeControls();renderHeatmap();if(lastGraphDetail)setInspector(graphSelectionContext(lastGraphDetail),{reveal:false});return true;
+}
+byId('heatmap-mode').onchange=event=>{if(event.target.value==='pressure'&&!hardwareProfile)event.target.value='off';syncHeatmapModeControls();renderHeatmap();if(lastGraphDetail)setInspector(graphSelectionContext(lastGraphDetail),{reveal:false});};
+document.querySelectorAll('[data-heat-mode]').forEach(button=>{button.onclick=()=>activateHeatmapMode(button.dataset.heatMode);});
 byId('model-dag').addEventListener('llm-vis:dag-view-change',event=>{
   const view=event.detail.view,saved=graphDetailByView.get(view.id)||null;
   lastGraphDetail=saved;

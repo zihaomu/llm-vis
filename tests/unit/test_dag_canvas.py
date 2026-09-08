@@ -91,7 +91,8 @@ def test_render_dag_canvas_embeds_payload_and_read_only_controls() -> None:
     assert 'aria-keyshortcuts="Enter Space"' in fragment
     assert 'class="llm-dag-heat-legend"' in fragment
     assert '<span class="llm-dag-readonly">Flow ↓</span>' in fragment
-    assert "gray = Unknown / not attributable" in fragment
+    assert "badges = Partial / Unknown" in fragment
+    assert 'data-overflow="false" data-overflow-axis="none" hidden' in fragment
     assert 'role="group" aria-label="Interactive model dataflow graph"' in fragment
     assert '"drilldown_view_id":"l1-block"' in fragment
     assert '"source_port_id":"hidden"' in fragment
@@ -115,9 +116,13 @@ def test_assets_expose_offline_interaction_api_and_distinct_edge_patterns() -> N
     assert "llm-dag-edge-label-shape" in assets
     assert "llm-dag-edge-label-dtype" in assets
     assert "stableLayout" in assets
-    assert "JSON.stringify(value)" in assets
-    assert "linear_attention_layers" in assets
-    assert "routed_experts" in assets
+    assert "NODE_PURPOSES" in assets
+    assert "nodePurpose" in assets
+    assert "nodeIoSummary" in assets
+    assert "nodeStatusSummary" in assets
+    assert "primitive_kind" in assets
+    assert "NODE_PURPOSES[primitiveKind] || NODE_PURPOSES[kind]" in assets
+    assert "Applies a local neighborhood filter" in assets
     assert "normalizeView" in assets
     assert "ownerByPort" in assets
     assert "shape Unknown" in assets
@@ -130,7 +135,7 @@ def test_assets_expose_offline_interaction_api_and_distinct_edge_patterns() -> N
     assert "dblclick" in DAG_CANVAS_JS
     assert "has-drilldown" in DAG_CANVAS_JS
     assert "llm-dag-drill-badge" in DAG_CANVAS_JS
-    assert "nodes ↓" in DAG_CANVAS_JS
+    assert "subnodes ↓" in DAG_CANVAS_JS
     assert "childNodeCount" in DAG_CANVAS_JS
     assert "viewsById.has(drilldownId)" in DAG_CANVAS_JS
     assert "'aria-keyshortcuts': 'Enter'" in DAG_CANVAS_JS
@@ -162,7 +167,7 @@ def test_assets_expose_offline_interaction_api_and_distinct_edge_patterns() -> N
     assert "heatKnown" in DAG_CANVAS_JS
     assert 'data-heat-known="false"' in DAG_CANVAS_CSS
     assert "llm-dag-heat-legend" in DAG_CANVAS_CSS
-    assert "stroke-dasharray: none" in DAG_CANVAS_CSS
+    assert "llm-dag-heat-badge" in DAG_CANVAS_CSS
     assert "parent_view_id" in DAG_CANVAS_JS
     assert "immediateParentContext" in DAG_CANVAS_JS
     assert "viewsById.get(String(view?.parent_view_id || ''))" in DAG_CANVAS_JS
@@ -178,7 +183,7 @@ def test_assets_expose_offline_interaction_api_and_distinct_edge_patterns() -> N
     assert "root.dataset.layoutDirection = 'DOWN'" in DAG_CANVAS_JS
     assert "direction === 'input' ? pos.y : pos.y + pos.height" in DAG_CANVAS_JS
     assert "V ${middle} H ${target.x} V ${target.y}" in DAG_CANVAS_JS
-    assert "rankDelta === 1" in DAG_CANVAS_JS
+    assert "rankDelta === 1 || routeHint.main === true" in DAG_CANVAS_JS
     assert "activeLayout.contentLeft" in DAG_CANVAS_JS
     assert "edgeRouteLanes" in DAG_CANVAS_JS
     assert "availableLane" in DAG_CANVAS_JS
@@ -208,6 +213,116 @@ def test_assets_expose_offline_interaction_api_and_distinct_edge_patterns() -> N
     assert "https://" not in assets_without_svg_namespace
     assert "<script src=" not in assets
     assert "@import" not in assets
+
+
+def test_progressive_disclosure_keeps_the_graph_structure_first() -> None:
+    draw_node = DAG_CANVAS_JS.split("function drawNode(node) {", 1)[1].split(
+        "function edgeEndpoint", 1
+    )[0]
+    draw_edges = DAG_CANVAS_JS.split("function drawEdges() {", 1)[1].split(
+        "function drawMinimap", 1
+    )[0]
+
+    assert "llm-dag-node-title" in draw_node
+    assert "llm-dag-node-purpose" in draw_node
+    assert "llm-dag-node-io" in draw_node
+    assert "data-purpose" in draw_node
+    assert "data-io-summary" in draw_node
+    assert "const accessibleSummary" in draw_node
+    assert "Status: ${statusSummary}" in draw_node
+    assert "data-structure-status" in draw_node
+    assert "data-conditional" in draw_node
+    assert "data-status-summary" in draw_node
+    assert "llm-dag-node-meta" not in draw_node
+    assert "llm-dag-node-core" not in draw_node
+    assert "origin" not in draw_node
+    assert "dtype" not in draw_node
+    assert "Open ${childNodeCount} subnodes ↓" in draw_node
+    assert "llm-dag-node-status" in draw_node
+    assert "status.push('Optional')" in DAG_CANVAS_JS
+    assert "status.push('Opaque')" in DAG_CANVAS_JS
+    assert "status.push(`${layerCount} layers`)" in DAG_CANVAS_JS
+    assert "const inlineHeatX = statusSummary ? 16 + statusWidth : 10" in draw_node
+    assert "inlineHeatX + 44 + 4 > drillBadgeX" in draw_node
+    assert "heatBadgeOnSide ? 'side' : 'inline'" in draw_node
+
+    assert "llm-dag-edge-label-shape" in draw_edges
+    assert "llm-dag-edge-label-name" in draw_edges
+    assert "llm-dag-edge-label-dtype" in draw_edges
+    assert "data-default-label" in draw_edges
+    assert "data-detail-label" in draw_edges
+    assert ".llm-dag-edge-label-name,\n.llm-dag-edge-label-dtype," in DAG_CANVAS_CSS
+    assert ".llm-dag-edge-label-redundant {\n  opacity: 0;" in DAG_CANVAS_CSS
+    assert ".llm-dag-edge-group:hover .llm-dag-edge-label-name" in DAG_CANVAS_CSS
+    assert ".llm-dag-edge-group:focus .llm-dag-edge-label-name" in DAG_CANVAS_CSS
+    assert ".llm-dag-edge-group.is-selected .llm-dag-edge-label-name" in DAG_CANVAS_CSS
+    assert ".llm-dag-edge-group.is-upstream .llm-dag-edge-label-name" in DAG_CANVAS_CSS
+    assert ".llm-dag-edge-group.is-downstream .llm-dag-edge-label-name" in DAG_CANVAS_CSS
+    assert "preferredShapeEdgeBySource" in draw_edges
+    assert "disclosurePriority" in draw_edges
+    assert "layout.mainEdgeIds.has(id) ? 0 : 1" in draw_edges
+    assert "data-shape-disclosure" in draw_edges
+    assert "'llm-dag-edge-label-name', -9" in draw_edges
+    assert "'llm-dag-edge-label-dtype', 13" in draw_edges
+    assert ".llm-dag-port-label" in DAG_CANVAS_CSS
+    assert ".llm-dag-port-group:focus + .llm-dag-port-label" in DAG_CANVAS_CSS
+
+
+def test_layout_has_a_semantic_main_spine_and_deterministic_side_lanes() -> None:
+    assert "const forwardIncoming" in DAG_CANVAS_JS
+    assert "const semanticScore" in DAG_CANVAS_JS
+    assert "const spineIds" in DAG_CANVAS_JS
+    assert "const mainEdgeIds" in DAG_CANVAS_JS
+    assert "edgeKind(edge) !== 'data'" in DAG_CANVAS_JS
+    assert "side: 'main', lane: 0, main: true" in DAG_CANVAS_JS
+    assert "const semanticLane" in DAG_CANVAS_JS
+    assert "if (isStateNode(node)) return 'left';" in DAG_CANVAS_JS
+    assert "if (nodeIsConditional(node)" in DAG_CANVAS_JS
+    assert "return 'right';" in DAG_CANVAS_JS
+    assert "const mainX" in DAG_CANVAS_JS
+    assert "const sideSlots = Math.max(maxLeft, maxRight)" in DAG_CANVAS_JS
+    assert "const contentWidth = WIDTH + 2 * sideSlots * stepX" in DAG_CANVAS_JS
+    assert "place(center, mainX, 'main', 0)" in DAG_CANVAS_JS
+    assert "data-layout-lane" in DAG_CANVAS_JS
+    assert "Math.max(.85, overviewScale)" in DAG_CANVAS_JS
+    assert "const Y_GAP = 78" in DAG_CANVAS_JS
+    assert "tx = (box.width - layout.width * scale) / 2" in DAG_CANVAS_JS
+
+
+def test_heat_evidence_uses_fill_and_badges_without_changing_node_borders() -> None:
+    heat_rules = DAG_CANVAS_CSS.split(".llm-dag-heat-badge", 1)[1].split(
+        ".llm-dag-heat-legend", 1
+    )[0]
+
+    assert "stroke-dasharray" not in heat_rules
+    assert 'data-heat-status="partial"' in heat_rules
+    assert "fill: var(--dag-heat-unknown);" in heat_rules
+    assert "fill: var(--dag-heat-not-applicable);" in heat_rules
+    assert "element.dataset.heatValue = known ? String(normalized) : '';" in DAG_CANVAS_JS
+    assert "if (known) element.style.setProperty('--dag-node-heat', heatColor(normalized));" in (
+        DAG_CANVAS_JS
+    )
+    assert "else element.style.removeProperty('--dag-node-heat');" in DAG_CANVAS_JS
+    assert "statusName === 'partial' ? 'Partial'" in DAG_CANVAS_JS
+    assert "statusName === 'unknown' ? 'Unknown'" in DAG_CANVAS_JS
+    assert '.llm-dag-node[data-structure-status="opaque"] .llm-dag-node-card' in (
+        DAG_CANVAS_CSS
+    )
+
+
+def test_current_minimap_is_conditional_but_keeps_its_dom() -> None:
+    assert "function syncMinimapVisibility()" in DAG_CANVAS_JS
+    assert "const worldRight = tx + layout.width * scale" in DAG_CANVAS_JS
+    assert "const worldBottom = ty + layout.height * scale" in DAG_CANVAS_JS
+    assert "tx < -1 || worldRight > box.width + 1" in DAG_CANVAS_JS
+    assert "ty < -1 || worldBottom > box.height + 1" in DAG_CANVAS_JS
+    assert "currentContext.dataset.overflow = String(overflow)" in DAG_CANVAS_JS
+    assert "currentContext.dataset.overflowAxis" in DAG_CANVAS_JS
+    assert "currentContext.hidden = !overflow" in DAG_CANVAS_JS
+    assert "root.dataset.minimapVisible = String(overflow)" in DAG_CANVAS_JS
+    assert "miniWorld.replaceChildren()" in DAG_CANVAS_JS
+    assert "drawParentContext" in DAG_CANVAS_JS
+    assert ".llm-dag-current-context[hidden] { display: none; }" in DAG_CANVAS_CSS
 
 
 def test_assets_expose_real_dark_light_palettes_and_repaint_without_navigation() -> None:

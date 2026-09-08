@@ -454,10 +454,11 @@ def test_cli_view_adds_labeled_prefill_and_decode_presets_without_pressure(
     assert (
         '<option value="pressure" disabled>Pressure (requires HardwareProfile)</option>' in html
     )
-    assert '<option value="compute" selected>Compute</option>' in html
+    assert '<option value="off" selected>Structure</option>' in html
+    assert '<option value="compute">Compute</option>' in html
     assert "Pressure (requires HardwareProfile)" in html
     assert "pressure.disabled=true" in html
-    assert "select.value='compute'" in html
+    assert "select.value='off'" in html
     assert "Pressure requires an explicit HardwareProfile." in html
     assert manifest["safety"] == {
         "weights_loaded": False,

@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 from contextlib import contextmanager
 from pathlib import Path
 from typing import Iterator
@@ -160,6 +161,14 @@ def _selected_view(page: Page):  # type: ignore[no-untyped-def]
     return page.locator("#model-dag .llm-dag-view-select option:checked")
 
 
+def _choose_heat_mode(page: Page, mode: str) -> None:
+    button = page.locator(f'[data-heat-mode="{mode}"]')
+    expect(button).to_be_enabled()
+    button.click()
+    expect(button).to_have_attribute("aria-pressed", "true")
+    expect(page.locator("#heatmap-mode")).to_have_value(mode)
+
+
 def _center_node(page: Page, node) -> None:  # type: ignore[no-untyped-def]
     node_id = node.get_attribute("data-node-id")
     assert node_id is not None
@@ -167,6 +176,122 @@ def _center_node(page: Page, node) -> None:  # type: ignore[no-untyped-def]
         "nodeId => window.LLMVisDAG.focusNode('model-dag', nodeId)", node_id
     )
     page.wait_for_timeout(100)
+
+
+def _node_layout_position(page: Page, label: str) -> dict[str, object]:
+    result = page.evaluate(
+        """label => {
+            const element = [...document.querySelectorAll('#model-dag .llm-dag-node')]
+                .find(node => node.querySelector('.llm-dag-node-title')
+                    ?.textContent.startsWith(label));
+            if (!element) return null;
+            const card = element.querySelector('.llm-dag-node-card');
+            const matrix = element.transform.baseVal.consolidate()?.matrix;
+            return {
+                lane: element.dataset.layoutLane,
+                x: (matrix?.e || 0) + Number(card?.getAttribute('width') || 0) / 2,
+                y: (matrix?.f || 0) + Number(card?.getAttribute('height') || 0) / 2
+            };
+        }""",
+        label,
+    )
+    assert isinstance(result, dict), label
+    return result
+
+
+def _assert_vertical_main_chain(page: Page, labels: tuple[str, ...]) -> None:
+    positions = [_node_layout_position(page, label) for label in labels]
+    assert all(position["lane"] == "main" for position in positions), list(
+        zip(labels, positions)
+    )
+    x_values = [float(position["x"]) for position in positions]
+    y_values = [float(position["y"]) for position in positions]
+    assert max(x_values) - min(x_values) <= 1.0
+    assert all(
+        y_values[index] < y_values[index + 1]
+        for index in range(len(y_values) - 1)
+    ), list(zip(labels, positions))
+
+
+def _layout_geometry_audit(page: Page) -> dict[str, object]:
+    return page.evaluate(
+        """() => {
+            const elements = [...document.querySelectorAll('#model-dag .llm-dag-node')];
+            const nodes = elements.map(element => {
+                const matrix = element.transform.baseVal.consolidate()?.matrix;
+                const card = element.querySelector('.llm-dag-node-card');
+                return {
+                    id: element.dataset.nodeId,
+                    lane: element.dataset.layoutLane,
+                    x: matrix?.e || 0,
+                    y: matrix?.f || 0,
+                    width: Number(card?.getAttribute('width') || 0),
+                    height: Number(card?.getAttribute('height') || 0)
+                };
+            });
+            const main = nodes.filter(node => node.lane === 'main');
+            const mainX = main[0]?.x;
+            const sideViolations = nodes.filter(node =>
+                (node.lane === 'left' && !(node.x < mainX))
+                || (node.lane === 'right' && !(node.x > mainX))
+            ).map(node => [node.id, node.lane, node.x]);
+            const penetrations = [];
+            const labelHits = [];
+            const edges = [...document.querySelectorAll(
+                '#model-dag .llm-dag-edge-group'
+            )];
+            for (const edge of edges) {
+                const path = edge.querySelector('.llm-dag-edge');
+                const length = path.getTotalLength();
+                const step = Math.max(3, length / 500);
+                for (let distance = 2; distance < length - 2; distance += step) {
+                    const point = path.getPointAtLength(distance);
+                    const hit = nodes.find(node =>
+                        node.id !== edge.dataset.sourceNodeId
+                        && node.id !== edge.dataset.targetNodeId
+                        && point.x > node.x + 2
+                        && point.x < node.x + node.width - 2
+                        && point.y > node.y + 2
+                        && point.y < node.y + node.height - 2
+                    );
+                    if (hit) {
+                        penetrations.push([edge.dataset.edgeId, hit.id]);
+                        break;
+                    }
+                }
+                if (edge.dataset.shapeDisclosure !== 'default') continue;
+                const label = edge.querySelector('.llm-dag-edge-label-shape');
+                const bounds = label.getBBox();
+                for (const node of nodes) {
+                    if (node.id === edge.dataset.sourceNodeId
+                        || node.id === edge.dataset.targetNodeId) continue;
+                    if (bounds.x < node.x + node.width
+                        && bounds.x + bounds.width > node.x
+                        && bounds.y < node.y + node.height
+                        && bounds.y + bounds.height > node.y) {
+                        labelHits.push([edge.dataset.edgeId, node.id]);
+                    }
+                }
+            }
+            return {
+                mainCount: main.length,
+                mainXs: main.map(node => node.x),
+                sideViolations,
+                penetrations,
+                labelHits,
+                signature: {
+                    nodes: nodes.map(node => [node.id, node.lane, node.x, node.y]),
+                    edges: edges.map(edge => [
+                        edge.dataset.edgeId,
+                        edge.dataset.routeSide,
+                        edge.dataset.routeLane,
+                        edge.dataset.shapeDisclosure,
+                        edge.querySelector('.llm-dag-edge').getAttribute('d')
+                    ])
+                }
+            };
+        }"""
+    )
 
 
 def _assert_browser_clean(browser_errors: list[str]) -> None:
@@ -519,15 +644,43 @@ def test_qwen_explain_drilldown_search_and_formula_heat(
         expect(page.locator("#heatmap-note")).to_have_text(
             "Pressure requires an explicit HardwareProfile."
         )
-        expect(heatmap).to_have_value("compute")
+        expect(heatmap).to_have_value("off")
+        expect(heatmap.locator('option[value="off"]')).to_have_text("Structure")
+        expect(page.locator(".dag-panel")).to_have_attribute(
+            "data-presentation", "off"
+        )
+        for mode in ("off", "compute", "memory"):
+            expect(page.locator(f'[data-heat-mode="{mode}"]')).to_be_enabled()
+            expect(page.locator(f'[data-heat-mode="{mode}"]')).to_be_visible()
+        expect(page.locator('[data-heat-mode="off"]')).to_have_attribute(
+            "aria-pressed", "true"
+        )
+        expect(page.locator('[data-heat-mode="pressure"]')).to_be_disabled()
+        expect(page.locator("#model-dag .llm-dag-heat-legend")).to_be_hidden()
+        expect(
+            page.locator('#model-dag .llm-dag-node[data-heat-status="off"]')
+        ).to_have_count(page.locator("#model-dag .llm-dag-node").count())
+
+        _choose_heat_mode(page, "compute")
         expect(page.locator("#model-dag .llm-dag-heat-title")).to_have_text(
             "Theoretical compute"
         )
         expect(
             page.locator('#model-dag .llm-dag-node[data-heat-known="true"]').first
         ).to_be_visible()
+        non_opaque_unattributed = page.locator(
+            '#model-dag .llm-dag-node[data-structure-status="known"]'
+            '[data-heat-known="false"]'
+        )
+        assert non_opaque_unattributed.count() > 0
+        assert non_opaque_unattributed.evaluate_all(
+            """nodes => nodes.every(node =>
+                getComputedStyle(node.querySelector('.llm-dag-node-card'))
+                    .strokeDasharray === 'none'
+                && node.dataset.heatValue === '')"""
+        )
 
-        heatmap.select_option("memory")
+        _choose_heat_mode(page, "memory")
         expect(page.locator("#model-dag .llm-dag-heat-title")).to_have_text(
             "Theoretical memory"
         )
@@ -639,6 +792,265 @@ def test_qwen_explain_drilldown_search_and_formula_heat(
         match = page.locator("#model-dag .llm-dag-node.is-match", has_text="Q RMSNorm")
         expect(match).to_have_count(1)
         assert "is-selected" in (match.get_attribute("class") or "").split()
+
+        _assert_browser_clean(browser_errors)
+
+
+def test_m313_structure_first_progressive_disclosure_preserves_graph_state(
+    chromium: Browser,
+    qwen_report: Path,
+) -> None:
+    with _open_report(chromium, qwen_report) as (page, browser_errors):
+        heatmap = page.locator("#heatmap-mode")
+        expect(heatmap).to_have_value("off")
+        assert heatmap.locator("option").all_text_contents() == [
+            "Structure",
+            "Compute",
+            "Memory",
+            "Pressure (requires HardwareProfile)",
+        ]
+        expect(page.locator(".dag-panel")).to_have_attribute(
+            "data-presentation", "off"
+        )
+        expect(page.locator("#model-dag .llm-dag-heat-legend")).to_be_hidden()
+
+        # The first screen keeps advanced evidence, layer positions and analysis
+        # available without putting them on the structural canvas.
+        expect(page.locator(".status-menu")).not_to_have_attribute("open", "")
+        expect(page.locator(".status-popover")).to_be_hidden()
+        expect(page.locator("#layer-panel")).not_to_have_attribute("open", "")
+        expect(page.locator("#supporting-analysis")).not_to_have_attribute("open", "")
+        expect(page.locator("#inspector-drawer")).to_have_attribute(
+            "aria-hidden", "true"
+        )
+        expect(page.locator(".dag-panel .badge")).to_have_count(0)
+        help_text = page.locator(".dag-help").inner_text()
+        assert help_text == "Click to explain · Double-click ↓ to open a subgraph"
+        assert len(help_text) < 64
+        header_box = page.locator("header").bounding_box()
+        assert header_box is not None
+        assert header_box["height"] <= 60
+        page.locator(".status-menu summary").click()
+        expect(page.locator("#source-evidence-badge")).to_be_visible()
+        expect(page.locator(".status-popover")).to_contain_text(
+            "no target weights · no model code · no full forward"
+        )
+        page.locator(".status-menu summary").click()
+        expect(page.locator(".status-popover")).to_be_hidden()
+
+        initial_ids = page.evaluate(
+            """() => ({
+                view: document.querySelector('#model-dag .llm-dag-view-select').value,
+                nodes: [...document.querySelectorAll('#model-dag .llm-dag-node')]
+                    .map(node => node.dataset.nodeId),
+                edges: [...document.querySelectorAll('#model-dag .llm-dag-edge-group')]
+                    .map(edge => edge.dataset.edgeId)
+            })"""
+        )
+
+        _assert_vertical_main_chain(
+            page,
+            (
+                "Token IDs",
+                "Token Embedding",
+                "Hybrid Decoder",
+                "Final Norm",
+                "LM Head",
+                "Logits",
+            ),
+        )
+        for supporting_label in (
+            "Vision Tower",
+            "Vision Projector",
+            "MTP × 1",
+            "MTP Draft Logits",
+        ):
+            assert _node_layout_position(page, supporting_label)["lane"] == "right"
+        projector = _node(page, "Vision Projector")
+        expect(projector).to_have_attribute("data-conditional", "true")
+        expect(projector).to_have_attribute("data-status-summary", "Optional")
+        expect(projector.locator(".llm-dag-node-status")).to_be_visible()
+        expect(projector.locator(".llm-dag-node-status-label")).to_have_text(
+            "Optional"
+        )
+        expect(projector).to_have_attribute(
+            "aria-label",
+            re.compile(
+                r"Vision Projector\. Maps visual features into model space\. "
+                r"I/O .+ → .+\. Status: Optional\. Single-click"
+            ),
+        )
+
+        minimal_node = _node(page, "Hybrid Decoder")
+        expect(minimal_node).to_have_attribute("data-layout-lane", "main")
+        expect(minimal_node).to_have_attribute(
+            "data-purpose", "Repeats the model decoder layers"
+        )
+        expect(minimal_node).to_have_attribute(
+            "data-io-summary", re.compile(r"^I/O .+ → .+$")
+        )
+        expect(minimal_node.locator(".llm-dag-node-title")).to_have_count(1)
+        expect(minimal_node.locator(".llm-dag-node-purpose")).to_have_count(1)
+        expect(minimal_node.locator(".llm-dag-node-io")).to_have_count(1)
+        expect(minimal_node.locator(".llm-dag-node-meta")).to_have_count(0)
+        expect(minimal_node.locator(".llm-dag-node-core")).to_have_count(0)
+        expect(minimal_node.locator(".llm-dag-drill-label")).to_have_text(
+            "Open 10 subnodes ↓"
+        )
+
+        first_edge = page.locator("#model-dag .llm-dag-edge-group").first
+        expect(first_edge.locator(".llm-dag-edge-label-shape")).to_have_count(1)
+        edge_default_opacity = first_edge.locator(
+            ".llm-dag-edge-label-name"
+        ).evaluate("element => getComputedStyle(element).opacity")
+        dtype_default_opacity = first_edge.locator(
+            ".llm-dag-edge-label-dtype"
+        ).evaluate("element => getComputedStyle(element).opacity")
+        assert edge_default_opacity == "0"
+        assert dtype_default_opacity == "0"
+        first_edge.focus()
+        assert first_edge.locator(".llm-dag-edge-label-name").evaluate(
+            "element => getComputedStyle(element).opacity"
+        ) == "1"
+        assert first_edge.locator(".llm-dag-edge-label-dtype").evaluate(
+            "element => getComputedStyle(element).opacity"
+        ) == "1"
+        page.locator('[data-heat-mode="off"]').focus()
+        assert first_edge.locator(".llm-dag-edge-label-name").evaluate(
+            "element => getComputedStyle(element).opacity"
+        ) == "0"
+        expect(
+            page.locator(
+                '#model-dag .llm-dag-edge-group[data-shape-disclosure="default"]'
+            ).first
+        ).to_be_attached()
+        redundant_edge = page.locator(
+            '#model-dag .llm-dag-edge-group[data-shape-disclosure="detail"]'
+        ).first
+        expect(redundant_edge).to_be_attached()
+        redundant_shape = redundant_edge.locator(
+            ".llm-dag-edge-label-shape.llm-dag-edge-label-redundant"
+        )
+        assert redundant_shape.evaluate(
+            "element => getComputedStyle(element).opacity"
+        ) == "0"
+        redundant_edge.focus()
+        assert redundant_shape.evaluate(
+            "element => getComputedStyle(element).opacity"
+        ) == "1"
+        page.locator('[data-heat-mode="off"]').focus()
+        assert redundant_shape.evaluate(
+            "element => getComputedStyle(element).opacity"
+        ) == "0"
+
+        _choose_heat_mode(page, "compute")
+        expect(page.locator(".dag-panel")).to_have_attribute(
+            "data-presentation", "compute"
+        )
+        expect(page.locator("#model-dag .llm-dag-heat-legend")).to_be_visible()
+        expect(
+            page.locator('#model-dag .llm-dag-node[data-heat-known="true"]').first
+        ).to_be_visible()
+
+        hybrid_decoder = _node(page, "Hybrid Decoder")
+        hybrid_id = hybrid_decoder.get_attribute("data-node-id")
+        assert hybrid_id is not None
+        hybrid_decoder.click()
+        expect(page.locator("#inspector-drawer")).to_have_attribute(
+            "aria-hidden", "false"
+        )
+        expect(page.locator("#inspector .inspector-formula")).to_contain_text(
+            "DecoderLayer"
+        )
+        expect(heatmap).to_have_value("compute")
+        page.get_by_role("button", name="Close inspector").click()
+
+        hybrid_decoder = _node(page, "Hybrid Decoder")
+        hybrid_decoder.dblclick()
+        expect(_selected_view(page)).to_contain_text(
+            "Gated DeltaNet Linear Attention representative"
+        )
+        expect(heatmap).to_have_value("compute")
+        page.get_by_role("button", name="Collapse to parent graph").click()
+        expect(_selected_view(page)).to_have_text("Qwen model DAG")
+        expect(_node(page, "Hybrid Decoder")).to_have_attribute(
+            "data-node-id", hybrid_id
+        )
+
+        # The heat selector changes only presentation: graph identity and the
+        # restored structural selection remain stable.
+        _choose_heat_mode(page, "off")
+        expect(page.locator("#model-dag .llm-dag-heat-legend")).to_be_hidden()
+        expect(_node(page, "Hybrid Decoder")).to_have_attribute(
+            "data-node-id", hybrid_id
+        )
+        expect(_node(page, "Hybrid Decoder")).to_have_class(re.compile(r"\bis-selected\b"))
+        final_ids = page.evaluate(
+            """() => ({
+                view: document.querySelector('#model-dag .llm-dag-view-select').value,
+                nodes: [...document.querySelectorAll('#model-dag .llm-dag-node')]
+                    .map(node => node.dataset.nodeId),
+                edges: [...document.querySelectorAll('#model-dag .llm-dag-edge-group')]
+                    .map(edge => edge.dataset.edgeId)
+            })"""
+        )
+        assert final_ids == initial_ids
+
+        edge = page.locator("#model-dag .llm-dag-edge-group").first
+        edge_id = edge.get_attribute("data-edge-id")
+        assert edge_id is not None
+        edge.focus()
+        edge.press("Enter")
+        expect(edge).to_have_class(re.compile(r"\bis-selected\b"))
+        assert edge.locator(".llm-dag-edge-label-name").evaluate(
+            "element => getComputedStyle(element).opacity"
+        ) == "1"
+        assert edge.locator(".llm-dag-edge-label-dtype").evaluate(
+            "element => getComputedStyle(element).opacity"
+        ) == "1"
+        expect(page.locator("#inspector-drawer")).to_have_attribute(
+            "aria-hidden", "false"
+        )
+        expect(page.locator("#inspector")).to_contain_text('"graphEdge"')
+        expect(heatmap).to_have_value("off")
+
+        _assert_browser_clean(browser_errors)
+
+
+@pytest.mark.parametrize("report_fixture", ["qwen_report", "glm_report", "generic_report"])
+def test_m313_all_views_keep_clear_deterministic_geometry(
+    chromium: Browser,
+    request: pytest.FixtureRequest,
+    report_fixture: str,
+) -> None:
+    report = request.getfixturevalue(report_fixture)
+    with _open_report(chromium, report) as (page, browser_errors):
+        payload = json.loads(page.locator("#llm-vis-data").text_content() or "{}")
+        views = payload["graphView"]["views"]
+        assert views
+
+        for view in views:
+            view_id = view["id"]
+            assert page.evaluate(
+                "viewId => window.LLMVisDAG.openView('model-dag', viewId)",
+                view_id,
+            )
+            first = _layout_geometry_audit(page)
+            assert first["mainCount"] > 0, view["label"]
+            main_xs = [float(value) for value in first["mainXs"]]
+            assert max(main_xs) - min(main_xs) <= 1.0, view["label"]
+            assert first["sideViolations"] == [], view["label"]
+            assert first["penetrations"] == [], view["label"]
+            assert first["labelHits"] == [], view["label"]
+
+            # Reopening the same renderer-neutral view must reproduce the same
+            # node coordinates, semantic lanes, edge routes and label disclosure.
+            assert page.evaluate(
+                "viewId => window.LLMVisDAG.openView('model-dag', viewId)",
+                view_id,
+            )
+            second = _layout_geometry_audit(page)
+            assert second["signature"] == first["signature"], view["label"]
 
         _assert_browser_clean(browser_errors)
 
@@ -985,7 +1397,7 @@ def test_qwen_theme_switch_preserves_dag_heat_and_interaction_state(
     ) as (page, browser_errors):
         expect(page.locator("html")).to_have_attribute("data-theme", "light")
         page.locator("#scenario-select").select_option(index=1)
-        page.locator("#heatmap-mode").select_option("memory")
+        _choose_heat_mode(page, "memory")
 
         hybrid_decoder = _node(page, "Hybrid Decoder")
         _center_node(page, hybrid_decoder)
@@ -1081,7 +1493,8 @@ def test_model_heat_semantics_survive_light_dark_round_trip(
                 "GLM Sparse DSA + MoE representative"
             )
         elif model_case == "qwen_pressure":
-            expect(page.locator("#heatmap-mode")).to_have_value("pressure")
+            expect(page.locator("#heatmap-mode")).to_have_value("off")
+            _choose_heat_mode(page, "pressure")
             expect(page.locator("#model-dag .llm-dag-heat-title")).to_have_text(
                 "Theoretical pressure"
             )
@@ -1161,12 +1574,13 @@ def test_qwen_key_controls_fit_without_horizontal_overflow_at_700px(
             page.locator("#scenario-select"),
             page.locator("#search"),
             page.locator("#theme-toggle"),
-            page.locator("#heatmap-mode"),
+            page.locator("#heatmap-buttons"),
             page.locator("#model-dag .llm-dag-view-select"),
             page.get_by_role("button", name="Collapse to parent graph"),
             page.get_by_role("button", name="Fit"),
         ):
             expect(control).to_be_visible()
+        expect(page.locator("#heatmap-mode")).to_have_value("off")
 
         widths = page.evaluate(
             """() => ({
@@ -1204,13 +1618,29 @@ def test_qwen_key_controls_fit_without_horizontal_overflow_at_700px(
         assert page.evaluate("document.documentElement.scrollWidth") <= 700
         layer_panel.locator("summary").click()
 
-        minimap = page.locator("#model-dag .llm-dag-minimap")
-        expect(minimap).to_be_visible()
+        current_context = page.locator("#model-dag .llm-dag-current-context")
+        expect(current_context).to_have_attribute(
+            "data-overflow", re.compile(r"^(true|false)$")
+        )
+        initial_overflow = current_context.get_attribute("data-overflow")
+        assert initial_overflow in {"true", "false"}
+        expect(page.locator("#model-dag")).to_have_attribute(
+            "data-minimap-visible", initial_overflow or "false"
+        )
+        if initial_overflow == "true":
+            expect(current_context).to_be_visible()
+        else:
+            expect(current_context).to_be_hidden()
+        minimap = current_context.locator(".llm-dag-minimap")
         expect(minimap.locator(".llm-dag-minimap-node")).to_have_count(11)
         minimap_viewport = minimap.locator(".llm-dag-minimap-viewport")
         viewport_width_before = float(minimap_viewport.get_attribute("width") or "0")
         for _ in range(4):
             page.get_by_role("button", name="Zoom in").click()
+        expect(page.locator("#model-dag")).to_have_attribute(
+            "data-minimap-visible", "true"
+        )
+        expect(current_context).to_be_visible()
         viewport_width_after = float(minimap_viewport.get_attribute("width") or "0")
         assert viewport_width_after < viewport_width_before
 
@@ -1250,8 +1680,10 @@ def test_qwen_explicit_hardware_profile_enables_pressure(
         pressure = heatmap.locator('option[value="pressure"]')
         expect(pressure).not_to_have_attribute("disabled", "")
         expect(pressure).to_have_text("Pressure")
-        expect(heatmap).to_have_value("pressure")
+        expect(page.locator('[data-heat-mode="pressure"]')).to_be_enabled()
+        expect(heatmap).to_have_value("off")
         expect(page.locator("#heatmap-note")).to_be_empty()
+        _choose_heat_mode(page, "pressure")
         expect(page.locator("#model-dag .llm-dag-heat-title")).to_have_text(
             "Theoretical pressure"
         )
@@ -1266,6 +1698,34 @@ def test_glm_preserves_static_moe_and_opaque_dsa_boundaries(
     glm_report: Path,
 ) -> None:
     with _open_report(chromium, glm_report) as (page, browser_errors):
+        _assert_vertical_main_chain(
+            page,
+            (
+                "Token IDs",
+                "Token Embedding",
+                "Dense DSA × 3",
+                "Sparse DSA + MoE × 75",
+                "Final Norm",
+                "LM Head",
+                "Logits",
+            ),
+        )
+        assert _node_layout_position(page, "MTP × 1")["lane"] == "right"
+        assert _node_layout_position(page, "MTP Draft Logits")["lane"] == "right"
+        _choose_heat_mode(page, "compute")
+        unknown_node = page.locator(
+            '#model-dag .llm-dag-node[data-structure-status="known"]'
+            '[data-heat-status="unknown"]'
+        ).first
+        expect(unknown_node).to_be_visible()
+        expect(unknown_node).to_have_attribute("data-heat-value", "")
+        expect(unknown_node.locator(".llm-dag-heat-badge")).to_be_visible()
+        expect(unknown_node.locator(".llm-dag-heat-badge-label")).to_have_text(
+            "Unknown"
+        )
+        assert unknown_node.locator(".llm-dag-node-card").evaluate(
+            "element => getComputedStyle(element).strokeDasharray"
+        ) == "none"
         expect(page.locator("#layer-pattern-summary")).to_have_text("D×3 → M×75")
         expect(page.locator("#layer-legend")).to_contain_text("Dense FFN")
         expect(page.locator("#layer-legend")).to_contain_text("MoE FFN")
@@ -1336,10 +1796,24 @@ def test_generic_fallback_searches_and_explains_without_children_or_cost(
         expect(_selected_view(page)).to_have_text("Config-only model skeleton")
         expect(page.locator("#model-dag .llm-dag-node.has-drilldown")).to_have_count(0)
         expect(page.locator("#model-dag .llm-dag-view-select option")).to_have_count(1)
-        expect(page.locator("#heatmap-mode")).to_have_value("compute")
+        expect(page.locator("#heatmap-mode")).to_have_value("off")
         expect(page.locator('#model-dag .llm-dag-node[data-heat-known="true"]')).to_have_count(
             0
         )
+
+        _choose_heat_mode(page, "compute")
+        opaque_architecture = _node(page, "Architecture × 3")
+        expect(opaque_architecture).to_have_attribute(
+            "data-status-summary", "Opaque · 3 layers"
+        )
+        expect(opaque_architecture.locator(".llm-dag-heat-badge")).to_be_visible()
+        expect(opaque_architecture.locator(".llm-dag-heat-badge-label")).to_have_text(
+            "Unknown"
+        )
+        status_box = opaque_architecture.locator(".llm-dag-node-status").bounding_box()
+        heat_box = opaque_architecture.locator(".llm-dag-heat-badge").bounding_box()
+        assert status_box is not None and heat_box is not None
+        assert status_box["x"] + status_box["width"] <= heat_box["x"]
 
         page.locator("#search").fill("Architecture")
         architecture = page.locator(
